@@ -104,7 +104,7 @@ export function activate(context: vscode.ExtensionContext) {
             // externel data
             ...{
                 "mysql.util.github": () => {
-                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/cweijan/vscode-database-client'));
+                    vscode.env.openExternal(vscode.Uri.parse('https://github.com/ijry/airdb'));
                 },
                 "mysql.struct.diff": () => {
                     new DiffService().startDiff(serviceManager.provider);

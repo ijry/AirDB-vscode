@@ -1,46 +1,51 @@
 # Database Client for Visual Studio Code
 
-在线文档已迁移至 [doc.database-client.com](https://doc.database-client.com/#/zh/).
+官网网站 [airdb.lingyun.net](https://airdb.lingyun.net).
 
 ---
 
 <p align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-    <img src="https://img.shields.io/vscode-marketplace/v/cweijan.vscode-mysql-client2.svg?label=vscode%20marketplace">
+<a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+    <img src="https://img.shields.io/vscode-marketplace/v/net.lingyun.airdb.svg?label=vscode%20marketplace">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-    <img src="https://vsmarketplacebadge.apphb.com/installs-short/cweijan.vscode-mysql-client2.svg">
+  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+    <img src="https://vsmarketplacebadge.apphb.com/installs-short/net.lingyun.airdb.svg">
   </a>
-  <a href="https://github.com/cweijan/vscode-database-client">
-    <img src="https://img.shields.io/github/stars/cweijan/vscode-database-client?logo=github&style=flat">
+  <a href="https://github.com/ijry/airdb">
+    <img src="https://img.shields.io/github/stars/ijry/airdb?logo=github&style=flat">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-    <img src="https://img.shields.io/vscode-marketplace/r/cweijan.vscode-mysql-client2.svg">
+  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+    <img src="https://img.shields.io/vscode-marketplace/r/net.lingyun.airdb.svg">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-  <img alt="GitHub" src="https://img.shields.io/github/license/cweijan/vscode-database-client">
+  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+  <img alt="GitHub" src="https://img.shields.io/github/license/ijry/airdb">
   </a>
 </p>
 <br>
 
 该项目为Visual Studio Code的数据库客户端扩展, 支持**MySQL/MariaDB, PostgreSQL, SQLite, Redis, ClickHouse, 达梦**以及**ElasticSearch**的管理, 且可以作为一个SSH客户端, 最大程度地提高你的生产力!
 
-<a href="https://database-client.com" target="_blank"><img src="./public/logo_dark.png" alt="Logo" style="height: auto !important;width: auto !important;" ></a>
+<a href="https://airdb.lingyun.net" target="_blank"><img src="./public/logo_dark.png" alt="Logo" style="height: auto !important;width: auto !important;" ></a>
 
 ## 功能
 
-- [连接](#连接)
-- [数据表](#数据表)
-- [执行SQL](#执行SQL)
-- [备份/导出](#备份/导出)
-- [设置](#设置)
-- [表过滤](#表过滤)
-- [生成测试数据](#生成测试数据)
-- [历史记录](#历史记录)
+- [Database Client for Visual Studio Code](#database-client-for-visual-studio-code)
+  - [功能](#功能)
+  - [安装](#安装)
+  - [连接](#连接)
+  - [数据表](#数据表)
+  - [执行SQL](#执行sql)
+  - [缓存](#缓存)
+  - [备份/导入](#备份导入)
+  - [设置](#设置)
+  - [表过滤](#表过滤)
+  - [生成测试数据](#生成测试数据)
+  - [历史记录](#历史记录)
+  - [致谢](#致谢)
 
 ## 安装
 
-在 Visual Studio Code 扩展中心安装 [Database Client](https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2).
+在 Visual Studio Code 扩展中心安装 [Database Client](https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb).
 
 ## 连接
 

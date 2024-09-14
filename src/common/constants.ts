@@ -4,7 +4,8 @@ import * as path from "path";
 const extName=require("@/../package.json")
 
 export class Constants {
-    public static CONFIG_PREFIX = "database-client"
+    // vs配置前缀
+    public static CONFIG_PREFIX = "airdb-config"
     public static RES_PATH = path.join(vscode.extensions.getExtension(`${extName.publisher}.${extName.name}`).extensionPath, "resources");
 }
 

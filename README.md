@@ -2,50 +2,54 @@
 
 # Database Client for Visual Studio Code
 
-The online document is migrate to https://doc.database-client.com.
+The website https://airdb.lingyun.net.
 
 ---
 
 <p align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-    <img src="https://img.shields.io/vscode-marketplace/v/cweijan.vscode-mysql-client2.svg?label=vscode%20marketplace">
+<a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+    <img src="https://img.shields.io/vscode-marketplace/v/net.lingyun.airdb.svg?label=vscode%20marketplace">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-    <img src="https://vsmarketplacebadge.apphb.com/installs-short/cweijan.vscode-mysql-client2.svg">
+  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+    <img src="https://vsmarketplacebadge.apphb.com/installs-short/net.lingyun.airdb.svg">
   </a>
-  <a href="https://github.com/cweijan/vscode-database-client">
-    <img src="https://img.shields.io/github/stars/cweijan/vscode-database-client?logo=github&style=flat">
+  <a href="https://github.com/ijry/airdb">
+    <img src="https://img.shields.io/github/stars/ijry/airdb?logo=github&style=flat">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-    <img src="https://img.shields.io/vscode-marketplace/r/cweijan.vscode-mysql-client2.svg">
+  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+    <img src="https://img.shields.io/vscode-marketplace/r/net.lingyun.airdb.svg">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2">
-  <img alt="GitHub" src="https://img.shields.io/github/license/cweijan/vscode-database-client">
+  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
+  <img alt="GitHub" src="https://img.shields.io/github/license/ijry/airdb">
   </a>
 </p>
 <br>
 
 This project is a database client for VSCode, supports manager **MySQL/MariaDB, PostgreSQL, SQLite, Redis, ClickHouse, 达梦**, and **ElasticSearch**, and works as an **SSH** client, boost your maximum productivity!
 
-> Project site: [vscode-database-client](https://github.com/cweijan/vscode-database-client), [中文文档](README_CN.md)
+> Project site: [airdb](https://github.com/ijry/airdb), [中文文档](README_CN.md)
 
-[![Logo](./public/logo_dark.png)](https://database-client.com)
+[![Logo](./public/logo_dark.png)](https://airdb.lingyun.net)
 
 ## Features
 
-- [Database Client](#database-client)
+- [Database Client for Visual Studio Code](#database-client-for-visual-studio-code)
+  - [Features](#features)
+  - [Installation](#installation)
   - [Connect](#connect)
   - [Table](#table)
   - [Execute SQL Query](#execute-sql-query)
+  - [Cache](#cache)
   - [Backup/Import](#backupimport)
   - [Setting](#setting)
   - [Filter](#filter)
   - [Generate Mock Data](#generate-mock-data)
   - [History](#history)
+  - [Credits](#credits)
 
 ## Installation
 
-Install from vscode marketplace [vscode-database-client](https://marketplace.visualstudio.com/items?itemName=cweijan.vscode-mysql-client2).
+Install from vscode marketplace [airdb](https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb).
 
 ## Connect
 

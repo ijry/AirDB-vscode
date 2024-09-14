@@ -86,7 +86,7 @@ export class ServiceManager {
 
     private initTreeView() {
         this.provider = new DbTreeDataProvider(this.context, CacheKey.DATBASE_CONECTIONS);
-        const treeview = vscode.window.createTreeView("github.cweijan.mysql", {
+        const treeview = vscode.window.createTreeView("net.lingyun.airdb.mysql", {
             treeDataProvider: this.provider,
         });
         treeview.onDidCollapseElement((event) => {
@@ -100,7 +100,7 @@ export class ServiceManager {
 
     private initTreeProvider() {
         this.nosqlProvider = new DbTreeDataProvider(this.context, CacheKey.NOSQL_CONNECTION);
-        const treeview = vscode.window.createTreeView("github.cweijan.nosql", {
+        const treeview = vscode.window.createTreeView("net.lingyubn.airdb.nosql", {
             treeDataProvider: this.nosqlProvider,
         });
         treeview.onDidCollapseElement((event) => {

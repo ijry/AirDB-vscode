@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 4.0.0 2024-2025
+
+- 支持账号登录
+
+
 # 3.9.8 2021-7-27
 
 - Support special ssl ca certificate.
