@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "AirDB",
 	"description": "Database Client for vscode",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
@@ -1015,8 +1015,7 @@
 		"build": "webpack --progress --mode=production",
 		"lib": "webpack --config webpack.config.lib.js --progress -p",
 		"package": "vsce package",
-		"publish": "vsce publish",
-		"vscode:prepublish": "npm run build"
+		"publish": "vsce publish"
 	},
 	"devDependencies": {
 		"@antv/g2": "^4.0.9",
