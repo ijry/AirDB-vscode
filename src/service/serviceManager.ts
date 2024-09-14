@@ -86,7 +86,7 @@ export class ServiceManager {
 
     private initTreeView() {
         this.provider = new DbTreeDataProvider(this.context, CacheKey.DATBASE_CONECTIONS);
-        const treeview = vscode.window.createTreeView("activitybar.airdb.mysql", {
+        const treeview = vscode.window.createTreeView("activitybar.airdb.sql", {
             treeDataProvider: this.provider,
         });
         treeview.onDidCollapseElement((event) => {

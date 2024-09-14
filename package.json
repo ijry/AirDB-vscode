@@ -31,8 +31,7 @@
 	"activationEvents": [
 		"*"
 	],
-	"overrides": {
-	},
+	"overrides": {},
 	"main": "./out/extension",
 	"contributes": {
 		"languages": [
@@ -532,424 +531,424 @@
 			"view/title": [
 				{
 					"command": "airdb.connection.add",
-					"when": "view =~ /cweijan.+?ql/",
+					"when": "view =~ /activitybar.airdb.+?ql/",
 					"group": "navigation@3"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/",
+					"when": "view =~ /activitybar.airdb.+?ql/",
 					"group": "navigation@2"
 				},
 				{
 					"command": "airdb.history.open",
-					"when": "view == net.lingyun.airdb.mysql",
+					"when": "view == activitybar.airdb.sql",
 					"group": "navigation@0"
 				},
 				{
 					"command": "airdb.struct.diff",
-					"when": "view == net.lingyun.airdb.mysql",
+					"when": "view == activitybar.airdb.sql",
 					"group": "navigation@-2"
 				},
 				{
 					"command": "airdb.connection.config",
-					"when": "view =~ /cweijan.+?ql/",
+					"when": "view =~ /activitybar.airdb.+?ql/",
 					"group": "navigation@-3"
 				},
 				{
 					"command": "airdb.util.github",
-					"when": "view == net.lingyun.airdb.nosql",
+					"when": "view == activitybar.airdb.nosql",
 					"group": "navigation@-3"
 				}
 			],
 			"view/item/context": [
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
 					"group": "inline@-2"
 				},
 				{
 					"command": "airdb.connection.edit",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.connection.disable",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection)$/",
 					"group": "1_mysql@4"
 				},
 				{
 					"command": "airdb.host.copy",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection)$/",
 					"group": "1_mysql@6"
 				},
 				{
 					"command": "airdb.database.add",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == connection",
 					"group": "2_mysql@0"
 				},
 				{
 					"command": "airdb.query.add",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == queryGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == queryGroup",
 					"group": "2_mysql@0"
 				},
 				{
 					"command": "airdb.query.rename",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == query",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == query",
 					"group": "2_mysql@0"
 				},
 				{
 					"command": "airdb.query.run",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == query",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == query",
 					"group": "2_mysql@0"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(esConnection|ftpConnection|ftpFolder)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(esConnection|ftpConnection|ftpFolder)$/",
 					"group": "2_mysql@1"
 				},
 				{
 					"command": "airdb.server.info",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == connection",
 					"group": "4_mysql@1"
 				},
 				{
 					"command": "airdb.data.import",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == connection",
 					"group": "8_mysql@1"
 				},
 				{
 					"command": "airdb.connection.delete",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
 					"group": "10mysql@2"
 				},
 				{
 					"command": "airdb.database.add",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == connection",
 					"group": "inline@0"
 				},
 				{
 					"command": "airdb.connection.terminal",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|catalog)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|catalog)$/",
 					"group": "inline@2"
 				},
 				{
 					"command": "airdb.query.switch",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|catalog|database|esConnection|esIndex)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|catalog|database|esConnection|esIndex)$/",
 					"group": "inline@5"
 				},
 				{
 					"command": "airdb.query.add",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == queryGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == queryGroup",
 					"group": "inline@0"
 				},
 				{
 					"command": "airdb.query.run",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == query",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == query",
 					"group": "inline@0"
 				},
 				{
 					"command": "airdb.template.user",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == userGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == userGroup",
 					"group": "1_mysql@1"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == userGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == userGroup",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.template.user",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == userGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == userGroup",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.change.user",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == user",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == user",
 					"group": "1_mysql@-1"
 				},
 				{
 					"command": "airdb.user.grant",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == user",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == user",
 					"group": "1_mysql@0"
 				},
 				{
 					"command": "airdb.delete.user",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == user",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == user",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.name.copy",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(catalog|user|database|esColumn|column|table|view|esIndex|procedure|function|trigger|mongoTable|redisKey)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(catalog|user|database|esColumn|column|table|view|esIndex|procedure|function|trigger|mongoTable|redisKey)$/",
 					"group": "-1_mysql@-5"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == database",
 					"group": "3_mysql@0"
 				},
 				{
 					"command": "airdb.db.truncate",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == database",
 					"group": "4_mysql@4"
 				},
 				{
 					"command": "airdb.db.drop",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /(database|catalog)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(database|catalog)/",
 					"group": "4_mysql@5"
 				},
 				{
 					"command": "airdb.data.export",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == database",
 					"group": "mysql@5"
 				},
 				{
 					"command": "airdb.struct.export",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == database",
 					"group": "mysql@6"
 				},
 				{
 					"command": "airdb.document.generate",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == database",
 					"group": "mysql@7"
 				},
 				{
 					"command": "airdb.data.import",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == database",
 					"group": "mysql@8"
 				},
 				{
 					"command": "airdb.table.show",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table|view)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "inline@3"
 				},
 				{
 					"command": "airdb.table.drop",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table && false",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table && false",
 					"group": "inline@1"
 				},
 				{
 					"command": "airdb.table.design",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "1_inline@0"
 				},
 				{
 					"command": "airdb.template.sql",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "inline@5"
 				},
 				{
 					"command": "airdb.table.source",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table)$/",
 					"group": "1_inline@2"
 				},
 				{
 					"command": "airdb.view.source",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(view)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(view)$/",
 					"group": "1_inline@2"
 				},
 				{
 					"command": "airdb.column.add",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "1_inline@6"
 				},
 				{
 					"command": "airdb.mock.table",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "1_inline1@1"
 				},
 				{
 					"command": "airdb.data.export",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table|view)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "1_inline1@2"
 				},
 				{
 					"command": "airdb.struct.export",
-					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table|view)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "1_inline1@3"
 				},
 				{
 					"command": "airdb.table.truncate",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "2_mysql@1"
 				},
 				{
 					"command": "airdb.table.drop",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "2_mysql@2"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == tableGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == tableGroup",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.template.table",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == tableGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == tableGroup",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.column.up",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == column",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == column",
 					"group": "inline@0"
 				},
 				{
 					"command": "airdb.column.down",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == column",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == column",
 					"group": "inline@2"
 				},
 				{
 					"command": "airdb.column.drop",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == column",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == column",
 					"group": "3_mysql@1"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == viewGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == viewGroup",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.template.view",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == viewGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == viewGroup",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.delete.view",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == view",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == view",
 					"group": "1_mysql@1"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == procedureGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == procedureGroup",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.template.procedure",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == procedureGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == procedureGroup",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.delete.procedure",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == procedure",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == procedure",
 					"group": "2_mysql@1"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == functionGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == functionGroup",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.template.function",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == functionGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == functionGroup",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.delete.function",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == function",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == function",
 					"group": "1_mysql@1"
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == triggerGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == triggerGroup",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.template.trigger",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == triggerGroup",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == triggerGroup",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.delete.trigger",
-					"when": "view =~ /cweijan.+?ql/ && viewItem == trigger",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == trigger",
 					"group": "1_mysql@1"
 				},
 				{
 					"command": "airdb.connection.terminal",
-					"when": "view == net.lingyun.airdb.nosql && viewItem == redisConnection",
+					"when": "view == activitybar.airdb.nosql && viewItem == redisConnection",
 					"group": "inline@1"
 				},
 				{
 					"command": "airdb.redis.connection.status",
-					"when": "view == net.lingyun.airdb.nosql && viewItem == redisConnection",
+					"when": "view == activitybar.airdb.nosql && viewItem == redisConnection",
 					"group": "connection"
 				},
 				{
 					"command": "airdb.redis.key.del",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /^(redisKey|redisFolder)$/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /^(redisKey|redisFolder)$/",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.connection.delete",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "inline@0"
 				},
 				{
 					"command": "airdb.connection.terminal",
-					"when": "view == net.lingyun.airdb.nosql && viewItem == sshConnection",
+					"when": "view == activitybar.airdb.nosql && viewItem == sshConnection",
 					"group": "inline@1"
 				},
 				{
 					"command": "airdb.ssh.host.copy",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "0_connection@-2"
 				},
 				{
 					"command": "airdb.ssh.forward.port",
-					"when": "view == net.lingyun.airdb.nosql && viewItem == sshConnection",
+					"when": "view == activitybar.airdb.nosql && viewItem == sshConnection",
 					"group": "1_nosql@0"
 				},
 				{
 					"command": "airdb.ssh.socks.port",
-					"when": "view == net.lingyun.airdb.nosql && viewItem == sshConnection",
+					"when": "view == activitybar.airdb.nosql && viewItem == sshConnection",
 					"group": "1_nosql@1"
 				},
 				{
 					"command": "airdb.ssh.file.new",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@2"
 				},
 				{
 					"command": "airdb.ssh.folder.new",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@4"
 				},
 				{
 					"command": "airdb.ssh.path.copy",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|file|link)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|file|link)/",
 					"group": "ssh@1"
 				},
 				{
 					"command": "airdb.ssh.folder.open",
-					"when": "view == net.lingyun.airdb.nosql && viewItem == folder",
+					"when": "view == activitybar.airdb.nosql && viewItem == folder",
 					"group": "ssh@2"
 				},
 				{
 					"command": "airdb.ssh.file.new",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@0"
 				},
 				{
 					"command": "airdb.ssh.folder.new",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@1"
 				},
 				{
 					"command": "airdb.ssh.file.upload",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "inline@-2"
 				},
 				{
 					"command": "airdb.ssh.file.delete",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /^(folder|ftpFolder|file|ftpFile|redisFolder)$/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /^(folder|ftpFolder|file|ftpFile|redisFolder)$/",
 					"group": "folder@4"
 				},
 				{
 					"command": "airdb.ssh.file.download",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|file|ftpFile)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|file|ftpFile)/",
 					"group": "file@1"
 				},
 				{
 					"command": "airdb.ssh.file.download",
-					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(file|ftpFile)/",
+					"when": "view == activitybar.airdb.nosql && viewItem =~ /(file|ftpFile)/",
 					"group": "inline@1"
 				}
 			]
@@ -1023,64 +1022,60 @@
 		"@antv/g2": "^4.0.9",
 		"@types/ioredis": "^4.22.0",
 		"@types/mongodb": "^3.6.3",
-		"@types/node": "^20.14.8",
+		"@types/node": "^12.12.6",
 		"@types/pg": "^7.14.7",
 		"@types/redis": "^2.8.18",
 		"@types/ssh2": "^0.5.43",
-		"@types/tedious": "^4.0.14",
-		"@types/vscode": "1.91.0",
-		"copy-webpack-plugin": "^12.0.2",
-		"css-loader": "^7.1.2",
-		"file-loader": "^6.2.0",
-		"html-webpack-plugin": "^5.6.0",
-		"postcss": "^8.4.45",
-		"postcss-loader": "^8.1.1",
-		"process": "0.11.10",
-		"style-loader": "^4.0.0",
-		"tailwindcss": "^3.4.11",
-		"ts-loader": "^9.5.1",
-		"typescript": "^5.6.2",
+		"@types/tedious": "^4.0.3",
+		"@types/vscode": "1.51.0",
+		"copy-webpack-plugin": "^6.3.0",
+		"css-loader": "^3.5.3",
+		"file-loader": "^6.0.0",
+		"html-webpack-plugin": "^4.3.0",
+		"postcss": "^8.2.1",
+		"postcss-loader": "^4.1.0",
+		"style-loader": "^1.2.1",
+		"tailwindcss": "^2.0.2",
+		"ts-loader": "^7.0.5",
+		"typescript": "^3.8.3",
 		"url-loader": "^4.1.0",
-		"vue-loader": "^15.11.1",
-		"vue-style-loader": "^4.1.3",
-		"vue-template-compiler": "^2.7.16",
-		"webpack": "^5.94.0",
-		"webpack-cli": "^5.1.4"
+		"vue-loader": "^15.9.2",
+		"vue-style-loader": "^4.1.2",
+		"vue-template-compiler": "^2.6.11",
+		"webpack": "^4.43.0",
+		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
-		"aws4": "^1.13.2",
 		"axios": "^0.21.1",
 		"command-exists": "^1.2.9",
-		"comment-json": "^4.2.5",
+		"comment-json": "^4.1.0",
 		"compare-versions": "^3.6.0",
-		"date-format": "^4.0.14",
-		"deepmerge": "^4.3.1",
+		"date-format": "^3.0.0",
+		"deepmerge": "^3.2.0",
 		"element-ui": "^2.13.2",
-		"encoding": "^0.1.13",
-		"esbuild": "^0.23.1",
+		"esbuild": "^0.12.16",
 		"g2": "^2.3.13",
 		"ioredis": "^4.23.0",
 		"json-format-highlight": "^1.0.4",
-		"lodash": "^4.17.21",
-		"lodash.defaults": "^4.2.0",
+		"lodash": "^4.17.20",
+		"lodash.defaults": "^4.1.0",
 		"mongodb": "^3.6.9",
-		"mysql2": "^3.11.2",
+		"mysql2": "^2.2.5",
 		"officegen": "^0.6.5",
 		"pg": "^8.5.1",
-		"pg-native": "^3.1.0",
-		"portfinder": "^1.0.32",
-		"pretty-bytes": "^5.3.1",
+		"portfinder": "^1.0.26",
+		"pretty-bytes": "^5.3.0",
 		"progress-stream": "^2.0.0",
 		"readable-stream": "1.1.x",
 		"routington": "^1.0.3",
-		"sqlstring": "^2.3.3",
+		"sqlstring": "^2.3.2",
 		"ssh2": "0.5.4",
 		"ssh2-streams": "^0.4.10",
-		"supports-color": "^9.4.0",
-		"umy-table": "1.1.8",
-		"vue": "^2.7.16",
-		"vue-router": "^3.4.9",
-		"xregexp": "5.1.1",
+		"supports-color": "^9.0.1",
+		"umy-table": "1.0.8",
+		"vue": "^2.6.11",
+		"vue-router": "^3.4.1",
+		"xregexp": "2.0.0",
 		"xterm": "^4.12.0",
 		"xterm-addon-fit": "^0.5.0",
 		"xterm-addon-search": "^0.8.0",

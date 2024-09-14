@@ -8,16 +8,16 @@ var webpack = require('webpack');
 module.exports = [
     {
         target: "node",
-        node: {
-            global: true,
-            __dirname: true,
-            __filename: true,
-        },
         // node: {
-        //     fs: 'empty', net: 'empty', tls: 'empty',
-        //     child_process: 'empty', dns: 'empty',
-        //     global: true, __dirname: true
+        //     global: true,
+        //     __dirname: true,
+        //     __filename: true,
         // },
+        node: {
+            fs: 'empty', net: 'empty', tls: 'empty',
+            child_process: 'empty', dns: 'empty',
+            global: true, __dirname: true
+        },
         entry: ['./src/extension.ts'],
         output: {
             path: path.resolve(__dirname, 'out'),
@@ -36,17 +36,17 @@ module.exports = [
                 '@': path.resolve(__dirname, './src')
             },
             // webpack5+ need this
-            fallback: {
-                "process": require.resolve("process/browser")
-            }
+            // fallback: {
+            //     "process": require.resolve("process/browser")
+            // }
         },
         plugins: [
-            // new webpack.IgnorePlugin(/^(pg-native|cardinal|encoding|aws4)$/)
-            new webpack.IgnorePlugin({resourceRegExp: /'^(pg-native|cardinal|encoding|aws4)$'/})
+            new webpack.IgnorePlugin(/^(pg-native|cardinal|encoding|aws4)$/)
+            // new webpack.IgnorePlugin({resourceRegExp: /'^(pg-native|cardinal|encoding|aws4)$'/})
         ],
         module: {
             //解决Critical dependency: require function is used in a way in which dependencies cannot be statically extracted的问题
-            unknownContextCritical : false,
+            // unknownContextCritical : false,
             rules: [{ test: /\.ts$/, exclude: /(node_modules|bin)/, use: ['ts-loader'] }]
         },
         optimization: { minimize: isProd },

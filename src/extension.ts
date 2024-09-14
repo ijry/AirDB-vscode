@@ -156,176 +156,176 @@ export function activate(context: vscode.ExtensionContext) {
                     databaseNode.dropDatatabase();
                 }
             },
-            // // mock
-            // ...{
-            //     "airdb.mock.table": (tableNode: TableNode) => {
-            //         serviceManager.mockRunner.create(tableNode)
-            //     },
-            //     "airdb.mock.run": () => {
-            //         serviceManager.mockRunner.runMock()
-            //     },
-            // },
-            // // user node
-            // ...{
-            //     "airdb.change.user": (userNode: UserNode) => {
-            //         userNode.changePasswordTemplate();
-            //     },
-            //     "airdb.user.grant": (userNode: UserNode) => {
-            //         userNode.grandTemplate();
-            //     },
-            //     "airdb.user.sql": (userNode: UserNode) => {
-            //         userNode.selectSqlTemplate();
-            //     },
-            // },
-            // // history
-            // ...{
-            //     "airdb.history.view": (historyNode: HistoryNode) => {
-            //         historyNode.view()
-            //     }
-            // },
-            // // query node
-            // ...{
-            //     "airdb.runQuery": (sql:string) => {
-            //         if (typeof sql != 'string') { sql = null; }
-            //         QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection());
-            //     },
-            //     "airdb.runAllQuery": () => {
-            //         QueryUnit.runQuery(null, ConnectionManager.tryGetConnection(), { runAll: true });
-            //     },
-            //     "airdb.query.switch": async (databaseOrConnectionNode: SchemaNode | ConnectionNode | EsConnectionNode | ESIndexNode) => {
-            //         if (databaseOrConnectionNode) {
-            //             await databaseOrConnectionNode.newQuery();
-            //         } else {
-            //             vscode.workspace.openTextDocument({ language: 'sql' }).then(async (doc) => {
-            //                 vscode.window.showTextDocument(doc)
-            //             });
-            //         }
-            //     },
-            //     "airdb.query.run": (queryNode: QueryNode) => {
-            //         queryNode.run()
-            //     },
-            //     "airdb.query.open": (queryNode: QueryNode) => {
-            //         queryNode.open()
-            //     },
-            //     "airdb.query.add": (queryGroup: QueryGroup) => {
-            //         queryGroup.add();
-            //     },
-            //     "airdb.query.rename": (queryNode: QueryNode) => {
-            //         queryNode.rename()
-            //     }
-            // },
-            // // redis
-            // ...{
-            //     "airdb.redis.connection.status": (connectionNode: RedisConnectionNode) => connectionNode.showStatus(),
-            //     "airdb.connection.terminal": (node: Node) => node.openTerminal(),
-            //     "airdb.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
-            //     "airdb.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
-            // },
-            // // table node
-            // ...{
-            //     "airdb.show.esIndex": (indexNode: ESIndexNode) => {
-            //         indexNode.viewData()
-            //     },
-            //     "airdb.table.truncate": (tableNode: TableNode) => {
-            //         tableNode.truncateTable();
-            //     },
-            //     "airdb.table.drop": (tableNode: TableNode) => {
-            //         tableNode.dropTable();
-            //     },
-            //     "airdb.table.source": (tableNode: TableNode) => {
-            //         if (tableNode) { tableNode.showSource(); }
-            //     },
-            //     "airdb.view.source": (tableNode: TableNode) => {
-            //         if (tableNode) { tableNode.showSource(); }
-            //     },
-            //     "airdb.table.show": (tableNode: TableNode) => {
-            //         if (tableNode) { tableNode.openInNew(); }
-            //     },
-            // },
-            // // column node
-            // ...{
-            //     "airdb.column.up": (columnNode: ColumnNode) => {
-            //         columnNode.moveUp();
-            //     },
-            //     "airdb.column.down": (columnNode: ColumnNode) => {
-            //         columnNode.moveDown();
-            //     },
-            //     "airdb.column.add": (tableNode: TableNode) => {
-            //         tableNode.addColumnTemplate();
-            //     },
-            //     "airdb.column.update": (columnNode: ColumnNode) => {
-            //         columnNode.updateColumnTemplate();
-            //     },
-            //     "airdb.column.drop": (columnNode: ColumnNode) => {
-            //         columnNode.dropColumnTemplate();
-            //     },
-            // },
-            // // template
-            // ...{
-            //     "airdb.table.find": (tableNode: TableNode) => {
-            //         tableNode.openTable();
-            //     },
-            //     "airdb.codeLens.run": (sql: string) => {
-            //         QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
-            //     },
-            //     "airdb.table.design": (tableNode: TableNode) => {
-            //         tableNode.designTable();
-            //     },
-            // },
-            // // show source
-            // ...{
-            //     "airdb.show.procedure": (procedureNode: ProcedureNode) => {
-            //         procedureNode.showSource();
-            //     },
-            //     "airdb.show.function": (functionNode: FunctionNode) => {
-            //         functionNode.showSource();
-            //     },
-            //     "airdb.show.trigger": (triggerNode: TriggerNode) => {
-            //         triggerNode.showSource();
-            //     },
-            // },
-            // // create template
-            // ...{
-            //     "airdb.template.sql": (tableNode: TableNode) => {
-            //         tableNode.selectSqlTemplate();
-            //     },
-            //     "airdb.template.table": (tableGroup: TableGroup) => {
-            //         tableGroup.createTemplate();
-            //     },
-            //     "airdb.template.procedure": (procedureGroup: ProcedureGroup) => {
-            //         procedureGroup.createTemplate();
-            //     },
-            //     "airdb.template.view": (viewGroup: ViewGroup) => {
-            //         viewGroup.createTemplate();
-            //     },
-            //     "airdb.template.trigger": (triggerGroup: TriggerGroup) => {
-            //         triggerGroup.createTemplate();
-            //     },
-            //     "airdb.template.function": (functionGroup: FunctionGroup) => {
-            //         functionGroup.createTemplate();
-            //     },
-            //     "airdb.template.user": (userGroup: UserGroup) => {
-            //         userGroup.createTemplate();
-            //     },
-            // },
-            // // drop template
-            // ...{
-            //     "airdb.delete.user": (userNode: UserNode) => {
-            //         userNode.drop();
-            //     },
-            //     "airdb.delete.view": (viewNode: ViewNode) => {
-            //         viewNode.drop();
-            //     },
-            //     "airdb.delete.procedure": (procedureNode: ProcedureNode) => {
-            //         procedureNode.drop();
-            //     },
-            //     "airdb.delete.function": (functionNode: FunctionNode) => {
-            //         functionNode.drop();
-            //     },
-            //     "airdb.delete.trigger": (triggerNode: TriggerNode) => {
-            //         triggerNode.drop();
-            //     },
-            // },
+            // mock
+            ...{
+                "airdb.mock.table": (tableNode: TableNode) => {
+                    serviceManager.mockRunner.create(tableNode)
+                },
+                "airdb.mock.run": () => {
+                    serviceManager.mockRunner.runMock()
+                },
+            },
+            // user node
+            ...{
+                "airdb.change.user": (userNode: UserNode) => {
+                    userNode.changePasswordTemplate();
+                },
+                "airdb.user.grant": (userNode: UserNode) => {
+                    userNode.grandTemplate();
+                },
+                "airdb.user.sql": (userNode: UserNode) => {
+                    userNode.selectSqlTemplate();
+                },
+            },
+            // history
+            ...{
+                "airdb.history.view": (historyNode: HistoryNode) => {
+                    historyNode.view()
+                }
+            },
+            // query node
+            ...{
+                "airdb.runQuery": (sql:string) => {
+                    if (typeof sql != 'string') { sql = null; }
+                    QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection());
+                },
+                "airdb.runAllQuery": () => {
+                    QueryUnit.runQuery(null, ConnectionManager.tryGetConnection(), { runAll: true });
+                },
+                "airdb.query.switch": async (databaseOrConnectionNode: SchemaNode | ConnectionNode | EsConnectionNode | ESIndexNode) => {
+                    if (databaseOrConnectionNode) {
+                        await databaseOrConnectionNode.newQuery();
+                    } else {
+                        vscode.workspace.openTextDocument({ language: 'sql' }).then(async (doc) => {
+                            vscode.window.showTextDocument(doc)
+                        });
+                    }
+                },
+                "airdb.query.run": (queryNode: QueryNode) => {
+                    queryNode.run()
+                },
+                "airdb.query.open": (queryNode: QueryNode) => {
+                    queryNode.open()
+                },
+                "airdb.query.add": (queryGroup: QueryGroup) => {
+                    queryGroup.add();
+                },
+                "airdb.query.rename": (queryNode: QueryNode) => {
+                    queryNode.rename()
+                }
+            },
+            // redis
+            ...{
+                "airdb.redis.connection.status": (connectionNode: RedisConnectionNode) => connectionNode.showStatus(),
+                "airdb.connection.terminal": (node: Node) => node.openTerminal(),
+                "airdb.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
+                "airdb.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
+            },
+            // table node
+            ...{
+                "airdb.show.esIndex": (indexNode: ESIndexNode) => {
+                    indexNode.viewData()
+                },
+                "airdb.table.truncate": (tableNode: TableNode) => {
+                    tableNode.truncateTable();
+                },
+                "airdb.table.drop": (tableNode: TableNode) => {
+                    tableNode.dropTable();
+                },
+                "airdb.table.source": (tableNode: TableNode) => {
+                    if (tableNode) { tableNode.showSource(); }
+                },
+                "airdb.view.source": (tableNode: TableNode) => {
+                    if (tableNode) { tableNode.showSource(); }
+                },
+                "airdb.table.show": (tableNode: TableNode) => {
+                    if (tableNode) { tableNode.openInNew(); }
+                },
+            },
+            // column node
+            ...{
+                "airdb.column.up": (columnNode: ColumnNode) => {
+                    columnNode.moveUp();
+                },
+                "airdb.column.down": (columnNode: ColumnNode) => {
+                    columnNode.moveDown();
+                },
+                "airdb.column.add": (tableNode: TableNode) => {
+                    tableNode.addColumnTemplate();
+                },
+                "airdb.column.update": (columnNode: ColumnNode) => {
+                    columnNode.updateColumnTemplate();
+                },
+                "airdb.column.drop": (columnNode: ColumnNode) => {
+                    columnNode.dropColumnTemplate();
+                },
+            },
+            // template
+            ...{
+                "airdb.table.find": (tableNode: TableNode) => {
+                    tableNode.openTable();
+                },
+                "airdb.codeLens.run": (sql: string) => {
+                    QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
+                },
+                "airdb.table.design": (tableNode: TableNode) => {
+                    tableNode.designTable();
+                },
+            },
+            // show source
+            ...{
+                "airdb.show.procedure": (procedureNode: ProcedureNode) => {
+                    procedureNode.showSource();
+                },
+                "airdb.show.function": (functionNode: FunctionNode) => {
+                    functionNode.showSource();
+                },
+                "airdb.show.trigger": (triggerNode: TriggerNode) => {
+                    triggerNode.showSource();
+                },
+            },
+            // create template
+            ...{
+                "airdb.template.sql": (tableNode: TableNode) => {
+                    tableNode.selectSqlTemplate();
+                },
+                "airdb.template.table": (tableGroup: TableGroup) => {
+                    tableGroup.createTemplate();
+                },
+                "airdb.template.procedure": (procedureGroup: ProcedureGroup) => {
+                    procedureGroup.createTemplate();
+                },
+                "airdb.template.view": (viewGroup: ViewGroup) => {
+                    viewGroup.createTemplate();
+                },
+                "airdb.template.trigger": (triggerGroup: TriggerGroup) => {
+                    triggerGroup.createTemplate();
+                },
+                "airdb.template.function": (functionGroup: FunctionGroup) => {
+                    functionGroup.createTemplate();
+                },
+                "airdb.template.user": (userGroup: UserGroup) => {
+                    userGroup.createTemplate();
+                },
+            },
+            // drop template
+            ...{
+                "airdb.delete.user": (userNode: UserNode) => {
+                    userNode.drop();
+                },
+                "airdb.delete.view": (viewNode: ViewNode) => {
+                    viewNode.drop();
+                },
+                "airdb.delete.procedure": (procedureNode: ProcedureNode) => {
+                    procedureNode.drop();
+                },
+                "airdb.delete.function": (functionNode: FunctionNode) => {
+                    functionNode.drop();
+                },
+                "airdb.delete.trigger": (triggerNode: TriggerNode) => {
+                    triggerNode.drop();
+                },
+            },
         }),
     );
 
