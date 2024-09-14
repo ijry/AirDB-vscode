@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "AirDB",
 	"description": "Database Client for vscode",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {

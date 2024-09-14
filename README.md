@@ -1,5 +1,3 @@
-#### This repository is the early source code of Database Client, the new version is closed source.
-
 # Database Client for Visual Studio Code
 
 The website https://github.com/ijry/airdb.
