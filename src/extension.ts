@@ -66,59 +66,59 @@ export function activate(context: vscode.ExtensionContext) {
                 [CodeCommand.RecordHistory]: (sql: string, costTime: number) => {
                     serviceManager.historyService.recordHistory(sql, costTime);
                 },
-                "mysql.history.open": () => serviceManager.historyService.showHistory(),
-                "mysql.setting.open": () => {
+                "airdb.history.open": () => serviceManager.historyService.showHistory(),
+                "airdb.setting.open": () => {
                     serviceManager.settingService.open();
                 },
-                "mysql.server.info": (connectionNode: ConnectionNode) => {
+                "airdb.server.info": (connectionNode: ConnectionNode) => {
                     serviceManager.statusService.show(connectionNode)
                 },
-                "mysql.name.copy": (copyAble: CopyAble) => {
+                "airdb.name.copy": (copyAble: CopyAble) => {
                     copyAble.copyName();
                 },
             },
             // connection
             ...{
-                "mysql.connection.add": () => {
+                "airdb.connection.add": () => {
                     serviceManager.connectService.openConnect(serviceManager.provider)
                 },
-                "mysql.connection.edit": (connectionNode: ConnectionNode) => {
+                "airdb.connection.edit": (connectionNode: ConnectionNode) => {
                     serviceManager.connectService.openConnect(connectionNode.provider, connectionNode)
                 },
-                "mysql.connection.config": () => {
+                "airdb.connection.config": () => {
                     serviceManager.connectService.openConfig()
                 },
-                "mysql.connection.open": (connectionNode: ConnectionNode) => {
+                "airdb.connection.open": (connectionNode: ConnectionNode) => {
                     connectionNode.provider.openConnection(connectionNode)
                 },
-                "mysql.connection.disable": (connectionNode: ConnectionNode) => {
+                "airdb.connection.disable": (connectionNode: ConnectionNode) => {
                     connectionNode.provider.disableConnection(connectionNode)
                 },
-                "mysql.connection.delete": (connectionNode: ConnectionNode) => {
+                "airdb.connection.delete": (connectionNode: ConnectionNode) => {
                     connectionNode.deleteConnection(context);
                 },
-                "mysql.host.copy": (connectionNode: ConnectionNode) => {
+                "airdb.host.copy": (connectionNode: ConnectionNode) => {
                     connectionNode.copyName();
                 },
             },
             // externel data
             ...{
-                "mysql.util.github": () => {
+                "airdb.util.github": () => {
                     vscode.env.openExternal(vscode.Uri.parse('https://github.com/ijry/airdb'));
                 },
-                "mysql.struct.diff": () => {
+                "airdb.struct.diff": () => {
                     new DiffService().startDiff(serviceManager.provider);
                 },
-                "mysql.data.export": (node: SchemaNode | TableNode) => {
+                "airdb.data.export": (node: SchemaNode | TableNode) => {
                     ServiceManager.getDumpService(node.dbType).dump(node, true)
                 },
-                "mysql.struct.export": (node: SchemaNode | TableNode) => {
+                "airdb.struct.export": (node: SchemaNode | TableNode) => {
                     ServiceManager.getDumpService(node.dbType).dump(node, false)
                 },
-                "mysql.document.generate": (node: SchemaNode | TableNode) => {
+                "airdb.document.generate": (node: SchemaNode | TableNode) => {
                     ServiceManager.getDumpService(node.dbType).generateDocument(node)
                 },
-                "mysql.data.import": (node: SchemaNode | ConnectionNode) => {
+                "airdb.data.import": (node: SchemaNode | ConnectionNode) => {
                     const importService=ServiceManager.getImportService(node.dbType);
                     vscode.window.showOpenDialog({ filters: importService.filter(), canSelectMany: false, openLabel: "Select sql file to import", canSelectFiles: true, canSelectFolders: false }).then((filePath) => {
                         if (filePath) {
@@ -129,203 +129,203 @@ export function activate(context: vscode.ExtensionContext) {
             },
             // ssh
             ...{
-                'mysql.ssh.folder.new': (parentNode: SSHConnectionNode) => parentNode.newFolder(),
-                'mysql.ssh.file.new': (parentNode: SSHConnectionNode) => parentNode.newFile(),
-                'mysql.ssh.host.copy': (parentNode: SSHConnectionNode) => parentNode.copyIP(),
-                'mysql.ssh.forward.port': (parentNode: SSHConnectionNode) => parentNode.fowardPort(),
-                'mysql.ssh.file.upload': (parentNode: SSHConnectionNode) => parentNode.upload(),
-                'mysql.ssh.folder.open': (parentNode: SSHConnectionNode) => parentNode.openInTeriminal(),
-                'mysql.ssh.path.copy': (node: Node) => node.copyName(),
-                'mysql.ssh.socks.port': (parentNode: SSHConnectionNode) => parentNode.startSocksProxy(),
-                'mysql.ssh.file.delete': (fileNode: FileNode | SSHConnectionNode) => fileNode.delete(),
-                'mysql.ssh.file.open': (fileNode: FileNode | FTPFileNode) => fileNode.open(),
-                'mysql.ssh.file.download': (fileNode: FileNode) => fileNode.download(),
+                "airdb.ssh.folder.new": (parentNode: SSHConnectionNode) => parentNode.newFolder(),
+                "airdb.ssh.file.new": (parentNode: SSHConnectionNode) => parentNode.newFile(),
+                "airdb.ssh.host.copy": (parentNode: SSHConnectionNode) => parentNode.copyIP(),
+                "airdb.ssh.forward.port": (parentNode: SSHConnectionNode) => parentNode.fowardPort(),
+                "airdb.ssh.file.upload": (parentNode: SSHConnectionNode) => parentNode.upload(),
+                "airdb.ssh.folder.open": (parentNode: SSHConnectionNode) => parentNode.openInTeriminal(),
+                "airdb.ssh.path.copy": (node: Node) => node.copyName(),
+                "airdb.ssh.socks.port": (parentNode: SSHConnectionNode) => parentNode.startSocksProxy(),
+                "airdb.ssh.file.delete": (fileNode: FileNode | SSHConnectionNode) => fileNode.delete(),
+                "airdb.ssh.file.open": (fileNode: FileNode | FTPFileNode) => fileNode.open(),
+                "airdb.ssh.file.download": (fileNode: FileNode) => fileNode.download(),
             },
             // database
             ...{
-                "mysql.db.active": () => {
+                "airdb.db.active": () => {
                     serviceManager.provider.activeDb();
                 },
-                "mysql.db.truncate": (databaseNode: SchemaNode) => {
+                "airdb.db.truncate": (databaseNode: SchemaNode) => {
                     databaseNode.truncateDb();
                 },
-                "mysql.database.add": (connectionNode: ConnectionNode) => {
+                "airdb.database.add": (connectionNode: ConnectionNode) => {
                     connectionNode.createDatabase();
                 },
-                "mysql.db.drop": (databaseNode: SchemaNode) => {
+                "airdb.db.drop": (databaseNode: SchemaNode) => {
                     databaseNode.dropDatatabase();
                 }
             },
-            // mock
-            ...{
-                "mysql.mock.table": (tableNode: TableNode) => {
-                    serviceManager.mockRunner.create(tableNode)
-                },
-                "mysql.mock.run": () => {
-                    serviceManager.mockRunner.runMock()
-                },
-            },
-            // user node
-            ...{
-                "mysql.change.user": (userNode: UserNode) => {
-                    userNode.changePasswordTemplate();
-                },
-                "mysql.user.grant": (userNode: UserNode) => {
-                    userNode.grandTemplate();
-                },
-                "mysql.user.sql": (userNode: UserNode) => {
-                    userNode.selectSqlTemplate();
-                },
-            },
-            // history
-            ...{
-                "mysql.history.view": (historyNode: HistoryNode) => {
-                    historyNode.view()
-                }
-            },
-            // query node
-            ...{
-                "mysql.runQuery": (sql:string) => {
-                    if (typeof sql != 'string') { sql = null; }
-                    QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection());
-                },
-                "mysql.runAllQuery": () => {
-                    QueryUnit.runQuery(null, ConnectionManager.tryGetConnection(), { runAll: true });
-                },
-                "mysql.query.switch": async (databaseOrConnectionNode: SchemaNode | ConnectionNode | EsConnectionNode | ESIndexNode) => {
-                    if (databaseOrConnectionNode) {
-                        await databaseOrConnectionNode.newQuery();
-                    } else {
-                        vscode.workspace.openTextDocument({ language: 'sql' }).then(async (doc) => {
-                            vscode.window.showTextDocument(doc)
-                        });
-                    }
-                },
-                "mysql.query.run": (queryNode: QueryNode) => {
-                    queryNode.run()
-                },
-                "mysql.query.open": (queryNode: QueryNode) => {
-                    queryNode.open()
-                },
-                "mysql.query.add": (queryGroup: QueryGroup) => {
-                    queryGroup.add();
-                },
-                "mysql.query.rename": (queryNode: QueryNode) => {
-                    queryNode.rename()
-                }
-            },
-            // redis
-            ...{
-                "mysql.redis.connection.status": (connectionNode: RedisConnectionNode) => connectionNode.showStatus(),
-                "mysql.connection.terminal": (node: Node) => node.openTerminal(),
-                "mysql.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
-                "mysql.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
-            },
-            // table node
-            ...{
-                "mysql.show.esIndex": (indexNode: ESIndexNode) => {
-                    indexNode.viewData()
-                },
-                "mysql.table.truncate": (tableNode: TableNode) => {
-                    tableNode.truncateTable();
-                },
-                "mysql.table.drop": (tableNode: TableNode) => {
-                    tableNode.dropTable();
-                },
-                "mysql.table.source": (tableNode: TableNode) => {
-                    if (tableNode) { tableNode.showSource(); }
-                },
-                "mysql.view.source": (tableNode: TableNode) => {
-                    if (tableNode) { tableNode.showSource(); }
-                },
-                "mysql.table.show": (tableNode: TableNode) => {
-                    if (tableNode) { tableNode.openInNew(); }
-                },
-            },
-            // column node
-            ...{
-                "mysql.column.up": (columnNode: ColumnNode) => {
-                    columnNode.moveUp();
-                },
-                "mysql.column.down": (columnNode: ColumnNode) => {
-                    columnNode.moveDown();
-                },
-                "mysql.column.add": (tableNode: TableNode) => {
-                    tableNode.addColumnTemplate();
-                },
-                "mysql.column.update": (columnNode: ColumnNode) => {
-                    columnNode.updateColumnTemplate();
-                },
-                "mysql.column.drop": (columnNode: ColumnNode) => {
-                    columnNode.dropColumnTemplate();
-                },
-            },
-            // template
-            ...{
-                "mysql.table.find": (tableNode: TableNode) => {
-                    tableNode.openTable();
-                },
-                "mysql.codeLens.run": (sql: string) => {
-                    QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
-                },
-                "mysql.table.design": (tableNode: TableNode) => {
-                    tableNode.designTable();
-                },
-            },
-            // show source
-            ...{
-                "mysql.show.procedure": (procedureNode: ProcedureNode) => {
-                    procedureNode.showSource();
-                },
-                "mysql.show.function": (functionNode: FunctionNode) => {
-                    functionNode.showSource();
-                },
-                "mysql.show.trigger": (triggerNode: TriggerNode) => {
-                    triggerNode.showSource();
-                },
-            },
-            // create template
-            ...{
-                "mysql.template.sql": (tableNode: TableNode) => {
-                    tableNode.selectSqlTemplate();
-                },
-                "mysql.template.table": (tableGroup: TableGroup) => {
-                    tableGroup.createTemplate();
-                },
-                "mysql.template.procedure": (procedureGroup: ProcedureGroup) => {
-                    procedureGroup.createTemplate();
-                },
-                "mysql.template.view": (viewGroup: ViewGroup) => {
-                    viewGroup.createTemplate();
-                },
-                "mysql.template.trigger": (triggerGroup: TriggerGroup) => {
-                    triggerGroup.createTemplate();
-                },
-                "mysql.template.function": (functionGroup: FunctionGroup) => {
-                    functionGroup.createTemplate();
-                },
-                "mysql.template.user": (userGroup: UserGroup) => {
-                    userGroup.createTemplate();
-                },
-            },
-            // drop template
-            ...{
-                "mysql.delete.user": (userNode: UserNode) => {
-                    userNode.drop();
-                },
-                "mysql.delete.view": (viewNode: ViewNode) => {
-                    viewNode.drop();
-                },
-                "mysql.delete.procedure": (procedureNode: ProcedureNode) => {
-                    procedureNode.drop();
-                },
-                "mysql.delete.function": (functionNode: FunctionNode) => {
-                    functionNode.drop();
-                },
-                "mysql.delete.trigger": (triggerNode: TriggerNode) => {
-                    triggerNode.drop();
-                },
-            },
+            // // mock
+            // ...{
+            //     "airdb.mock.table": (tableNode: TableNode) => {
+            //         serviceManager.mockRunner.create(tableNode)
+            //     },
+            //     "airdb.mock.run": () => {
+            //         serviceManager.mockRunner.runMock()
+            //     },
+            // },
+            // // user node
+            // ...{
+            //     "airdb.change.user": (userNode: UserNode) => {
+            //         userNode.changePasswordTemplate();
+            //     },
+            //     "airdb.user.grant": (userNode: UserNode) => {
+            //         userNode.grandTemplate();
+            //     },
+            //     "airdb.user.sql": (userNode: UserNode) => {
+            //         userNode.selectSqlTemplate();
+            //     },
+            // },
+            // // history
+            // ...{
+            //     "airdb.history.view": (historyNode: HistoryNode) => {
+            //         historyNode.view()
+            //     }
+            // },
+            // // query node
+            // ...{
+            //     "airdb.runQuery": (sql:string) => {
+            //         if (typeof sql != 'string') { sql = null; }
+            //         QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection());
+            //     },
+            //     "airdb.runAllQuery": () => {
+            //         QueryUnit.runQuery(null, ConnectionManager.tryGetConnection(), { runAll: true });
+            //     },
+            //     "airdb.query.switch": async (databaseOrConnectionNode: SchemaNode | ConnectionNode | EsConnectionNode | ESIndexNode) => {
+            //         if (databaseOrConnectionNode) {
+            //             await databaseOrConnectionNode.newQuery();
+            //         } else {
+            //             vscode.workspace.openTextDocument({ language: 'sql' }).then(async (doc) => {
+            //                 vscode.window.showTextDocument(doc)
+            //             });
+            //         }
+            //     },
+            //     "airdb.query.run": (queryNode: QueryNode) => {
+            //         queryNode.run()
+            //     },
+            //     "airdb.query.open": (queryNode: QueryNode) => {
+            //         queryNode.open()
+            //     },
+            //     "airdb.query.add": (queryGroup: QueryGroup) => {
+            //         queryGroup.add();
+            //     },
+            //     "airdb.query.rename": (queryNode: QueryNode) => {
+            //         queryNode.rename()
+            //     }
+            // },
+            // // redis
+            // ...{
+            //     "airdb.redis.connection.status": (connectionNode: RedisConnectionNode) => connectionNode.showStatus(),
+            //     "airdb.connection.terminal": (node: Node) => node.openTerminal(),
+            //     "airdb.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
+            //     "airdb.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
+            // },
+            // // table node
+            // ...{
+            //     "airdb.show.esIndex": (indexNode: ESIndexNode) => {
+            //         indexNode.viewData()
+            //     },
+            //     "airdb.table.truncate": (tableNode: TableNode) => {
+            //         tableNode.truncateTable();
+            //     },
+            //     "airdb.table.drop": (tableNode: TableNode) => {
+            //         tableNode.dropTable();
+            //     },
+            //     "airdb.table.source": (tableNode: TableNode) => {
+            //         if (tableNode) { tableNode.showSource(); }
+            //     },
+            //     "airdb.view.source": (tableNode: TableNode) => {
+            //         if (tableNode) { tableNode.showSource(); }
+            //     },
+            //     "airdb.table.show": (tableNode: TableNode) => {
+            //         if (tableNode) { tableNode.openInNew(); }
+            //     },
+            // },
+            // // column node
+            // ...{
+            //     "airdb.column.up": (columnNode: ColumnNode) => {
+            //         columnNode.moveUp();
+            //     },
+            //     "airdb.column.down": (columnNode: ColumnNode) => {
+            //         columnNode.moveDown();
+            //     },
+            //     "airdb.column.add": (tableNode: TableNode) => {
+            //         tableNode.addColumnTemplate();
+            //     },
+            //     "airdb.column.update": (columnNode: ColumnNode) => {
+            //         columnNode.updateColumnTemplate();
+            //     },
+            //     "airdb.column.drop": (columnNode: ColumnNode) => {
+            //         columnNode.dropColumnTemplate();
+            //     },
+            // },
+            // // template
+            // ...{
+            //     "airdb.table.find": (tableNode: TableNode) => {
+            //         tableNode.openTable();
+            //     },
+            //     "airdb.codeLens.run": (sql: string) => {
+            //         QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
+            //     },
+            //     "airdb.table.design": (tableNode: TableNode) => {
+            //         tableNode.designTable();
+            //     },
+            // },
+            // // show source
+            // ...{
+            //     "airdb.show.procedure": (procedureNode: ProcedureNode) => {
+            //         procedureNode.showSource();
+            //     },
+            //     "airdb.show.function": (functionNode: FunctionNode) => {
+            //         functionNode.showSource();
+            //     },
+            //     "airdb.show.trigger": (triggerNode: TriggerNode) => {
+            //         triggerNode.showSource();
+            //     },
+            // },
+            // // create template
+            // ...{
+            //     "airdb.template.sql": (tableNode: TableNode) => {
+            //         tableNode.selectSqlTemplate();
+            //     },
+            //     "airdb.template.table": (tableGroup: TableGroup) => {
+            //         tableGroup.createTemplate();
+            //     },
+            //     "airdb.template.procedure": (procedureGroup: ProcedureGroup) => {
+            //         procedureGroup.createTemplate();
+            //     },
+            //     "airdb.template.view": (viewGroup: ViewGroup) => {
+            //         viewGroup.createTemplate();
+            //     },
+            //     "airdb.template.trigger": (triggerGroup: TriggerGroup) => {
+            //         triggerGroup.createTemplate();
+            //     },
+            //     "airdb.template.function": (functionGroup: FunctionGroup) => {
+            //         functionGroup.createTemplate();
+            //     },
+            //     "airdb.template.user": (userGroup: UserGroup) => {
+            //         userGroup.createTemplate();
+            //     },
+            // },
+            // // drop template
+            // ...{
+            //     "airdb.delete.user": (userNode: UserNode) => {
+            //         userNode.drop();
+            //     },
+            //     "airdb.delete.view": (viewNode: ViewNode) => {
+            //         viewNode.drop();
+            //     },
+            //     "airdb.delete.procedure": (procedureNode: ProcedureNode) => {
+            //         procedureNode.drop();
+            //     },
+            //     "airdb.delete.function": (functionNode: FunctionNode) => {
+            //         functionNode.drop();
+            //     },
+            //     "airdb.delete.trigger": (triggerNode: TriggerNode) => {
+            //         triggerNode.drop();
+            //     },
+            // },
         }),
     );
 

@@ -2,7 +2,7 @@
 
 # Database Client for Visual Studio Code
 
-The website https://airdb.lingyun.net.
+The website https://github.com/ijry/airdb.
 
 ---
 

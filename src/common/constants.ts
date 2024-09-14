@@ -17,13 +17,13 @@ export class Pattern {
 
 export enum CacheKey {
     // sql
-    DATBASE_CONECTIONS = "mysql.connections",
-    DATABASE_SATE = "mysql.database.cache.collapseState",
+    DATBASE_CONECTIONS = "airdb.connections",
+    DATABASE_SATE = "airdb.database.cache.collapseState",
     // nosql
-    NOSQL_CONNECTION = "redis.connections",
-    COLLAPSE_SATE = "redis.cache.collapseState",
+    NOSQL_CONNECTION = "airdb.redis.connections",
+    COLLAPSE_SATE = "airdb.redis.cache.collapseState",
     // history
-    GLOBAL_HISTORY="sql.history"
+    GLOBAL_HISTORY="airdb.sql.history"
 }
 
 export enum ConfigKey {
@@ -34,8 +34,8 @@ export enum ConfigKey {
 }
 
 export enum CodeCommand {
-    RecordHistory = "mysql.history.record",
-    Refresh = "mysql.refresh"
+    RecordHistory = "airdb.history.record",
+    Refresh = "airdb.refresh"
 }
 
 export class Cursor {

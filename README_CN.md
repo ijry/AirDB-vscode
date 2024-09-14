@@ -1,6 +1,6 @@
 # Database Client for Visual Studio Code
 
-官网网站 [airdb.lingyun.net](https://airdb.lingyun.net).
+官网网站 [https://github.com/ijry/airdb](https://github.com/ijry/airdb).
 
 ---
 
@@ -25,7 +25,7 @@
 
 该项目为Visual Studio Code的数据库客户端扩展, 支持**MySQL/MariaDB, PostgreSQL, SQLite, Redis, ClickHouse, 达梦**以及**ElasticSearch**的管理, 且可以作为一个SSH客户端, 最大程度地提高你的生产力!
 
-<a href="https://airdb.lingyun.net" target="_blank"><img src="./public/logo_dark.png" alt="Logo" style="height: auto !important;width: auto !important;" ></a>
+<a href="https://github.com/ijry/airdb" target="_blank"><img src="./public/logo_dark.png" alt="Logo" style="height: auto !important;width: auto !important;" ></a>
 
 ## 功能
 

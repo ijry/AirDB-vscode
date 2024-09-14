@@ -8,6 +8,11 @@ var webpack = require('webpack');
 module.exports = [
     {
         target: "node",
+        node: {
+            global: true,
+            __dirname: true,
+            __filename: true,
+        },
         // node: {
         //     fs: 'empty', net: 'empty', tls: 'empty',
         //     child_process: 'empty', dns: 'empty',
@@ -39,7 +44,11 @@ module.exports = [
             // new webpack.IgnorePlugin(/^(pg-native|cardinal|encoding|aws4)$/)
             new webpack.IgnorePlugin({resourceRegExp: /'^(pg-native|cardinal|encoding|aws4)$'/})
         ],
-        module: { rules: [{ test: /\.ts$/, exclude: /(node_modules|bin)/, use: ['ts-loader'] }] },
+        module: {
+            //解决Critical dependency: require function is used in a way in which dependencies cannot be statically extracted的问题
+            unknownContextCritical : false,
+            rules: [{ test: /\.ts$/, exclude: /(node_modules|bin)/, use: ['ts-loader'] }]
+        },
         optimization: { minimize: isProd },
         watch: !isProd,
         mode: isProd ? 'production' : 'development',
@@ -53,7 +62,11 @@ module.exports = [
         plugins: [
             new VueLoaderPlugin(),
             new HtmlWebpackPlugin({ inject: true, template: './public/index.html', chunks: ['app'], filename: 'webview/app.html' }),
-            new HtmlWebpackPlugin({ inject: true, templateContent: `<head><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`, chunks: ['query'], filename: 'webview/result.html' }),
+            new HtmlWebpackPlugin({ inject: true, 
+                templateContent: `<head><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`,
+                chunks: ['query'],
+                filename: 'webview/result.html'
+            }),
             new CopyWebpackPlugin({
                 patterns: [{ from: 'public', to: './webview' }]
             }),
@@ -67,6 +80,8 @@ module.exports = [
             alias: { 'vue$': 'vue/dist/vue.esm.js', '@': path.resolve('src'), }
         },
         module: {
+            //解决Critical dependency: require function is used in a way in which dependencies cannot be statically extracted的问题
+            unknownContextCritical : false,
             rules: [
                 { test: /\.vue$/, loader: 'vue-loader', options: { loaders: { css: ["vue-style-loader", "css-loader"] } } },
                 { test: /(\.css|\.cssx)$/, use: ["vue-style-loader", "css-loader", { loader: "postcss-loader" }] },

@@ -6,7 +6,7 @@
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
-		"vscode": "^1.92.0"
+		"vscode": "^1.91.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -31,6 +31,8 @@
 	"activationEvents": [
 		"*"
 	],
+	"overrides": {
+	},
 	"main": "./out/extension",
 	"contributes": {
 		"languages": [
@@ -79,420 +81,420 @@
 		"viewsContainers": {
 			"activitybar": [
 				{
-					"id": "net-lingyun-airdb-mysql",
+					"id": "activitybar-airdb-sql",
 					"title": "Database",
 					"icon": "resources/icon/database-container.svg"
 				},
 				{
-					"id": "net-lingyun-airdb-nosql",
+					"id": "activitybar-airdb-nosql",
 					"title": "NoSQL",
 					"icon": "resources/image/other-container.png"
 				}
 			]
 		},
 		"views": {
-			"net-lingyun-airdb-mysql": [
+			"activitybar-airdb-sql": [
 				{
-					"id": "net.lingyun.airdb.mysql",
+					"id": "activitybar.airdb.sql",
 					"name": "Database"
 				}
 			],
-			"net-lingyun-airdb-nosql": [
+			"activitybar-airdb-nosql": [
 				{
-					"id": "net.lingyun.airdb.nosql",
+					"id": "activitybar.airdb.nosql",
 					"name": "NoSQL"
 				}
 			]
 		},
 		"commands": [
 			{
-				"command": "mysql.struct.diff",
+				"command": "airdb.struct.diff",
 				"title": "%command.struct.diff%",
 				"category": "MySQL",
 				"icon": "$(sync)"
 			},
 			{
-				"command": "mysql.history.open",
+				"command": "airdb.history.open",
 				"title": "%command.history.open%",
 				"category": "MySQL",
 				"icon": "$(history)"
 			},
 			{
-				"command": "mysql.setting.open",
+				"command": "airdb.setting.open",
 				"title": "%command.setting.open%",
 				"category": "MySQL",
 				"icon": "resources/icon/settings.svg"
 			},
 			{
-				"command": "mysql.refresh",
+				"command": "airdb.refresh",
 				"title": "%command.refresh%",
 				"category": "MySQL",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "mysql.host.copy",
+				"command": "airdb.host.copy",
 				"title": "%command.host.copy%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.name.copy",
+				"command": "airdb.name.copy",
 				"title": "%command.name.copy%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.query.add",
+				"command": "airdb.query.add",
 				"title": "%command.query.add%",
 				"icon": "$(add)",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.query.rename",
+				"command": "airdb.query.rename",
 				"title": "%command.query.rename%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.query.run",
+				"command": "airdb.query.run",
 				"title": "%command.query.run%",
 				"icon": "$(run)",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.connection.add",
+				"command": "airdb.connection.add",
 				"title": "%command.connection.add%",
 				"icon": "$(add)",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.util.github",
+				"command": "airdb.util.github",
 				"title": "%command.util.github%",
 				"icon": "$(github)",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.connection.edit",
+				"command": "airdb.connection.edit",
 				"title": "%command.connection.edit%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.connection.config",
+				"command": "airdb.connection.config",
 				"title": "%command.connection.config%",
 				"icon": "$(gear)",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.connection.disable",
+				"command": "airdb.connection.disable",
 				"title": "%command.connection.disable%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.server.info",
+				"command": "airdb.server.info",
 				"title": "%command.server.info%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.connection.delete",
+				"command": "airdb.connection.delete",
 				"title": "%command.connection.delete%",
 				"category": "MySQL",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "mysql.database.add",
+				"command": "airdb.database.add",
 				"title": "%command.database.add%",
 				"icon": "$(add)",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.db.drop",
+				"command": "airdb.db.drop",
 				"title": "%command.db.drop%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.runQuery",
+				"command": "airdb.runQuery",
 				"title": "%command.runQuery%",
 				"category": "MySQL",
 				"icon": "$(run)"
 			},
 			{
-				"command": "mysql.runAllQuery",
+				"command": "airdb.runAllQuery",
 				"title": "%command.runAllQuery%",
 				"category": "MySQL",
 				"icon": "$(run)"
 			},
 			{
-				"command": "mysql.query.switch",
+				"command": "airdb.query.switch",
 				"title": "%command.query.switch%",
 				"category": "MySQL",
 				"icon": "$(symbol-file)"
 			},
 			{
-				"command": "mysql.data.import",
+				"command": "airdb.data.import",
 				"title": "%command.data.import%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.data.export",
+				"command": "airdb.data.export",
 				"title": "%command.data.export%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.struct.export",
+				"command": "airdb.struct.export",
 				"title": "%command.struct.export%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.document.generate",
+				"command": "airdb.document.generate",
 				"title": "%command.document.generate%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.db.active",
+				"command": "airdb.db.active",
 				"title": "%command.db.active%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.table.truncate",
+				"command": "airdb.table.truncate",
 				"title": "%command.table.truncate%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.db.truncate",
+				"command": "airdb.db.truncate",
 				"title": "%command.db.truncate%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.table.drop",
+				"command": "airdb.table.drop",
 				"title": "%command.table.drop%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.mock.run",
+				"command": "airdb.mock.run",
 				"title": "%command.mock.run%",
 				"category": "MySQL",
 				"icon": "$(run)"
 			},
 			{
-				"command": "mysql.mock.table",
+				"command": "airdb.mock.table",
 				"title": "%command.mock.table%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.changeTableName",
+				"command": "airdb.changeTableName",
 				"title": "%command.changeTableName%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.table.design",
+				"command": "airdb.table.design",
 				"title": "%comman.table.design%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.column.add",
+				"command": "airdb.column.add",
 				"title": "%command.column.add%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.column.up",
+				"command": "airdb.column.up",
 				"title": "%command.column.up%",
 				"category": "MySQL",
 				"icon": "$(arrow-up)"
 			},
 			{
-				"command": "mysql.column.down",
+				"command": "airdb.column.down",
 				"title": "%command.column.down%",
 				"category": "MySQL",
 				"icon": "$(arrow-down)"
 			},
 			{
-				"command": "mysql.table.source",
+				"command": "airdb.table.source",
 				"title": "%command.table.source%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.view.source",
+				"command": "airdb.view.source",
 				"title": "%command.view.source%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.table.show",
+				"command": "airdb.table.show",
 				"title": "%command.table.show%",
 				"category": "MySQL",
 				"icon": "$(list-flat)"
 			},
 			{
-				"command": "mysql.column.update",
+				"command": "airdb.column.update",
 				"title": "%command.column.update%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.column.drop",
+				"command": "airdb.column.drop",
 				"title": "%command.column.drop%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.template.sql",
+				"command": "airdb.template.sql",
 				"title": "%command.template.sql%",
 				"category": "MySQL",
 				"icon": "$(symbol-file)"
 			},
 			{
-				"command": "mysql.template.table",
+				"command": "airdb.template.table",
 				"title": "%command.template.table%",
 				"category": "MySQL",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.view",
+				"command": "airdb.template.view",
 				"title": "%command.template.view%",
 				"category": "MySQL",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.procedure",
+				"command": "airdb.template.procedure",
 				"title": "%command.template.procedure%",
 				"category": "MySQL",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.trigger",
+				"command": "airdb.template.trigger",
 				"title": "%command.template.trigger%",
 				"category": "MySQL",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.function",
+				"command": "airdb.template.function",
 				"title": "%command.template.function%",
 				"category": "MySQL",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.template.user",
+				"command": "airdb.template.user",
 				"title": "%command.template.user%",
 				"category": "MySQL",
 				"icon": "$(add)"
 			},
 			{
-				"command": "mysql.delete.user",
+				"command": "airdb.delete.user",
 				"title": "%command.delete.user%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.user.grant",
+				"command": "airdb.user.grant",
 				"title": "%command.user.grant%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.change.user",
+				"command": "airdb.change.user",
 				"title": "%command.change.user%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.delete.view",
+				"command": "airdb.delete.view",
 				"title": "%command.delete.view%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.delete.procedure",
+				"command": "airdb.delete.procedure",
 				"title": "%command.delete.procedure%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.delete.function",
+				"command": "airdb.delete.function",
 				"title": "%command.delete.function%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.delete.trigger",
+				"command": "airdb.delete.trigger",
 				"title": "%command.delete.trigger%",
 				"category": "MySQL"
 			},
 			{
-				"command": "mysql.connection.terminal",
+				"command": "airdb.connection.terminal",
 				"title": "%command.connection.terminal%",
 				"icon": "$(terminal)"
 			},
 			{
-				"command": "mysql.redis.connection.status",
+				"command": "airdb.redis.connection.status",
 				"title": "%command.redis.connection.status%"
 			},
 			{
-				"command": "mysql.redis.key.del",
+				"command": "airdb.redis.key.del",
 				"title": "%command.redis.key.del%",
 				"icon": "$(trash)"
 			},
 			{
-				"command": "mysql.redis.key.detail",
+				"command": "airdb.redis.key.detail",
 				"title": "%command.redis.key.detail%"
 			},
 			{
-				"command": "mysql.ssh.terminal.hear",
+				"command": "airdb.ssh.terminal.hear",
 				"title": "Open Terminal in hear"
 			},
 			{
-				"command": "mysql.ssh.path.copy",
+				"command": "airdb.ssh.path.copy",
 				"title": "Copy Path"
 			},
 			{
-				"command": "mysql.ssh.file.new",
+				"command": "airdb.ssh.file.new",
 				"title": "New File"
 			},
 			{
-				"command": "mysql.ssh.folder.new",
+				"command": "airdb.ssh.folder.new",
 				"title": "New Folder"
 			},
 			{
-				"command": "mysql.ssh.host.copy",
+				"command": "airdb.ssh.host.copy",
 				"title": "Copy Host"
 			},
 			{
-				"command": "mysql.ssh.forward.port",
+				"command": "airdb.ssh.forward.port",
 				"title": "Forward Port"
 			},
 			{
-				"command": "mysql.ssh.socks.port",
+				"command": "airdb.ssh.socks.port",
 				"title": "Start Socks5 Proxy"
 			},
 			{
-				"command": "mysql.ssh.folder.open",
+				"command": "airdb.ssh.folder.open",
 				"title": "Open In Terminal"
 			},
 			{
-				"command": "mysql.ssh.file.delete",
+				"command": "airdb.ssh.file.delete",
 				"title": "Delete"
 			},
 			{
-				"command": "mysql.ssh.file.download",
+				"command": "airdb.ssh.file.download",
 				"title": "Download File",
 				"icon": "$(cloud-download)"
 			},
 			{
-				"command": "mysql.ssh.file.upload",
+				"command": "airdb.ssh.file.upload",
 				"title": "Upload File",
 				"icon": "$(cloud-upload)"
 			}
 		],
 		"keybindings": [
 			{
-				"command": "mysql.runQuery",
+				"command": "airdb.runQuery",
 				"key": "f9",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.runQuery",
+				"command": "airdb.runQuery",
 				"key": "ctrl+enter",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.runAllQuery",
+				"command": "airdb.runAllQuery",
 				"key": "ctrl+f9",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.runAllQuery",
+				"command": "airdb.runAllQuery",
 				"key": "ctrl+shift+enter",
 				"when": "editorLangId == sql"
 			},
 			{
-				"command": "mysql.mock.run",
+				"command": "airdb.mock.run",
 				"when": "resourceFilename =~ /mock\\.json$/ ",
 				"key": "f9"
 			}
@@ -500,453 +502,453 @@
 		"menus": {
 			"editor/context": [
 				{
-					"command": "mysql.runQuery",
+					"command": "airdb.runQuery",
 					"when": "editorLangId == sql",
 					"group": "navigation@-2"
 				},
 				{
-					"command": "mysql.runAllQuery",
+					"command": "airdb.runAllQuery",
 					"when": "editorLangId == sql",
 					"group": "navigation@1"
 				},
 				{
-					"command": "mysql.db.active",
+					"command": "airdb.db.active",
 					"when": "editorLangId == sql",
 					"group": "navigation@2"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "mysql.mock.run",
+					"command": "airdb.mock.run",
 					"when": "resourceFilename =~ /mock.json$/ ",
 					"group": "navigation"
 				},
 				{
-					"command": "mysql.runQuery",
+					"command": "airdb.runQuery",
 					"when": "editorLangId == sql || resourceFilename =~ /.sql$/ ",
 					"group": "navigation"
 				}
 			],
 			"view/title": [
 				{
-					"command": "mysql.connection.add",
+					"command": "airdb.connection.add",
 					"when": "view =~ /cweijan.+?ql/",
 					"group": "navigation@3"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/",
 					"group": "navigation@2"
 				},
 				{
-					"command": "mysql.history.open",
+					"command": "airdb.history.open",
 					"when": "view == net.lingyun.airdb.mysql",
 					"group": "navigation@0"
 				},
 				{
-					"command": "mysql.struct.diff",
+					"command": "airdb.struct.diff",
 					"when": "view == net.lingyun.airdb.mysql",
 					"group": "navigation@-2"
 				},
 				{
-					"command": "mysql.connection.config",
+					"command": "airdb.connection.config",
 					"when": "view =~ /cweijan.+?ql/",
 					"group": "navigation@-3"
 				},
 				{
-					"command": "mysql.util.github",
+					"command": "airdb.util.github",
 					"when": "view == net.lingyun.airdb.nosql",
 					"group": "navigation@-3"
 				}
 			],
 			"view/item/context": [
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
 					"group": "inline@-2"
 				},
 				{
-					"command": "mysql.connection.edit",
+					"command": "airdb.connection.edit",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.connection.disable",
+					"command": "airdb.connection.disable",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection)$/",
 					"group": "1_mysql@4"
 				},
 				{
-					"command": "mysql.host.copy",
+					"command": "airdb.host.copy",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection)$/",
 					"group": "1_mysql@6"
 				},
 				{
-					"command": "mysql.database.add",
+					"command": "airdb.database.add",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.query.add",
+					"command": "airdb.query.add",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == queryGroup",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.query.rename",
+					"command": "airdb.query.rename",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == query",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.query.run",
+					"command": "airdb.query.run",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == query",
 					"group": "2_mysql@0"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(esConnection|ftpConnection|ftpFolder)$/",
 					"group": "2_mysql@1"
 				},
 				{
-					"command": "mysql.server.info",
+					"command": "airdb.server.info",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
 					"group": "4_mysql@1"
 				},
 				{
-					"command": "mysql.data.import",
+					"command": "airdb.data.import",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
 					"group": "8_mysql@1"
 				},
 				{
-					"command": "mysql.connection.delete",
+					"command": "airdb.connection.delete",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
 					"group": "10mysql@2"
 				},
 				{
-					"command": "mysql.database.add",
+					"command": "airdb.database.add",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == connection",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.connection.terminal",
+					"command": "airdb.connection.terminal",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|catalog)$/",
 					"group": "inline@2"
 				},
 				{
-					"command": "mysql.query.switch",
+					"command": "airdb.query.switch",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(connection|catalog|database|esConnection|esIndex)$/",
 					"group": "inline@5"
 				},
 				{
-					"command": "mysql.query.add",
+					"command": "airdb.query.add",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == queryGroup",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.query.run",
+					"command": "airdb.query.run",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == query",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.template.user",
+					"command": "airdb.template.user",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == userGroup",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == userGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.user",
+					"command": "airdb.template.user",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == userGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.change.user",
+					"command": "airdb.change.user",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == user",
 					"group": "1_mysql@-1"
 				},
 				{
-					"command": "mysql.user.grant",
+					"command": "airdb.user.grant",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == user",
 					"group": "1_mysql@0"
 				},
 				{
-					"command": "mysql.delete.user",
+					"command": "airdb.delete.user",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == user",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.name.copy",
+					"command": "airdb.name.copy",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(catalog|user|database|esColumn|column|table|view|esIndex|procedure|function|trigger|mongoTable|redisKey)$/",
 					"group": "-1_mysql@-5"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
 					"group": "3_mysql@0"
 				},
 				{
-					"command": "mysql.db.truncate",
+					"command": "airdb.db.truncate",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
 					"group": "4_mysql@4"
 				},
 				{
-					"command": "mysql.db.drop",
+					"command": "airdb.db.drop",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /(database|catalog)/",
 					"group": "4_mysql@5"
 				},
 				{
-					"command": "mysql.data.export",
+					"command": "airdb.data.export",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
 					"group": "mysql@5"
 				},
 				{
-					"command": "mysql.struct.export",
+					"command": "airdb.struct.export",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
 					"group": "mysql@6"
 				},
 				{
-					"command": "mysql.document.generate",
+					"command": "airdb.document.generate",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
 					"group": "mysql@7"
 				},
 				{
-					"command": "mysql.data.import",
+					"command": "airdb.data.import",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == database",
 					"group": "mysql@8"
 				},
 				{
-					"command": "mysql.table.show",
+					"command": "airdb.table.show",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "inline@3"
 				},
 				{
-					"command": "mysql.table.drop",
+					"command": "airdb.table.drop",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table && false",
 					"group": "inline@1"
 				},
 				{
-					"command": "mysql.table.design",
+					"command": "airdb.table.design",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
 					"group": "1_inline@0"
 				},
 				{
-					"command": "mysql.template.sql",
+					"command": "airdb.template.sql",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
 					"group": "inline@5"
 				},
 				{
-					"command": "mysql.table.source",
+					"command": "airdb.table.source",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table)$/",
 					"group": "1_inline@2"
 				},
 				{
-					"command": "mysql.view.source",
+					"command": "airdb.view.source",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(view)$/",
 					"group": "1_inline@2"
 				},
 				{
-					"command": "mysql.column.add",
+					"command": "airdb.column.add",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
 					"group": "1_inline@6"
 				},
 				{
-					"command": "mysql.mock.table",
+					"command": "airdb.mock.table",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
 					"group": "1_inline1@1"
 				},
 				{
-					"command": "mysql.data.export",
+					"command": "airdb.data.export",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "1_inline1@2"
 				},
 				{
-					"command": "mysql.struct.export",
+					"command": "airdb.struct.export",
 					"when": "view =~ /cweijan.+?ql/ && viewItem =~ /^(table|view)$/",
 					"group": "1_inline1@3"
 				},
 				{
-					"command": "mysql.table.truncate",
+					"command": "airdb.table.truncate",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
 					"group": "2_mysql@1"
 				},
 				{
-					"command": "mysql.table.drop",
+					"command": "airdb.table.drop",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == table",
 					"group": "2_mysql@2"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == tableGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.table",
+					"command": "airdb.template.table",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == tableGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.column.up",
+					"command": "airdb.column.up",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == column",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.column.down",
+					"command": "airdb.column.down",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == column",
 					"group": "inline@2"
 				},
 				{
-					"command": "mysql.column.drop",
+					"command": "airdb.column.drop",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == column",
 					"group": "3_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == viewGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.view",
+					"command": "airdb.template.view",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == viewGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.view",
+					"command": "airdb.delete.view",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == view",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == procedureGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.procedure",
+					"command": "airdb.template.procedure",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == procedureGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.procedure",
+					"command": "airdb.delete.procedure",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == procedure",
 					"group": "2_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == functionGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.function",
+					"command": "airdb.template.function",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == functionGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.function",
+					"command": "airdb.delete.function",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == function",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.refresh",
+					"command": "airdb.refresh",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == triggerGroup",
 					"group": "1_mysql@2"
 				},
 				{
-					"command": "mysql.template.trigger",
+					"command": "airdb.template.trigger",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == triggerGroup",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.delete.trigger",
+					"command": "airdb.delete.trigger",
 					"when": "view =~ /cweijan.+?ql/ && viewItem == trigger",
 					"group": "1_mysql@1"
 				},
 				{
-					"command": "mysql.connection.terminal",
+					"command": "airdb.connection.terminal",
 					"when": "view == net.lingyun.airdb.nosql && viewItem == redisConnection",
 					"group": "inline@1"
 				},
 				{
-					"command": "mysql.redis.connection.status",
+					"command": "airdb.redis.connection.status",
 					"when": "view == net.lingyun.airdb.nosql && viewItem == redisConnection",
 					"group": "connection"
 				},
 				{
-					"command": "mysql.redis.key.del",
+					"command": "airdb.redis.key.del",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /^(redisKey|redisFolder)$/",
 					"group": "inline"
 				},
 				{
-					"command": "mysql.connection.delete",
+					"command": "airdb.connection.delete",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "inline@0"
 				},
 				{
-					"command": "mysql.connection.terminal",
+					"command": "airdb.connection.terminal",
 					"when": "view == net.lingyun.airdb.nosql && viewItem == sshConnection",
 					"group": "inline@1"
 				},
 				{
-					"command": "mysql.ssh.host.copy",
+					"command": "airdb.ssh.host.copy",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "0_connection@-2"
 				},
 				{
-					"command": "mysql.ssh.forward.port",
+					"command": "airdb.ssh.forward.port",
 					"when": "view == net.lingyun.airdb.nosql && viewItem == sshConnection",
 					"group": "1_nosql@0"
 				},
 				{
-					"command": "mysql.ssh.socks.port",
+					"command": "airdb.ssh.socks.port",
 					"when": "view == net.lingyun.airdb.nosql && viewItem == sshConnection",
 					"group": "1_nosql@1"
 				},
 				{
-					"command": "mysql.ssh.file.new",
+					"command": "airdb.ssh.file.new",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@2"
 				},
 				{
-					"command": "mysql.ssh.folder.new",
+					"command": "airdb.ssh.folder.new",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@4"
 				},
 				{
-					"command": "mysql.ssh.path.copy",
+					"command": "airdb.ssh.path.copy",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|file|link)/",
 					"group": "ssh@1"
 				},
 				{
-					"command": "mysql.ssh.folder.open",
+					"command": "airdb.ssh.folder.open",
 					"when": "view == net.lingyun.airdb.nosql && viewItem == folder",
 					"group": "ssh@2"
 				},
 				{
-					"command": "mysql.ssh.file.new",
+					"command": "airdb.ssh.file.new",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@0"
 				},
 				{
-					"command": "mysql.ssh.folder.new",
+					"command": "airdb.ssh.folder.new",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@1"
 				},
 				{
-					"command": "mysql.ssh.file.upload",
+					"command": "airdb.ssh.file.upload",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
 					"group": "inline@-2"
 				},
 				{
-					"command": "mysql.ssh.file.delete",
+					"command": "airdb.ssh.file.delete",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /^(folder|ftpFolder|file|ftpFile|redisFolder)$/",
 					"group": "folder@4"
 				},
 				{
-					"command": "mysql.ssh.file.download",
+					"command": "airdb.ssh.file.download",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(folder|file|ftpFile)/",
 					"group": "file@1"
 				},
 				{
-					"command": "mysql.ssh.file.download",
+					"command": "airdb.ssh.file.download",
 					"when": "view == net.lingyun.airdb.nosql && viewItem =~ /(file|ftpFile)/",
 					"group": "inline@1"
 				}
@@ -1026,7 +1028,7 @@
 		"@types/redis": "^2.8.18",
 		"@types/ssh2": "^0.5.43",
 		"@types/tedious": "^4.0.14",
-		"@types/vscode": "1.92.0",
+		"@types/vscode": "1.91.0",
 		"copy-webpack-plugin": "^12.0.2",
 		"css-loader": "^7.1.2",
 		"file-loader": "^6.2.0",
