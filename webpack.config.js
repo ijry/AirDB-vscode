@@ -8,11 +8,11 @@ var webpack = require('webpack');
 module.exports = [
     {
         target: "node",
-        node: {
-            fs: 'empty', net: 'empty', tls: 'empty',
-            child_process: 'empty', dns: 'empty',
-            global: true, __dirname: true
-        },
+        // node: {
+        //     fs: 'empty', net: 'empty', tls: 'empty',
+        //     child_process: 'empty', dns: 'empty',
+        //     global: true, __dirname: true
+        // },
         entry: ['./src/extension.ts'],
         output: {
             path: path.resolve(__dirname, 'out'),
@@ -29,10 +29,15 @@ module.exports = [
             extensions: ['.ts', '.js'],
             alias: {
                 '@': path.resolve(__dirname, './src')
+            },
+            // webpack5+ need this
+            fallback: {
+                "process": require.resolve("process/browser")
             }
         },
         plugins: [
-            new webpack.IgnorePlugin(/^(pg-native|cardinal|encoding|aws4)$/)
+            // new webpack.IgnorePlugin(/^(pg-native|cardinal|encoding|aws4)$/)
+            new webpack.IgnorePlugin({resourceRegExp: /'^(pg-native|cardinal|encoding|aws4)$'/})
         ],
         module: { rules: [{ test: /\.ts$/, exclude: /(node_modules|bin)/, use: ['ts-loader'] }] },
         optimization: { minimize: isProd },

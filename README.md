@@ -8,16 +8,16 @@ The website https://airdb.lingyun.net.
 
 <p align="center">
 <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-    <img src="https://img.shields.io/vscode-marketplace/v/net.lingyun.airdb.svg?label=vscode%20marketplace">
+    <img src="https://img.shields.io/vscode-marketplace/v/net.lingyun.airdb.png?label=vscode%20marketplace">
   </a>
   <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-    <img src="https://vsmarketplacebadge.apphb.com/installs-short/net.lingyun.airdb.svg">
+    <img src="https://vsmarketplacebadge.apphb.com/installs-short/net.lingyun.airdb.png">
   </a>
   <a href="https://github.com/ijry/airdb">
     <img src="https://img.shields.io/github/stars/ijry/airdb?logo=github&style=flat">
   </a>
   <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-    <img src="https://img.shields.io/vscode-marketplace/r/net.lingyun.airdb.svg">
+    <img src="https://img.shields.io/vscode-marketplace/r/net.lingyun.airdb.png">
   </a>
   <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
   <img alt="GitHub" src="https://img.shields.io/github/license/ijry/airdb">
