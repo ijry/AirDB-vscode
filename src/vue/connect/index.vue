@@ -1,6 +1,6 @@
 <template>
   <form @submit.prevent="tryConnect" class="flex flex-col mx-auto connect-container">
-    <h1 class="py-4 text-2xl">Connect to Database Server</h1>
+    <h1 class="py-4 text-2xl">{{$t('Connect to Database Server')}}</h1>
 
     <blockquote class="p-3 mb-2 panel error" v-if="connect.error">
       <section class="panel__text">

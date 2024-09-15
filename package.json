@@ -2,11 +2,11 @@
 	"name": "airdb",
 	"displayName": "AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
-		"vscode": "^1.91.0"
+		"vscode": "^1.51.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -1073,6 +1073,7 @@
 		"supports-color": "^9.0.1",
 		"umy-table": "1.0.8",
 		"vue": "^2.6.11",
+		"vue-i18n": "8.2.1",
 		"vue-router": "^3.4.1",
 		"xregexp": "2.0.0",
 		"xterm": "^4.12.0",

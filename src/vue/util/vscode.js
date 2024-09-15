@@ -19,11 +19,13 @@ export const getVscodeEvent = () => {
         },
         emit(event, data) {
             this.tryInit();
+            // 发送消息给vscode
             postMessage({ type: event, content: data })
         },
         tryInit() {
             if (init) return;
             init = true;
+            // 接收vscode发送的消息
             window.addEventListener('message', receive)
         },
         destroy() {

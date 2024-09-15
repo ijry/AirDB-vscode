@@ -124,10 +124,13 @@ export class ViewManager {
                 }
                 webviewPanel.webview.onDidReceiveMessage((message) => {
                     if (message.type == 'init') {
+                        // console.log('初始化')
                         if (newStatus.creating) {
                             newStatus.eventEmitter.emit(message.type, message.content)
                             newStatus.creating = false
                         }
+                        // 发送界面语言
+                        webviewPanel.webview.postMessage({ type: 'lang', content: vscode.env.language })
                     } else {
                         newStatus.eventEmitter.emit(message.type, message.content)
                     }
