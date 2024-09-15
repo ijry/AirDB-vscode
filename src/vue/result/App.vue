@@ -11,12 +11,12 @@
       </div>
     </div>
     <!-- trigger when click -->
-    <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vh" stripe :checkboxConfig="{ checkMethod: selectable}">
+    <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vw" stripe :checkboxConfig="{ checkMethod: selectable}">
       <ux-table-column type="checkbox" width="40" fixed="left"></ux-table-column>
       <ux-table-column type="index" width="40" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
         <Controller slot="header" :result="result" :toolbar="toolbar" />
       </ux-table-column>
-      <ux-table-column v-for="(field,index) in (result.fields||[]).filter(field=>toolbar.showColumns.includes(field.name.toLowerCase()))" :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :width="computeWidth(field,0)" edit-render>
+      <ux-table-column v-for="(field,index) in (result.fields||[]).filter(field=>toolbar.showColumns.includes(field.name.toLowerCase()))" :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :minWidth="computeWidth(field,0)" edit-render>
         <Header slot="header" slot-scope="scope" :result="result" :scope="scope" :index="index" />
         <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" />
       </ux-table-column>
@@ -134,7 +134,16 @@ export default {
     };
     vscodeEvent = getVscodeEvent();
 
-    vscodeEvent.on("updateSuccess", () => {
+    // 监听语言
+    vscodeEvent.on("lang", (lang) => {
+      console.log('onLang', lang)
+      let locale = 'en'
+      if (lang == 'zh-cn' || lang == 'zh-tw') {
+        locale = 'zh'
+      }
+      this.$i18n.locale = locale
+      console.log(this.$i18n)
+    }).on("updateSuccess", () => {
       for (const index in this.update.editList) {
         const element = this.update.editList[index];
         this.result.data[index] = element;

@@ -4,14 +4,14 @@
 
     <blockquote class="p-3 mb-2 panel error" v-if="connect.error">
       <section class="panel__text">
-        <div class="inline-block w-32 mr-5 font-bold">Connection error!</div>
+        <div class="w-50 mr-5 font-bold">{{$t('Connection error!')}}</div>
         <span>{{ connect.errorMessage }}</span>
       </section>
     </blockquote>
 
     <blockquote class="p-3 mb-2 panel success" v-if="connect.success">
       <section class="panel__text">
-        <div class="inline-block mr-5 font-bold w-36">Success!</div>
+        <div class="mr-5 font-bold w-36">{{$t('Success!')}}</div>
         <span>
           {{ connect.successMessage }}
         </span>
@@ -20,25 +20,29 @@
 
     <section class="flex flex-wrap items-center">
       <div class="inline-block mb-2 mr-10">
-        <label class="inline-block mr-5 font-bold">Connection Name</label>
+        <label class="inline-block mr-5 font-bold">{{$t('Connection Name')}}</label>
         <input
           class="field__input"
           style="min-width: 400px"
-          placeholder="Connection name"
+          :placeholder="$t('Connection Name')"
           v-model="connectionOption.name"
         />
       </div>
       <div class="inline-block mb-2 mr-10">
-        <label class="inline-block mr-5 font-bold">Connection Target</label>
+        <label class="inline-block mr-5 font-bold">{{$t('Connection Target')}}</label>
         <div class="inline-flex items-center">
-          <el-radio v-model="connectionOption.global" :label="true"> Global </el-radio>
-          <el-radio v-model="connectionOption.global" :label="false"> Current Workspace </el-radio>
+          <el-radio v-model="connectionOption.global" :label="true">
+            {{$t('Global')}}
+          </el-radio>
+          <el-radio v-model="connectionOption.global" :label="false">
+            {{$t('Current Workspace')}}
+          </el-radio>
         </div>
       </div>
     </section>
 
     <section class="mt-5">
-      <label class="block font-bold">Database Type</label>
+      <label class="block font-bold">{{$t('Database Type')}}</label>
       <ul class="flex-wrap tab">
         <li
           class="tab__item"
@@ -70,24 +74,24 @@
       <section class="mt-5">
         <div class="inline-block mb-2 mr-10">
           <label class="inline-block w-32 mr-5 font-bold">
-            <span>Host</span>
+            <span>{{$t('Host')}}</span>
             <span class="mr-1 text-red-600" title="required">*</span>
           </label>
           <input
             class="w-64 field__input"
-            placeholder="The host of connection"
+            :placeholder="$t('The host of connection')"
             required
             v-model="connectionOption.host"
           />
         </div>
         <div class="inline-block mb-2 mr-10">
           <label class="inline-block w-32 mr-5 font-bold">
-            Port
+            {{$t('Port')}}
             <span class="mr-1 text-red-600" title="required">*</span>
           </label>
           <input
             class="w-64 field__input"
-            placeholder="The port of connection"
+            :placeholder="$t('The port of connection')"
             required
             type="number"
             v-model="connectionOption.port"
@@ -100,31 +104,32 @@
       <section>
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
           <label class="inline-block w-32 mr-5 font-bold">
-            Username
+            {{$t('Username')}}
             <span class="mr-1 text-red-600" title="required">*</span>
           </label>
           <input class="w-64 field__input" placeholder="Username" required v-model="connectionOption.user" />
         </div>
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">Password</label>
-          <input class="w-64 field__input" placeholder="Password" type="password" v-model="connectionOption.password" />
+          <label class="inline-block w-32 mr-5 font-bold">{{$t('Password')}}</label>
+          <input class="w-64 field__input" :placeholder="$t('Password')"
+            type="password" v-model="connectionOption.password" />
         </div>
       </section>
 
       <section v-if="connectionOption.dbType != 'FTP' && connectionOption.dbType != 'MongoDB'">
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">Databases</label>
+          <label class="inline-block w-32 mr-5 font-bold">{{$t('Databases')}}</label>
           <input
             class="w-64 field__input"
-            placeholder="Special connection database"
+            :placeholder="$t('Special connection database')"
             v-model="connectionOption.database"
           />
         </div>
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
-          <label class="inline-block w-32 mr-5 font-bold">Include Databases</label>
+          <label class="inline-block w-32 mr-5 font-bold">{{$t('Include Databases')}}</label>
           <input
             class="w-64 field__input"
-            placeholder="Example: mysql,information_schema"
+            :placeholder="$t('Example') + ': mysql,information_schema'"
             v-model="connectionOption.includeDatabases"
           />
         </div>
@@ -134,11 +139,11 @@
 
       <section>
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">Connection Timeout</label>
+          <label class="inline-block w-32 mr-5 font-bold">{{$t('Connection Timeout')}}</label>
           <input class="w-64 field__input" placeholder="5000" v-model="connectionOption.connectTimeout" />
         </div>
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">Request Timeout</label>
+          <label class="inline-block w-32 mr-5 font-bold">{{$t('Request Timeout')}}</label>
           <input
             class="w-64 field__input"
             placeholder="10000"
@@ -150,7 +155,7 @@
 
       <section class="flex items-center mb-2" v-if="connectionOption.dbType == 'MySQL'">
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">Timezone</label>
+          <label class="inline-block w-32 mr-5 font-bold">{{$t('Timezone')}}</label>
           <input class="w-64 field__input" placeholder="+HH:MM" v-model="connectionOption.timezone" />
         </div>
       </section>
@@ -161,7 +166,7 @@
         class="inline-block mb-2 mr-10"
         v-if="connectionOption.dbType != 'SSH' && connectionOption.dbType != 'SQLite'"
       >
-        <label class="mr-2 font-bold">SSH Tunnel</label>
+        <label class="mr-2 font-bold">{{$t('SSH Tunnel')}}</label>
         <el-switch v-model="connectionOption.usingSSH"></el-switch>
       </div>
       <div

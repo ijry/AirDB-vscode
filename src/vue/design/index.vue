@@ -1,11 +1,13 @@
 <template>
   <div class="mt-2">
-    <el-button @click="init" type="success" title="Refresh"  size="mini" >Refresh </el-button>
-    <el-tag>Table:</el-tag>
+    <el-button @click="init" type="success" title="Refresh" size="small">{{ $t('Refresh') }} </el-button>
+    <el-tag>{{ $t('Design.Table') }}:</el-tag>
     {{table}}
     <ul class="tab">
-      <li class="tab__item " :class="{'tab__item--active':activePanel=='column'}" @click="activePanel='column'">Column </li>
-      <li class="tab__item " :class="{'tab__item--active':activePanel=='index'}" @click="activePanel='index'">Index </li>
+      <li class="tab__item " :class="{'tab__item--active':activePanel=='column'}"
+        @click="activePanel='column'">{{ $t('Design.Column') }} </li>
+      <li class="tab__item " :class="{'tab__item--active':activePanel=='index'}"
+        @click="activePanel='index'">{{ $t('Design.Index') }}</li>
     </ul>
     <div class="mt-2">
       <ColumnPanel v-if="activePanel=='column'" />

@@ -56,6 +56,6 @@ new Vue({
   el: '#app',
   components: { App },
   router,
-  i18n, //使用国际化
+  i18n, // 使用国际化
   template: '<App/>'
 })

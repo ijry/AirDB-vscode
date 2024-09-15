@@ -1,5 +1,6 @@
 import { CacheKey, CodeCommand, DatabaseType } from "@/common/constants";
 import { FileManager, FileModel } from "@/common/filesManager";
+import * as vscode from "vscode";
 import { ConnectionManager } from "@/service/connectionManager";
 import { resolve } from "path";
 import { platform } from "os";
@@ -32,7 +33,9 @@ export class ConnectService {
         }
         let plat: string = platform();
         ViewManager.createWebviewPanel({
-            path: "app", title: connectionNode ? "edit" : "connect",
+            path: "app", title: connectionNode
+                ? vscode.env.language.startsWith('zh-') ? "修改连接" : "edit"
+                : vscode.env.language.startsWith('zh-') ? "新增连接" : "connect",
             splitView: false, iconPath: Global.getExtPath("resources", "icon", "connection.svg"),
             eventHandler: (handler) => {
                 handler.on("init", () => {

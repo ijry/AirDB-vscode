@@ -2,42 +2,51 @@
   <div>
     <InfoPanel/>
     <div class="design-toolbar">
-      <el-button @click="column.visible=true" type="primary" title="Insert" icon="el-icon-circle-plus-outline" size="mini" circle> </el-button>
+      <el-button @click="column.visible=true" type="primary" :title="$t('Design.Insert')"
+        icon="el-icon-circle-plus-outline" size="mini" circle> </el-button>
     </div>
-    <ux-grid :data="designData.editColumnList" stripe style="width: 100%" :cell-style="{height: '25px'}" :height="remainHeight()">
-      <ux-table-column align="center" field="name" title="Name" show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="type" title="Type" show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="comment" title="Comment" show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="maxLength" width="80" title="Length" show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="defaultValue" width="120" title="Default" show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" title="Primary Key" width="100" show-overflow-tooltip="true">
+    <ux-grid :data="designData.editColumnList" stripe style="width: 100%"
+      :cell-style="{height: '25px'}" :height="remainHeight()">
+      <ux-table-column align="center" field="name" :title="$t('Design.Column.Name')"
+        show-overflow-tooltip="true"></ux-table-column>
+      <ux-table-column align="center" field="type" :title="$t('Design.Column.Type')"
+        show-overflow-tooltip="true"></ux-table-column>
+      <ux-table-column align="center" field="comment" :title="$t('Design.Column.Comment')"
+        show-overflow-tooltip="true"></ux-table-column>
+      <ux-table-column align="center" field="maxLength" width="80" :title="$t('Design.Column.Length')"
+        show-overflow-tooltip="true"></ux-table-column>
+      <ux-table-column align="center" field="defaultValue" width="120" :title="$t('Design.Column.Default')"
+        show-overflow-tooltip="true"></ux-table-column>
+      <ux-table-column align="center" width="100" :title="$t('Primary Key')"
+        show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isPrimary"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" title="Unique" width="80" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Unique')" width="80" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isUnique"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" title="Not Null" width="80" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Not Null')" width="80" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.nullable=='NO'"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" title="Auto Incrment" width="140" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Auto Incrment')" width="140" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isAutoIncrement"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column title="Operation" width="120">
+      <ux-table-column :title="$t('Operation')" width="120">
         <template v-slot="{ row }">
           <el-button @click="openEdit(row)" title="edit" size="mini" icon="el-icon-edit" circle> </el-button>
-          <el-button @click="deleteConfirm(row)" title="delete" type="danger" size="mini" icon="el-icon-delete" circle> </el-button>
+          <el-button @click="deleteConfirm(row)" :title="$t('delete')" type="danger"
+            size="mini" icon="el-icon-delete" circle> </el-button>
         </template>
       </ux-table-column>
     </ux-grid>
-    <el-dialog :title="'Update Column'" :visible.sync="column.editVisible" top="3vh" size="mini">
+    <el-dialog :title="$t('Update Column')" :visible.sync="column.editVisible" top="3vh" size="mini">
       <el-form :inline='true'>
         <el-form-item label="Name">
           <el-input v-model="editColumn.name"></el-input>

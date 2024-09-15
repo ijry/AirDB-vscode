@@ -3,19 +3,19 @@
     <div class="mb-3">
       <div class="inline-block mr-10">
         <label class="inline-block mr-5 font-bold w-14">
-          Table
+          {{$t('Design.Table')}}
           <span class="mr-1 text-red-600">*</span>
         </label>
         <input class="w-64 field__input" required v-model="table.name" />
       </div>
       <div class="inline-block mr-10">
         <label class="inline-block w-32 mr-5 font-bold">
-          Comment
+          {{$t('Design.Comment')}}
           <span class="mr-1 text-red-600">*</span>
         </label>
         <input class="w-64 field__input" v-model="table.comment" />
       </div>
-      <el-button @click="rename" type="success">Update</el-button>
+      <el-button @click="rename" size="medium" type="success">{{ $t('Design.Update') }}</el-button>
     </div>
   </div>
 </template>

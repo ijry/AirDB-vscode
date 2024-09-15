@@ -3,7 +3,7 @@
     <section class="mb-2">
       <div class="inline-block mr-10">
         <label class="inline-block w-32 mr-5 font-bold">
-          <span>URL</span>
+          <span>{{$t('URL')}}</span>
           <span class="mr-1 text-red-600" title="required">*</span>
         </label>
         <input
@@ -44,7 +44,7 @@
       />
     </section>
     <div class="inline-block mb-2 mr-10">
-      <label class="inline-block w-32 mr-5 font-bold">Connection Timeout</label>
+      <label class="inline-block w-32 mr-5 font-bold">{{ $t('Connection Timeout') }}</label>
       <input class="w-64 field__input" placeholder="2000" required v-model="connectionOption.connectTimeout" />
     </div>
   </div>

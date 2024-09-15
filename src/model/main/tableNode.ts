@@ -124,7 +124,7 @@ export class TableNode extends Node implements CopyAble {
         }
 
         ViewManager.createWebviewPanel({
-            path: "app", title: "Design Table",
+            path: "app", title: vscode.env.language.startsWith('zh-') ? "设计表" : "Design Table",
             splitView: false, iconPath: Global.getExtPath("resources", "icon", "dropper.svg"),
             eventHandler: (handler => {
                 handler.on("init", () => {
