@@ -25,7 +25,7 @@ set NODE_OPTIONS=--openssl-legacy-provider
 
 ```
 nvm use 20
-npm i g @vscode/vsce
+npm i -g @vscode/vsce
 vsce login [ms-userid]
 vsce package
 vsce publish

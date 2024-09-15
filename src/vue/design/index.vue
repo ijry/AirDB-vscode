@@ -1,5 +1,5 @@
 <template>
-  <div class="mt-2">
+  <div class="px-4 py-4 ">
     <el-button @click="init" type="success" title="Refresh" size="small">{{ $t('Refresh') }} </el-button>
     <el-tag>{{ $t('Design.Table') }}:</el-tag>
     {{table}}

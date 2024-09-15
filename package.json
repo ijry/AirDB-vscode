@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "1.0.7",
+	"version": "1.0.8",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
@@ -728,7 +728,6 @@
 				},
 				{
 					"command": "airdb.table.design",
-					"title": "%command.table.design%",
 					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == table",
 					"group": "1_inline@0"
 				},
