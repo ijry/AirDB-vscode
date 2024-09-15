@@ -5,20 +5,20 @@
 ---
 
 <p align="center">
-<a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-    <img src="https://img.shields.io/vscode-marketplace/v/net.lingyun.airdb.png?label=vscode%20marketplace">
+<a href="https://marketplace.visualstudio.com/items?itemName=jry.airdb">
+    <img src="https://img.shields.io/vscode-marketplace/v/jry.airdb.png?label=vscode%20marketplace">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-    <img src="https://vsmarketplacebadge.apphb.com/installs-short/net.lingyun.airdb.png">
+  <a href="https://marketplace.visualstudio.com/items?itemName=jry">
+    <img src="https://vsmarketplacebadge.apphb.com/installs-short/jry.airdb.png">
   </a>
   <a href="https://github.com/ijry/airdb">
     <img src="https://img.shields.io/github/stars/ijry/airdb?logo=github&style=flat">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-    <img src="https://img.shields.io/vscode-marketplace/r/net.lingyun.airdb.png">
+  <a href="https://marketplace.visualstudio.com/items?itemName=jry">
+    <img src="https://img.shields.io/vscode-marketplace/r/jry.airdb.png">
   </a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=net.lingyun.airdb">
-  <img alt="GitHub" src="https://img.shields.io/github/license/ijry/airdb">
+  <a href="https://marketplace.visualstudio.com/items?itemName=jry">
+    <img alt="GitHub" src="https://img.shields.io/github/license/ijry/airdb">
   </a>
 </p>
 <br>
