@@ -1,0 +1,3 @@
+[submodule "airdb"]
+	path = airdb
+	url = git@github.com:ijry/airdb.git
