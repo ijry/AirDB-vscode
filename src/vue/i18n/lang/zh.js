@@ -3,7 +3,7 @@ export default {
     'Connection error!': '注意看，这个连接出错啦！',
     'Success!': '还得是你，连接成功了！',
     'Connection Name': '连接名称',
-    'Connection Target': '连接目标',
+    'Connection Target': '存储位置',
     'Global': '全局',
     'Current Workspace': '当前工作空间',
     'Database Type': '数据库类型',
@@ -55,5 +55,10 @@ export default {
     'dashBoard': '控制台',
     'processList': '进程列表',
     'variableList': '变量列表',
-    'statusList': '状态'
+    'statusList': '状态',
+    'Connect': '连接',
+    'Close': '关闭',
+    'Local': '本地',
+    'Cloud': '云端',
+    'Connection Storge': '存储位置',
 }

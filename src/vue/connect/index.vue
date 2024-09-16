@@ -19,6 +19,20 @@
     </blockquote>
 
     <section class="flex flex-wrap items-center">
+      <div class="mb-2 mr-10">
+        <label class="inline-block mr-5 font-bold">{{$t('Connection Storge')}}</label>
+        <div class="inline-flex items-center">
+          <el-radio v-model="connectionOption.isCloud" :label="0">
+            {{$t('Local')}}
+          </el-radio>
+          <el-radio v-model="connectionOption.isCloud" :label="1">
+            {{$t('Cloud')}}
+          </el-radio>
+        </div>
+      </div>
+    </section>
+
+    <section class="flex flex-wrap items-center">
       <div class="inline-block mb-2 mr-10">
         <label class="inline-block mr-5 font-bold">{{$t('Connection Name')}}</label>
         <input
@@ -28,7 +42,7 @@
           v-model="connectionOption.name"
         />
       </div>
-      <div class="inline-block mb-2 mr-10">
+      <div class="inline-block mb-2 mr-10" v-if="connectionOption.isCloud == 0">
         <label class="inline-block mr-5 font-bold">{{$t('Connection Target')}}</label>
         <div class="inline-flex items-center">
           <el-radio v-model="connectionOption.global" :label="true">
@@ -211,8 +225,10 @@
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
 
     <div class="mt-2">
-      <button class="inline mr-4 button button--primary w-28" type="submit" v-loading="connect.loading">Connect</button>
-      <button class="inline button button--primary w-28" @click="close">Close</button>
+      <button class="inline mr-4 button button--primary w-28" type="submit" v-loading="connect.loading">
+        {{$t('Connect')}}
+      </button>
+      <button class="inline button button--primary w-28" @click="close">{{$t('Close')}}</button>
     </div>
   </form>
 </template>
@@ -232,6 +248,7 @@ export default {
   data() {
     return {
       connectionOption: {
+        isCloud: 0, // 是否存储云端
         host: "127.0.0.1",
         dbPath: "",
         port: "3306",

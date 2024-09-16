@@ -16,6 +16,7 @@ import { ClientManager } from "../ssh/clientManager";
 import { ConnnetionConfig } from "./config/connnetionConfig";
 import { readFileSync } from "fs";
 import { GlobalState, WorkState } from "@/common/state";
+import axios, { AxiosRequestConfig } from "axios";
 var commandExistsSync = require('command-exists').sync;
 
 export class ConnectService {
@@ -75,8 +76,20 @@ export class ConnectService {
                     const node:Node = Util.trim(NodeUtil.of(connectionOption))
                     try {
                         node.initKey();
+
+                        // 连接数据库
                         await this.connect(node)
+
+                        // 连接成功自动保存
                         await provider.addConnection(node)
+
+                        // 云端存储请求服务器
+                        if(node.isCloud == 1)  {
+                            let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
+                            const response = await axios.post(url, {
+                                node: node
+                            });
+                        }
                         const { key, connectionKey } = node
                         handler.emit("success", { message: 'connect success!', key, connectionKey })
                     } catch (err) {

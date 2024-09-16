@@ -10,6 +10,7 @@ import { ConnectionManager } from "../../service/connectionManager";
 import { CopyAble } from "../interface/copyAble";
 import { Node } from "../interface/node";
 import { MongoTableGroup } from "../mongo/mongoTableGroup";
+import axios, { AxiosRequestConfig } from "axios";
 
 export class RootNode extends Node implements CopyAble {
 
@@ -37,7 +38,7 @@ export class RootNode extends Node implements CopyAble {
                     res(list)
                     break;
                 case 'cloud':
-                    let list2 = []  
+                    let list2 = await this.provider.getCloudConnectionNodes()
                     res(list2)
                     break;
             

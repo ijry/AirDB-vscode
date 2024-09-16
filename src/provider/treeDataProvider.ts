@@ -14,6 +14,7 @@ import { UserGroup } from "../model/database/userGroup";
 import { CommandKey, Node } from "../model/interface/node";
 import { DatabaseCache } from "../service/common/databaseCache";
 import { ConnectionManager } from "../service/connectionManager";
+import axios, { AxiosRequestConfig } from "axios";
 
 export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
@@ -78,9 +79,13 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         connectionNode.indent({ command: CommandKey.update })
     }
 
+    // 添加本地连接
     public async addConnection(node: Node) {
 
         const newKey = this.getKeyByNode(node)
+
+        if (node.isCloud) return;
+
         node.context = node.global ? this.context.globalState : this.context.workspaceState
 
         const isGlobal = (node as any).isGlobal;
@@ -92,12 +97,15 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
         // config has change, remove old connection.
         if (isGlobal != null) {
+            // 全局配置还是当前工作空间
             node.context = isGlobal ? this.context.globalState : this.context.workspaceState
+            // 删除已存在的相同连接
             await node.indent({ command: CommandKey.delete, connectionKey: node.connectionKey, refresh: false })
             node.context = node.global ? this.context.globalState : this.context.workspaceState
         }
 
         node.connectionKey = newKey
+        // 添加新连接
         await node.indent({ command: CommandKey.add, connectionKey: newKey })
 
     }
@@ -139,6 +147,27 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         )
     }
 
+    // 获取云端连接
+    public async getCloudConnectionNodes(): Promise<Node[]> {
+        const connetKey = this.connectionKey;
+        let url = `https://airdb.lingyun.net/api/v1/airdb/conns/my?type=sql`;
+        try {
+            let response = await axios.get(url);
+            let res = response.data
+            console.log('&&&&&&&&&', response)
+            let list = res.data.dataList;
+            let list2: Node[] = []; 
+            list.forEach(element => {
+                let node:Node = element.node as Node;
+                // todo云端密码应该加密后解密
+                list2.push(this.getNode(node, element.id, false, connetKey))
+            });
+            return list2;
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     private getNode(connectInfo: Node, key: string, global: boolean, connectionKey: string) {
         // 兼容老版本的连接信息
         if (!connectInfo.dbType) connectInfo.dbType = DatabaseType.MYSQL
@@ -158,9 +187,11 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         node.connectionKey = connectionKey;
         node.provider = this
         node.global = global;
-        node.context = node.global ? this.context.globalState : this.context.workspaceState;
-        if (!node.global) {
-            node.description = `${node.description || ''} workspace`
+        if (node.isCloud == 0) {
+            node.context = node.global ? this.context.globalState : this.context.workspaceState;
+            if (!node.global) {
+                node.description = `${node.description || ''} workspace`
+            }
         }
         return node;
     }
