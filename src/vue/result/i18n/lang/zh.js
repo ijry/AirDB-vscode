@@ -29,9 +29,15 @@ export default {
     'Choose Database File': '选择文件',
     'Input To Search Data': '输入关键字搜索',
     'Star the project to represent support.': 'Star支持下',
-    'Insert new row': '新增行',
+    'Insert': '插入',
     'delete': '删除',
     'Execute Sql': '执行Sql',
     'Cost': '耗时',
-    'export': '导出'
+    'export': '导出',
+    'Export': '导出',
+    'You need to select at least one row of data.': '请至少选择一行进行删除。',
+    'Are you sure you want to delete this data?': '确认要删除选中数据吗？不可恢复！',
+    'OK': '确认',
+    'Cancel': '取消',
+    'Update Success': '更新成功',
 }

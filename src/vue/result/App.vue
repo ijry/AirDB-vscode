@@ -1,9 +1,17 @@
 <template>
   <div id="app">
     <div class="hint" style="margin-bottom: 5px;">
-      <div style="width:95%;margin-top: 10px;margin-bottom: 15px;">
-        <el-input type="textarea" :autosize="{ minRows:3, maxRows:8}"
+      <div class="relative" style="width:100%;margin-top: 10px;margin-bottom: 15px;position: relative;">
+        <el-input type="textarea" :autosize="{ minRows:4, maxRows:8}"
           v-model="toolbar.sql" class="sql-pannel" @keypress.native="panelInput" />
+          <div style="position: absolute;bottom: 5px;right: 10px;">
+            <el-button size="mini" :title="$t('Execute Sql')" @click="info.message = false;execute(toolbar.sql);">
+              {{ $t('Execute Sql') }}
+            </el-button>
+            <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
+              {{ $t('Cost') }}: {{result.costTime}}ms
+            </div>
+          </div>
       </div>
       <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" style="margin-bottom: 15px;"
         :costTime="result.costTime" @changePage="changePage"
@@ -16,7 +24,9 @@
       </div>
     </div>
     <!-- trigger when click -->
-    <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading' size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight" width="100vw" stripe :checkboxConfig="{ checkMethod: selectable}">
+    <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading'
+      size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight"
+      width="100vw" stripe :checkboxConfig="{ checkMethod: selectable}">
       <ux-table-column type="checkbox" width="40" fixed="left"></ux-table-column>
       <ux-table-column type="index" width="40" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
         <Controller slot="header" :result="result" :toolbar="toolbar" />
@@ -26,7 +36,9 @@
         <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" />
       </ux-table-column>
     </ux-grid>
-    <EditDialog ref="editor" :dbType="result.dbType" :result="result" :database="result.database" :table="result.table" :primaryKey="result.primaryKey" :primaryKeyList="result.primaryKeyList" :columnList="result.columnList" @execute="execute" />
+    <EditDialog ref="editor" :dbType="result.dbType" :result="result"
+      :database="result.database" :table="result.table" :primaryKey="result.primaryKey"
+      :primaryKeyList="result.primaryKeyList" :columnList="result.columnList" @execute="execute" />
     <ExportDialog :visible.sync="exportOption.visible" @exportHandle="confirmExport" />
   </div>
 </template>
@@ -158,7 +170,7 @@ export default {
       this.$message({
         showClose: true,
         duration: 500,
-        message: "Update Success",
+        message: this.$t("Update Success"),
         type: "success",
       });
     });
@@ -306,13 +318,13 @@ export default {
       if (!datas || datas.length == 0) {
         this.$message({
           type: "warning",
-          message: "You need to select at least one row of data.",
+          message: this.$t('You need to select at least one row of data.')
         });
         return;
       }
-      this.$confirm("Are you sure you want to delete this data?", "Warning", {
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
+      this.$confirm(this.$t('Are you sure you want to delete this data?'), "Warning", {
+        confirmButtonText: this.$t('OK'),
+        cancelButtonText: this.$t('Cancel'),
         type: "warning",
       })
         .then(() => {
