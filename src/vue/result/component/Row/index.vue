@@ -1,14 +1,21 @@
 <template>
   <div>
     <template v-if="scope.row.isFilter">
-      <el-input class='edit-filter' v-model="filterObj[scope.column.title]" :clearable='true' placeholder="Filter" @clear="filter(null,scope.column.title)" @keyup.enter.native="filter($event,scope.column.title)">
+      <el-input class='edit-filter' v-model="filterObj[scope.column.title]"
+        :clearable='true' placeholder="Filter" @clear="filter(null,scope.column.title)"
+        @keyup.enter.native="filter($event,scope.column.title)">
       </el-input>
     </template>
     <template v-else-if="!scope.row.isFilter && result.dbType=='ElasticSearch'">
-      <div class="edit-column" :contenteditable="editable" style="height: 100%; line-height: 33px;" @input="editListen($event,scope)" @contextmenu.prevent="onContextmenu($event,scope)" v-html='dataformat(scope.row[scope.column.title])'></div>
+      <div class="edit-column" :contenteditable="editable"
+        style="height: 100%; line-height: 33px;" @input="editListen($event,scope)"
+        @contextmenu.prevent="onContextmenu($event,scope)"
+        v-html='dataformat(scope.row[scope.column.title])'></div>
     </template>
     <template v-else>
-      <div class="edit-column" :contenteditable="editable" style="height: 100%; line-height: 33px;" @input="editListen($event,scope)" @contextmenu.prevent="onContextmenu($event,scope)">
+      <div class="edit-column" :contenteditable="editable"
+        style="height: 100%; line-height: 33px;" @input="editListen($event,scope)"
+        @contextmenu.prevent="onContextmenu($event,scope)">
         <template v-if="scope.row[scope.column.title]==null || scope.row[scope.column.title]==undefined">
           <span class='null-column'>(NULL)</span>
         </template>
@@ -111,70 +118,70 @@ export default {
       this.$contextmenu({
         items: [
           {
-            label: `Copy`,
+            label: this.$t(`Copy Cell`),
             onClick: () => {
               this.$emit("sendToVscode", "copy", value);
             },
             divided: true,
           },
           {
-            label: `Open Edit Dialog`,
+            label: this.$t(`Open Edit Dialog`),
             onClick: () => {
               this.$emit("openEditor", row, false);
             },
           },
           {
-            label: `Open Copy Dialog`,
+            label: this.$t(`Open Copy Dialog`),
             onClick: () => {
               this.$emit("openEditor", row, true);
             },
             divided: true,
           },
           {
-            label: `Filter by ${name} = '${value}'`,
+            label: this.$t('Filter by') + ` ${name} = '${value}'`,
             onClick: () => {
               this.filter(event, name, "=");
             },
           },
           {
-            label: "Filter by",
+            label: this.$t('Filter by'),
             divided: true,
             children: [
               {
-                label: `Filter by ${name} > '${value}'`,
+                label: this.$t('Filter by') + ` ${name} > '${value}'`,
                 onClick: () => {
                   this.filter(event, name, ">");
                 },
               },
               {
-                label: `Filter by ${name} >= '${value}'`,
+                label: this.$t('Filter by') + ` ${name} >= '${value}'`,
                 onClick: () => {
                   this.filter(event, name, ">=");
                 },
                 divided: true,
               },
               {
-                label: `Filter by ${name} < '${value}'`,
+                label: this.$t('Filter by') + ` ${name} < '${value}'`,
                 onClick: () => {
                   this.filter(event, name, "<");
                 },
               },
               {
-                label: `Filter by ${name} <= '${value}'`,
+                label: this.$t('Filter by') + ` ${name} <= '${value}'`,
                 onClick: () => {
                   this.filter(event, name, "<=");
                 },
                 divided: true,
               },
               {
-                label: `Filter by ${name} LIKE '%${value}%'`,
+                label: this.$t('Filter by') + ` ${name} LIKE '%${value}%'`,
                 onClick: () => {
                   event.target.value = `%${value}%`;
                   this.filter(event, name, "LIKE");
                 },
               },
               {
-                label: `Filter by ${name} NOT LIKE '%${value}%'`,
+                label: this.$t('Filter by') + ` ${name} NOT LIKE '%${value}%'`,
                 onClick: () => {
                   event.target.value = `%${value}%`;
                   this.filter(event, name, "NOT LIKE");

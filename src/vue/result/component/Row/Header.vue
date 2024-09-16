@@ -2,7 +2,8 @@
   <el-tooltip class="item" effect="dark" :content="getTip(result.columnList[index],scope.column)" placement="left-start">
     <div>
       <span>
-        <span v-if="result.columnList[index]&& (result.columnList[index].nullable != 'YES')" style="color: #f94e4e; position: relative; top: .2em;">
+        <span v-if="result.columnList[index]&& (result.columnList[index].nullable != 'YES')"
+          style="color: #f94e4e; position: relative; top: .2em;">
           *
         </span>
         <span class="column-name">

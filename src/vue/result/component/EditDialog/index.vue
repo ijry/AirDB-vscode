@@ -1,5 +1,6 @@
 <template>
-  <el-dialog ref="editDialog" :title="editorTilte" :visible.sync="visible" width="60%" top="3vh" size="mini" :closeOnClickModal="false">
+  <el-dialog ref="editDialog" :title="editorTilte" :visible.sync="visible"
+    width="60%" top="3vh" size="mini" :closeOnClickModal="false">
     <el-form ref="infoForm" :model="editModel" :inline="true">
       <el-form-item :prop="column.name" :key="column.name" v-for="column in columnList" size="mini">
         <template>
@@ -14,11 +15,13 @@
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
-      <el-button @click="visible = false">Cancel</el-button>
+      <el-button @click="visible = false">{{$t('Cancel')}}</el-button>
       <el-button v-if="model=='update'" type="primary" :loading="loading" @click="confirmUpdate(editModel)">
-        Update</el-button>
+        {{$t('Update')}}
+      </el-button>
       <el-button v-if="model=='insert'||model=='copy'" type="primary" :loading="loading" @click="confirmInsert(editModel)">
-        Insert</el-button>
+         {{$t('Insert')}}
+      </el-button>
     </span>
   </el-dialog>
 </template>
@@ -215,10 +218,10 @@ export default {
   computed: {
     editorTilte() {
       if (this.model == "insert") {
-        return "Insert To " + this.table;
+        return this.$t("Insert To") + this.table;
       } else if (this.model == "update") {
         return (
-          "Edit For " +
+          this.$t("Edit For") +
           this.table +
           " : " +
           this.primaryKey +
@@ -226,7 +229,7 @@ export default {
           this.originModel[this.primaryKey]
         );
       } else {
-        return "Copy To " + this.table;
+        return this.$t("Copy To") + this.table;
       }
     },
   },

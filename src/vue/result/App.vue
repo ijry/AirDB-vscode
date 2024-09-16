@@ -322,7 +322,7 @@ export default {
         });
         return;
       }
-      this.$confirm(this.$t('Are you sure you want to delete this data?'), "Warning", {
+      this.$confirm(this.$t('Are you sure you want to delete this data?'), this.$t("Warning"), {
         confirmButtonText: this.$t('OK'),
         cancelButtonText: this.$t('Cancel'),
         type: "warning",
@@ -367,7 +367,7 @@ export default {
           if (e) {
             this.$message.error(e);
           } else {
-            this.$message({ type: "warning", message: "Delete canceled" });
+            this.$message({ type: "warning", message: this.$t("Delete canceled") });
           }
         });
     },
