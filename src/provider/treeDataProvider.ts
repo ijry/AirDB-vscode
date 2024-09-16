@@ -8,6 +8,7 @@ import { SSHConnectionNode } from "@/model/ssh/sshConnectionNode";
 import * as vscode from "vscode";
 import { CacheKey, DatabaseType } from "../common/constants";
 import { ConnectionNode } from "../model/database/connectionNode";
+import { RootNode } from "../model/database/rootNode";
 import { SchemaNode } from "../model/database/schemaNode";
 import { UserGroup } from "../model/database/userGroup";
 import { CommandKey, Node } from "../model/interface/node";
@@ -35,7 +36,15 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
     public async getChildren(element?: Node): Promise<Node[]> {
         return new Promise(async (res, rej) => {
             if (!element) {
-                res(this.getConnectionNodes())
+                // 左侧树根节点
+                let local = new RootNode(vscode.env.language.startsWith('zh-') ? '本地' : 'Local', this);
+                local.key = 'local'
+                let local2 = new RootNode(vscode.env.language.startsWith('zh-') ? '云端' : 'Cloud', this);
+                local2.key = 'cloud'
+                res([
+                    local,local2
+                ])
+                // res(this.getConnectionNodes())
                 return;
             }
             try {

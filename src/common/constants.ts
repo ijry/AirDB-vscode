@@ -81,7 +81,9 @@ export enum ModelType {
     VIEW = "view", VIEW_GROUP = "viewGroup",  TRIGGER_GROUP = "triggerGroup", TRIGGER = "trigger",
     PROCEDURE_GROUP = "procedureGroup", PROCEDURE = "procedure", FUNCTION_GROUP = "functionGroup", FUNCTION = "function",
     QUERY_GROUP = "queryGroup", QUERY = "query",
-    DIAGRAM_GROUP = "diagramGroup", DIAGRAM = "diagram"
+    DIAGRAM_GROUP = "diagramGroup", DIAGRAM = "diagram",
+    // 左侧树根节点
+    ROOTGROUP = "root"
 }
 
 export enum MessageType {
