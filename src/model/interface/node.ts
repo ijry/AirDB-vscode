@@ -60,7 +60,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
     public uid: string;
     public key: string;
     public provider?: DbTreeDataProvider;
-    public context?: Memento;
+    public context?: Memento; // 全局状态和工作区状态
     public parent?: Node;
 
     public useSSL?: boolean;

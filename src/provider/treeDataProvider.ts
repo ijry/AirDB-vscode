@@ -84,7 +84,10 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
         const newKey = this.getKeyByNode(node)
 
-        if (node.isCloud) return;
+        if (node.isCloud) {
+            node.connectionKey = newKey
+            return;
+        }
 
         node.context = node.global ? this.context.globalState : this.context.workspaceState
 
@@ -150,11 +153,22 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
     // 获取云端连接
     public async getCloudConnectionNodes(): Promise<Node[]> {
         const connetKey = this.connectionKey;
-        let url = `https://airdb.lingyun.net/api/v1/airdb/conns/my?type=sql`;
+        const type = connetKey == CacheKey.DATBASE_CONECTIONS ? 'sql' : 'nosql'
+        let url = `https://airdb.lingyun.net/api/v1/airdb/conns/my?type=${type}`;
         try {
-            let response = await axios.get(url);
+            // 设置请求头
+            let userStateExist = GlobalState.get<any>('userState') || '';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': userStateExist ? userStateExist.token: ''
+            };
+            let response = await axios.get(url, { headers: headers });
             let res = response.data
-            console.log('&&&&&&&&&', response)
+            // 登录失效充值用户状态
+            if (response.data.code == 401 || response.data.code == 402) {
+                vscode.window.showErrorMessage('AirDb登录失效')
+                GlobalState.update('userState', '');
+            }
             let list = res.data.dataList;
             let list2: Node[] = []; 
             list.forEach(element => {

@@ -34,7 +34,8 @@
 
     <section class="flex flex-wrap items-center">
       <div class="inline-block mb-2 mr-10">
-        <label class="inline-block mr-5 font-bold">{{$t('Connection Name')}}</label>
+        <label class="inline-block mr-5 font-bold"
+          @click="dialogVisible = true">{{$t('Connection Name')}}</label>
         <input
           class="field__input"
           style="min-width: 400px"
@@ -230,10 +231,21 @@
       </button>
       <button class="inline button button--primary w-28" @click="close">{{$t('Close')}}</button>
     </div>
+
+    <el-dialog
+      title="User"
+      :visible.sync="dialogVisible"
+      width="700px">
+      <lingyun-user baseUrl="https://airdb.lingyun.net"
+        @reg-success="userSuccess"
+        @login-success="userSuccess"></lingyun-user>
+    </el-dialog>
+    
   </form>
 </template>
 
 <script>
+import LingyunUser from './lingyun-user/LingyunUser.vue';
 import ElasticSearch from "./component/ElasticSearch.vue";
 import SQLite from "./component/SQLite.vue";
 import SQLServer from "./component/SQLServer.vue";
@@ -242,11 +254,13 @@ import FTP from "./component/FTP.vue";
 import SSL from "./component/SSL.vue";
 import { getVscodeEvent } from "../util/vscode";
 let vscodeEvent;
+vscodeEvent = getVscodeEvent();
 export default {
   name: "Connect",
-  components: { ElasticSearch, SQLite, SQLServer, SSH, SSL, FTP },
+  components: { ElasticSearch, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
   data() {
     return {
+      dialogVisible: false,
       connectionOption: {
         isCloud: 0, // 是否存储云端
         host: "127.0.0.1",
@@ -305,7 +319,6 @@ export default {
     };
   },
   mounted() {
-    vscodeEvent = getVscodeEvent();
     vscodeEvent
       .on("edit", (node) => {
         this.editModel = true;
@@ -345,16 +358,22 @@ export default {
         this.connectionOption.isGlobal = this.connectionOption.global;
       });
     vscodeEvent.emit("route-" + this.$route.name);
+    // vscodeEvent.emit("loginSuccess", {token: '12'});
   },
   destroyed() {
     vscodeEvent.destroy();
   },
   methods: {
+    userSuccess(userState) {
+      // console.log('#####%*&^**^*^*&',userState)
+      vscodeEvent.emit("loginSuccess", userState);
+    },
     installSqlite() {
       vscodeEvent.emit("installSqlite");
       this.sqliteState = true;
     },
     tryConnect() {
+      if (!this.checkLogin()) return;
       this.connect.loading = true;
       vscodeEvent.emit("connecting", {
         connectionOption: this.connectionOption,
@@ -379,8 +398,25 @@ export default {
     close() {
       vscodeEvent.emit("close");
     },
+    checkLogin() {
+      // 检测是否已经登录
+      let userState = localStorage.getItem('userState');
+      if (userState && 'undefined' !== userState) {
+        userState = JSON.parse(userState);
+        if (userState.token) {
+          return true;
+        }
+      }
+      this.dialogVisible = true;
+      return false;
+    }
   },
   watch: {
+    "connectionOption.isCloud"(value) {
+      if (value == 1) {
+        this.checkLogin()
+      }
+    },
     "connectionOption.dbType"(value) {
       if (this.editModel) {
         return;

@@ -151,11 +151,11 @@ export default {
     };
     vscodeEvent = getVscodeEvent();
 
-    // 监听语言
-    vscodeEvent.on("lang", (lang) => {
-      console.log('onLang', lang)
+    // 监听状态同步
+    vscodeEvent.on("syncState", (state) => {
+      console.log('syncState', state)
       let locale = 'en'
-      if (lang == 'zh-cn' || lang == 'zh-tw') {
+      if (state.lang == 'zh-cn' || state.lang == 'zh-tw') {
         locale = 'zh'
       }
       this.$i18n.locale = locale

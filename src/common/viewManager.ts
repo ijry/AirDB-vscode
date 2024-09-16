@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import { WebviewPanel } from "vscode";
 import { Console } from "./Console";
 import { EventEmitter } from 'events'
+import { GlobalState, WorkState } from "@/common/state";
+import { CodeCommand } from "@/common/constants";
 
 export class ViewOption {
     public iconPath?:  string|vscode.Uri | { light: vscode.Uri; dark: vscode.Uri };
@@ -122,6 +124,15 @@ export class ViewManager {
                 if (viewOption.eventHandler) {
                     viewOption.eventHandler(new Hanlder(webviewPanel, newStatus.eventEmitter))
                 }
+                newStatus.eventEmitter.on('loginSuccess', (userState) => {
+                    // 存储状态
+                    // vscode.window.showErrorMessage(userState.token)
+                    let re = GlobalState.update('userState', userState);
+
+                    // 刷新左侧目录树
+                    vscode.commands.executeCommand(CodeCommand.Refresh)
+                })
+                let userStateExist = GlobalState.get<any>('userState') || '';
                 webviewPanel.webview.onDidReceiveMessage((message) => {
                     if (message.type == 'init') {
                         // console.log('初始化')
@@ -129,8 +140,14 @@ export class ViewManager {
                             newStatus.eventEmitter.emit(message.type, message.content)
                             newStatus.creating = false
                         }
-                        // 发送界面语言
-                        webviewPanel.webview.postMessage({ type: 'lang', content: vscode.env.language })
+                        
+                        // 发送同步数据
+                        webviewPanel.webview.postMessage({ type: 'syncState',
+                            content: {
+                                lang : vscode.env.language,
+                                userState: userStateExist // 用户登录数据{token, userInfo}
+                            }
+                        })
                     } else {
                         newStatus.eventEmitter.emit(message.type, message.content)
                     }

@@ -85,10 +85,24 @@ export class ConnectService {
 
                         // 云端存储请求服务器
                         if(node.isCloud == 1)  {
+                            // 设置请求头
+                            let userStateExist = GlobalState.get<any>('userState') || '';
+                            const headers = {
+                                'Content-Type': 'application/json',
+                                'Authorization': userStateExist ? userStateExist.token: ''
+                            };
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
                             const response = await axios.post(url, {
+                                type: node.connectionKey == CacheKey.DATBASE_CONECTIONS ? 'sql' : 'nosql',
                                 node: node
+                            }, {
+                                headers: headers
                             });
+                            // 登录失效充值用户状态
+                            if (response.data.code == 401 || response.data.code == 402) {
+                                vscode.window.showErrorMessage('AirDb登录失效')
+                                GlobalState.update('userState', '');
+                            }
                         }
                         const { key, connectionKey } = node
                         handler.emit("success", { message: 'connect success!', key, connectionKey })

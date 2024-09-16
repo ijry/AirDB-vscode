@@ -11,14 +11,14 @@ export default {
   name: "App",
   mounted() {
     // 监听语言
-    vscodeEvent.on("lang", (lang) => {
-      console.log('onLang', lang)
+    vscodeEvent.on("syncState", (state) => {
+      console.log('syncState', state)
+      localStorage.setItem('userState', JSON.stringify(state.userState)); // 用户登录信息
       let locale = 'en'
-      if (lang == 'zh-cn' || lang == 'zh-tw') {
+      if (state.lang == 'zh-cn' || state.lang == 'zh-tw') {
         locale = 'zh'
       }
       this.$i18n.locale = locale
-      console.log(this.$i18n)
     }).on("route", (path) => {
       // console.log('onRoute', path)
       if (this.$route.name == path) {
