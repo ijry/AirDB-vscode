@@ -1,4 +1,6 @@
 {
+	"command.view.database": "DATABASE",
+	"command.view.nosql": "NoSQL",
 	"command.history.open": "Open History",
 	"command.setting.open": "Open Setting",
 	"command.refresh": "Refresh",

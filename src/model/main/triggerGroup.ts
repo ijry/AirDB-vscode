@@ -5,6 +5,7 @@ import { QueryUnit } from "../../service/queryUnit";
 import { Node } from "../interface/node";
 import { InfoNode } from "../other/infoNode";
 import { TriggerNode } from "./trigger";
+import * as vscode from 'vscode';
 
 export class TriggerGroup extends Node {
 
@@ -12,7 +13,7 @@ export class TriggerGroup extends Node {
     public contextValue = ModelType.TRIGGER_GROUP
 
     constructor(readonly parent: Node) {
-        super("Trigger")
+        super(vscode.env.language.startsWith('zh-') ? "触发器" : "Trigger")
         this.init(parent)
         if(Util.supportColorIcon){
             this.iconPath=new ThemeIcon("zap",new ThemeColor("terminal.ansiYellow"))

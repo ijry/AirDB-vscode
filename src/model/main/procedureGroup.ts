@@ -4,13 +4,14 @@ import { QueryUnit } from "../../service/queryUnit";
 import { Node } from "../interface/node";
 import { InfoNode } from "../other/infoNode";
 import { ProcedureNode } from "./procedure";
+import * as vscode from 'vscode';
 
 export class ProcedureGroup extends Node {
 
     public contextValue = ModelType.PROCEDURE_GROUP
     public iconPath =new ThemeIcon("gear")
     constructor(readonly parent: Node) {
-        super("Procedure")
+        super(vscode.env.language.startsWith('zh-') ? "存储过程" : "Procedure")
         this.init(parent)
     }
 
@@ -26,7 +27,9 @@ export class ProcedureGroup extends Node {
                     return new ProcedureNode(table.ROUTINE_NAME, this);
                 });
                 if (tableNodes.length == 0) {
-                    tableNodes = [new InfoNode("This schema has no procedure")];
+                    tableNodes = [new InfoNode(
+                        vscode.env.language.startsWith('zh-') ? '不存在存储过程' : "This schema has no procedure"
+                    )];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;

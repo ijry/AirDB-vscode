@@ -95,13 +95,13 @@
 			"activitybar-airdb-sql": [
 				{
 					"id": "activitybar.airdb.sql",
-					"name": "Database"
+					"name": "%command.view.database%"
 				}
 			],
 			"activitybar-airdb-nosql": [
 				{
 					"id": "activitybar.airdb.nosql",
-					"name": "NoSQL"
+					"name": "%command.view.nosql%"
 				}
 			]
 		},

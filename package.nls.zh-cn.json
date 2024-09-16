@@ -1,4 +1,6 @@
 {
+	"command.view.database": "数据库",
+	"command.view.nosql": "NoSQL",
 	"command.history.open": "打开查询历史",
 	"command.setting.open": "打开设置",
 	"command.refresh": "刷新",

@@ -4,13 +4,14 @@ import { QueryUnit } from "../../service/queryUnit";
 import { Node } from "../interface/node";
 import { InfoNode } from "../other/infoNode";
 import { FunctionNode } from "./function";
+import * as vscode from 'vscode';
 
 export class FunctionGroup extends Node {
 
     public contextValue = ModelType.FUNCTION_GROUP;
     public iconPath = new ThemeIcon("symbol-function")
     constructor(readonly parent: Node) {
-        super("Function")
+        super(vscode.env.language.startsWith('zh-') ? "函数" : "Function")
         this.init(parent)
     }
 

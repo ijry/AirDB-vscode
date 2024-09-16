@@ -6,13 +6,14 @@ import { Node } from "../interface/node";
 import { InfoNode } from "../other/infoNode";
 import { TableNode } from "./tableNode";
 import { ViewNode } from "./viewNode";
+import * as vscode from 'vscode';
 
 export class ViewGroup extends Node {
 
     public iconPath=new ThemeIcon("menu")
     public contextValue = ModelType.VIEW_GROUP
     constructor(readonly parent: Node) {
-        super("View")
+        super(vscode.env.language.startsWith('zh-') ? "视图" : "View")
         this.init(parent)
         if(Util.supportColorIcon){
             this.iconPath=new ThemeIcon("menu",new ThemeColor("problemsWarningIcon.foreground"))

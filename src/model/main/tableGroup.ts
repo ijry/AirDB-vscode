@@ -5,13 +5,14 @@ import { QueryUnit } from "../../service/queryUnit";
 import { Node } from "../interface/node";
 import { InfoNode } from "../other/infoNode";
 import { TableNode } from "./tableNode";
+import * as vscode from 'vscode';
 
 export class TableGroup extends Node {
 
     public iconPath=new ThemeIcon("list-flat")
     public contextValue: string = ModelType.TABLE_GROUP;
     constructor(readonly parent: Node) {
-        super("Table")
+        super(vscode.env.language.startsWith('zh-') ? "表" : "Table")
         this.init(parent)
         if(Util.supportColorIcon){
             this.iconPath=new ThemeIcon("list-flat",new ThemeColor("terminal.ansiBlue"))
