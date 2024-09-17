@@ -107,6 +107,12 @@
 		},
 		"commands": [
 			{
+				"command": "airdb.user.center",
+				"title": "%command.user.center%",
+				"category": "MySQL",
+				"icon": "$(sync)"
+			},
+			{
 				"command": "airdb.struct.diff",
 				"title": "%command.struct.diff%",
 				"category": "MySQL",
@@ -558,6 +564,11 @@
 					"command": "airdb.util.github",
 					"when": "view == activitybar.airdb.nosql",
 					"group": "navigation@-3"
+				},
+				{
+					"command": "airdb.user.center",
+					"when": "view =~ /activitybar.airdb.+?ql/",
+					"group": "navigation@-4"
 				}
 			],
 			"view/item/context": [

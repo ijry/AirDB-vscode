@@ -38,6 +38,7 @@ import { MongoPageService } from "./page/mongoPageService";
 import { HighlightCreator } from "@/provider/codelen/highlightCreator";
 import { SQLSymbolProvide } from "@/provider/sqlSymbolProvide";
 import { MysqlDumpService } from "./dump/mysqlDumpService";
+import { UserCenterService } from "./user/UserCenterService"
 
 export class ServiceManager {
 
@@ -49,6 +50,7 @@ export class ServiceManager {
     public nosqlProvider: DbTreeDataProvider;
     public settingService: SettingService;
     public statusService: StatusService;
+    public userCenterService = new UserCenterService();
     public codeLenProvider: SqlCodeLensProvider;
     private isInit = false;
 

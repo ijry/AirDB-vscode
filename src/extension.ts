@@ -77,6 +77,11 @@ export function activate(context: vscode.ExtensionContext) {
                     copyAble.copyName();
                 },
             },
+            ...{
+                "airdb.user.center": () => {
+                    serviceManager.userCenterService.openPage(serviceManager.provider)
+                },
+            },
             // connection
             ...{
                 "airdb.connection.add": () => {
