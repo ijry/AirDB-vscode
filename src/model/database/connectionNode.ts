@@ -2,7 +2,7 @@ import { Console } from "@/common/Console";
 import { Global } from "@/common/global";
 import * as path from "path";
 import * as vscode from "vscode";
-import { ConfigKey, Constants, DatabaseType, ModelType } from "../../common/constants";
+import { CodeCommand, ConfigKey, Constants, DatabaseType, ModelType } from "../../common/constants";
 import { FileManager } from "../../common/filesManager";
 import { Util } from "../../common/util";
 import { DbTreeDataProvider } from "../../provider/treeDataProvider";
@@ -15,6 +15,8 @@ import { ViewGroup } from "../main/viewGroup";
 import { CatalogNode } from "./catalogNode";
 import { SchemaNode } from "./schemaNode";
 import { UserGroup } from "./userGroup";
+import { GlobalState, WorkState } from "@/common/state";
+import axios, { AxiosRequestConfig } from "axios";
 
 /**
  * TODO: 切换为使用连接池, 现在会导致消费队列不正确, 导致视图失去响应
@@ -143,11 +145,34 @@ export class ConnectionNode extends Node implements CopyAble {
     }
 
     public async deleteConnection(context: vscode.ExtensionContext) {
-
         Util.confirm(`Are you sure you want to delete Connection ${this.label} ? `, async () => {
-            this.indent({ command: CommandKey.delete })
+            if (this.isCloud) {
+                // 云端删除
+                // 设置请求头
+                let userStateExist = GlobalState.get<any>('userState') || '';
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': userStateExist ? userStateExist.token: ''
+                };
+                let url = `https://airdb.lingyun.net/api/v1/airdb/conns/delete/` + this.cloudId;
+                axios.delete(url, {
+                    headers: headers
+                }).then((response) => {
+                    // 登录失效重置用户状态
+                    if (response.data.code == 401 || response.data.code == 402) {
+                        vscode.window.showErrorMessage('AirDb登录失效')
+                        GlobalState.update('userState', '');
+                    }
+                    if (response.data.code != 200) {
+                        vscode.window.showErrorMessage('fail ' + response.data.msg)
+                    }
+                    // 刷新左侧目录树
+                    vscode.commands.executeCommand(CodeCommand.Refresh)
+                });
+            } else {
+                this.indent({ command: CommandKey.delete })
+            }
         })
-
     }
 
     public static init() { }

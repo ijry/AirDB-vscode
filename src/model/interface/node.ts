@@ -26,6 +26,7 @@ export interface SwitchOpt {
 export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     public isCloud:number;
+    public cloudId?:string;
     public cryptoVersion :number = 1;
     public cryptoIv :string = '';
     public host: string;
@@ -109,6 +110,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     protected init(source: Node) {
         this.isCloud = source?.isCloud ? 1 : 0
+        this.cloudId = source?.cloudId ? source?.cloudId : ''
         this.cryptoIv = source?.cryptoIv ? source?.cryptoIv : ''
         this.host = source.host
         this.port = source.port

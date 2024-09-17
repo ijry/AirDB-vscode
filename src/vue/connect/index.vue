@@ -263,6 +263,7 @@ export default {
       dialogVisible: false,
       connectionOption: {
         isCloud: 0, // 是否存储云端
+        cloudId: '', // 云端ID
         host: "127.0.0.1",
         dbPath: "",
         port: "3306",

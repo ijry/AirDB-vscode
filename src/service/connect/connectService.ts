@@ -95,6 +95,10 @@ export class ConnectService {
                             let cryRes = Util.encryptPassword(node.password)
                             node.password = cryRes.password;
                             node.cryptoIv = cryRes.iv;
+                            if (node.ssh && node.ssh.password) {
+                                let cryResSSH = Util.encryptPassword(node.ssh.password)
+                                node.ssh.password = cryResSSH.password;
+                            }
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
                             const response = await axios.post(url, {
                                 type: node.connectionKey == CacheKey.DATBASE_CONECTIONS ? 'sql' : 'nosql',
@@ -107,6 +111,12 @@ export class ConnectService {
                                 vscode.window.showErrorMessage('AirDb登录失效')
                                 GlobalState.update('userState', '');
                             }
+                            if (response.data.code != 200) {
+                                handler.emit("error", 'save to cloud fail ' + response.data.msg)
+                                return;
+                            }
+                            // 刷新左侧目录树
+                            vscode.commands.executeCommand(CodeCommand.Refresh)
                         }
                         const { key, connectionKey } = node
                         handler.emit("success", { message: 'connect success!', key, connectionKey })

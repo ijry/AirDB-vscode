@@ -12,7 +12,7 @@ import crypto from 'crypto';
 export class Util {
 
     public static getIv() {
-        return crypto.randomBytes(16).toString('hex'); // 生成随机的IV  
+        return crypto.randomBytes(16); // 生成随机的IV  
     }
 
     public static aesEncrypt(text: string, secretKey: string) {  
@@ -56,7 +56,7 @@ export class Util {
                 throw new Error("main password not set correct");
             }
         }
-        let res = Util.aesEncrypt(password, mainPwd);
+        let res = Util.aesEncrypt(password + '-airdb', mainPwd);
 
         return {
             iv: res.iv,
@@ -83,35 +83,32 @@ export class Util {
         }
         password = Util.aesDecrypt(aesPwd, mainPwd, iv);
 
-        return password;
+        return password.slice(0, -6);
     }
 
     public static validatePassword(password: string) {  
-        // 定义正则表达式  
-        // ^ 表示字符串开始  
-        // (?=.*[a-z]) 确保至少有一个小写字母  
-        // (?=.*[A-Z]) 确保至少有一个大写字母  
-        // (?=.*\d)    确保至少有一个数字  
-        // (?=.*[@$!%*?&]) 确保至少有一个特殊字符（这里只是示例，你可以根据需要添加更多）  
-        // $ 表示字符串结束  
-        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&()]{8,}$/;  
-        
-        // 使用正则表达式测试密码  
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/;  
         return regex.test(password);  
       }
 
       public static setMainPwd(): boolean {
-        vscode.window.showInputBox({ prompt: `Set a main password to crypto connects's password in cloud sync`, placeHolder: 'Input main password' }).then(async (inputContent) => {
+        vscode.window.showInputBox({
+            prompt: `Set a main password to encrypt your db's password in cloud sync`,
+            placeHolder: 'Input main password' }).then(async (inputContent) => {
             if (inputContent) {
                 if (Util.validatePassword(inputContent.trim())) {
+                    // todo检测填写的密码是否与以前的密码一致，如果不一致提示用户是否需要重置密码，
+                    // todo如果要重置密码，那么所有历史连接的密码都无法恢复。
                     GlobalState.update('mainPwd', inputContent.trim());
                     vscode.window.showInformationMessage(`Main password set success!`)
                     return true;
                 } else {
-                    vscode.window.showInformationMessage(`Require the main password to contain uppercase letters, lowercase letters, digits, and special characters.`)
+                    vscode.window.showErrorMessage(
+                        `Require the main password to contain uppercase letters, lowercase letters, digits, and special characters.`
+                    )
                 }
             } else {
-                vscode.window.showInformationMessage(`Cancel`)
+                vscode.window.showErrorMessage(`Cancel`)
             }
         })
         return false;
