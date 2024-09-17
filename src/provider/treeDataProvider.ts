@@ -5,7 +5,6 @@ import { FTPConnectionNode } from "@/model/ftp/ftpConnectionNode";
 import { InfoNode } from "@/model/other/infoNode";
 import { RedisConnectionNode } from "@/model/redis/redisConnectionNode";
 import { SSHConnectionNode } from "@/model/ssh/sshConnectionNode";
-import * as vscode from "vscode";
 import { CacheKey, DatabaseType } from "../common/constants";
 import { ConnectionNode } from "../model/database/connectionNode";
 import { RootNode } from "../model/database/rootNode";
@@ -15,6 +14,8 @@ import { CommandKey, Node } from "../model/interface/node";
 import { DatabaseCache } from "../service/common/databaseCache";
 import { ConnectionManager } from "../service/connectionManager";
 import axios, { AxiosRequestConfig } from "axios";
+import { Util } from "../common/util";
+import * as vscode from "vscode";
 
 export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
@@ -173,12 +174,17 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             let list2: Node[] = []; 
             list.forEach(element => {
                 let node:Node = element.node as Node;
-                // todo云端密码应该加密后解密
+                // 云端密码应该加密后解密
+                node.password = Util.decryptPassword(node.password, node.cryptoIv)
                 list2.push(this.getNode(node, element.id, false, connetKey))
             });
             return list2;
-        } catch (error) {
-            console.log(error)
+        } catch (err) {
+            if (err?.message) {
+                vscode.window.showInformationMessage(err.message)
+            } else {
+                err.message(JSON.stringify(err))
+            }
         }
     }
 

@@ -91,6 +91,10 @@ export class ConnectService {
                                 'Content-Type': 'application/json',
                                 'Authorization': userStateExist ? userStateExist.token: ''
                             };
+                            // 密码加密存储云端
+                            let cryRes = Util.encryptPassword(node.password)
+                            node.password = cryRes.password;
+                            node.cryptoIv = cryRes.iv;
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
                             const response = await axios.post(url, {
                                 type: node.connectionKey == CacheKey.DATBASE_CONECTIONS ? 'sql' : 'nosql',
@@ -98,7 +102,7 @@ export class ConnectService {
                             }, {
                                 headers: headers
                             });
-                            // 登录失效充值用户状态
+                            // 登录失效重置用户状态
                             if (response.data.code == 401 || response.data.code == 402) {
                                 vscode.window.showErrorMessage('AirDb登录失效')
                                 GlobalState.update('userState', '');

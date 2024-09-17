@@ -163,5 +163,4 @@ export class ViewManager {
         return data.replace(/((src|href)=("|'))(.+?\.(css|js))\b/gi, "$1" + webview.asWebviewUri(vscode.Uri.file(`${contextPath}`)) + "/$4");
     }
 
-
 }

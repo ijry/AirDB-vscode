@@ -7,8 +7,115 @@ import { exec } from "child_process";
 import { wrapByDb } from "./wrapper.js";
 import { GlobalState } from "./state";
 import { Console } from "./Console";
+import crypto from 'crypto';
 
 export class Util {
+
+    public static getIv() {
+        return crypto.randomBytes(16).toString('hex'); // 生成随机的IV  
+    }
+
+    public static aesEncrypt(text: string, secretKey: string) {  
+        let algorithm = 'aes-256-cbc'; // 你可以根据需要选择其他算法，如 aes-128-cbc  
+        let key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32); // 密钥需要是32字节（AES-256）  
+        let iv = Util.getIv();
+      
+        let cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'utf8'), iv);  
+        let encrypted = cipher.update(text, 'utf8', 'hex');  
+        encrypted += cipher.final('hex');  
+      
+        // 返回IV和加密后的文本，以便解密时使用  
+        return { iv: iv, encryptedData: encrypted };  
+    }
+
+    public static aesDecrypt(text: string, secretKey: string, iv: string) {  
+        let algorithm = 'aes-256-cbc';
+        let key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32);  
+        let decipher = crypto.createDecipheriv(algorithm, Buffer.from(key, 'utf8'), Buffer.from(iv, 'hex'));  
+        let decrypted = decipher.update(text, 'hex', 'utf8');  
+        decrypted += decipher.final('utf8');
+        return decrypted;  
+    }
+
+    // 加密数据库连接的密码主要用于云端同步避免泄露
+    public static encryptPassword(password: string): object {
+        if (password == '') return {
+            iv: '',
+            password: ''
+        }
+
+        // 获取本地存储的主密码
+        let mainPwd = GlobalState.get<any>('mainPwd') || '';
+        if (!mainPwd) {
+            // 不存在主密码弹窗让设置
+            if (!Util.setMainPwd()) {
+                throw new Error("main password not set correct");
+            }
+            mainPwd = GlobalState.get<any>('mainPwd') || '';
+            if (!mainPwd) {
+                throw new Error("main password not set correct");
+            }
+        }
+        let res = Util.aesEncrypt(password, mainPwd);
+
+        return {
+            iv: res.iv,
+            password: res.encryptedData
+        };
+    }
+
+    // 密码解密
+    public static decryptPassword(aesPwd: string, iv: string): string {
+        if (aesPwd == '') return '';
+
+        let password = '';
+        // 获取本地存储的主密码
+        let mainPwd = GlobalState.get<any>('mainPwd') || '';
+        if (!mainPwd) {
+            // 不存在主密码弹窗让设置
+            if (!Util.setMainPwd()) {
+                throw new Error("main password not set correct");
+            }
+            mainPwd = GlobalState.get<any>('mainPwd') || '';
+            if (!mainPwd) {
+                throw new Error("main password not set correct");
+            }
+        }
+        password = Util.aesDecrypt(aesPwd, mainPwd, iv);
+
+        return password;
+    }
+
+    public static validatePassword(password: string) {  
+        // 定义正则表达式  
+        // ^ 表示字符串开始  
+        // (?=.*[a-z]) 确保至少有一个小写字母  
+        // (?=.*[A-Z]) 确保至少有一个大写字母  
+        // (?=.*\d)    确保至少有一个数字  
+        // (?=.*[@$!%*?&]) 确保至少有一个特殊字符（这里只是示例，你可以根据需要添加更多）  
+        // $ 表示字符串结束  
+        const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&()]{8,}$/;  
+        
+        // 使用正则表达式测试密码  
+        return regex.test(password);  
+      }
+
+      public static setMainPwd(): boolean {
+        vscode.window.showInputBox({ prompt: `Set a main password to crypto connects's password in cloud sync`, placeHolder: 'Input main password' }).then(async (inputContent) => {
+            if (inputContent) {
+                if (Util.validatePassword(inputContent.trim())) {
+                    GlobalState.update('mainPwd', inputContent.trim());
+                    vscode.window.showInformationMessage(`Main password set success!`)
+                    return true;
+                } else {
+                    vscode.window.showInformationMessage(`Require the main password to contain uppercase letters, lowercase letters, digits, and special characters.`)
+                }
+            } else {
+                vscode.window.showInformationMessage(`Cancel`)
+            }
+        })
+        return false;
+    }
 
     public static getTableName(sql: string, tablePattern: string): string {
 
