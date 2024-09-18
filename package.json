@@ -110,7 +110,7 @@
 				"command": "airdb.user.center",
 				"title": "%command.user.center%",
 				"category": "MySQL",
-				"icon": "$(sync)"
+				"icon": "resources/icon/user.svg"
 			},
 			{
 				"command": "airdb.struct.diff",

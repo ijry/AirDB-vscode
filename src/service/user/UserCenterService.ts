@@ -39,7 +39,11 @@ export class UserCenterService {
                     try {
                         // 更新主密码
                         GlobalState.update('mainPwd', data.pwd);
-                        handler.emit("success") // 成功提示
+                        vscode.window.showInformationMessage(`Main password set success!` + data.pwd)
+                        // handler.emit("success") // 成功提示
+
+                        // 刷新左侧目录树
+                        vscode.commands.executeCommand(CodeCommand.Refresh)
                     } catch (error) {
                         handler.emit("error", error.message) // 失败提示
                     }

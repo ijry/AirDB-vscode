@@ -52,6 +52,7 @@ export default {
     'Add Index': '添加索引',
     'Design.Create': '创建',
     'Cancel': '取消',
+    'Confirm': '确认',
     'dashBoard': '控制台',
     'processList': '进程列表',
     'variableList': '变量列表',
@@ -61,6 +62,7 @@ export default {
     'Local': '本地',
     'Cloud': '云端',
     'Connection Storge': '存储位置',
+    // lingyun-user
     'I have read and agree': '我已阅读且同意',
     'User Terms': '用户协议',
     'Privacy Policy': '隐私政策',
@@ -79,4 +81,14 @@ export default {
     'mobile': '手机号',
     'Send': '发送',
     'left': '剩余',
+    'UserCenter': '用户中心',
+    'Main password': '主密码',
+    'Reset': '重置',
+    'Set': '设置',
+    'Tip': '提示',
+    // lingyun-user
+    'Main password': '主密码',
+    'New Main password': '新主密码',
+    "Require the main password to contain uppercase letters, lowercase letters, digits, and special characters.": "密码需要包含大小写字母数字和特殊字符",
+    "Reset main password will delete all connect's password in cloud, you need fill every conns's password later.": "重置AirDB主密码将会清除所有云端连接的加密字符，您需要稍后为每个连接重新填写密码字段。"
 }
