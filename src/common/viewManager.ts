@@ -127,7 +127,22 @@ export class ViewManager {
                 newStatus.eventEmitter.on('loginSuccess', (userState) => {
                     // 存储状态
                     // vscode.window.showErrorMessage(userState.token)
-                    let re = GlobalState.update('userState', userState);
+                    GlobalState.update('userState', userState);
+
+                    // 刷新左侧目录树
+                    vscode.commands.executeCommand(CodeCommand.Refresh)
+                })
+                // 注销登录
+                newStatus.eventEmitter.on('logout', () => {
+                    // 存储状态
+                    GlobalState.update('userState', '');
+
+                    webviewPanel.webview.postMessage({ type: 'syncState',
+                        content: {
+                            lang : vscode.env.language,
+                            userState: '' // 用户登录数据{token, userInfo}
+                        }
+                    })
 
                     // 刷新左侧目录树
                     vscode.commands.executeCommand(CodeCommand.Refresh)

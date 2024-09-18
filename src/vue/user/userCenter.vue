@@ -17,12 +17,20 @@
       <div class="mt-3 max-w-sm mx-auto shadow-sm rounded-sm overflow-hidden">
         <div class="flex items-center p-4">
           <div class="w-full">
-            <div class="w-full text-gray-600 flex justify-between">
-              <div class="w-120px">{{ $t('Main password') }}</div>
+            <div class="mb-2 w-full text-gray-600 flex justify-between">
+              <div class="w-120px">
+                {{ $t('Main password') }}
+                (<span class="ml-2">{{ replaceMiddleWithAsterisks(initData.mainPwd) }}</span>)
+              </div>
               <div clas="flex-1 flex justify-end">
-                <div class="mr-2">{{ replaceMiddleWithAsterisks(initData.mainPwd) }}</div>
                 <el-button size="mini" @click="resetMainPwd" v-if="initData.mainPwd">{{ $t('Reset') }}</el-button>
                 <el-button size="mini" @click="setMainPwd" v-else>{{ $t('Set') }}</el-button>
+              </div>
+            </div>
+            <div class="mb-2 w-full text-gray-600 flex justify-between">
+              <div class="w-120px">{{ $t('Logout') }}</div>
+              <div clas="flex-1 flex justify-end">
+                <el-button size="mini" @click="logout">{{ $t('Logout') }}</el-button>
               </div>
             </div>
           </div>
@@ -94,6 +102,17 @@ export default {
       const asterisks = '*'.repeat(length - 2); // 生成中间的 * 号
 
       return start + asterisks + end; // 拼接并返回
+    },
+    logout() {
+      this.userState = {
+        token: '',
+        userInfo: {
+          avatar: '',
+          nickname: '',
+          emial: '',
+        }
+      }
+      vscodeEvent.emit("logout");
     },
     userSuccess(userState) {
       // console.log('#####%*&^**^*^*&',userState)

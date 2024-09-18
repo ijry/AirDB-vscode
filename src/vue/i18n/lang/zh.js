@@ -86,6 +86,7 @@ export default {
     'Reset': '重置',
     'Set': '设置',
     'Tip': '提示',
+    'Logout': '退出登录',
     // lingyun-user
     'Main password': '主密码',
     'New Main password': '新主密码',
