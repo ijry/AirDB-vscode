@@ -1,7 +1,7 @@
 <style scoped lang="less">
 </style>
 <template>
-    <span @click="captchaSuccess" :id="CaptchaId">
+    <span @click="captchaSuccess">
         <span class="send-verify p-l-xs p-r-xs lh-1 cursor-pointer"
             :id="CaptchaId" type="text">
             <span @click="doClick">{{ label }}</span>

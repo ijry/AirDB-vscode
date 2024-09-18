@@ -28,17 +28,28 @@
           </div>
         </div>
       </div>
+
+      <el-dialog
+        title="User"
+        :visible.sync="dialogVisible"
+        width="700px">
+        <lingyun-user :baseUrl="baseUrl"
+          @reg-success="userSuccess"
+          @login-success="userSuccess"></lingyun-user>
+      </el-dialog>
     </div>
 </template>
   
 <script>
 import axios, { AxiosRequestConfig } from "axios";
+import LingyunUser from '../connect/lingyun-user/LingyunUser.vue';
 import { getVscodeEvent } from "../util/vscode";
 let vscodeEvent = getVscodeEvent();
 const inputPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$/
 export default {
   data() {
     return {
+      dialogVisible: false,
       baseUrl: 'https://airdb.lingyun.net',
       initData: { mainPwd: '' },
       userState: {
@@ -51,11 +62,16 @@ export default {
       },
     };
   },
+  components: { LingyunUser },
   mounted() {
     vscodeEvent
       .on("syncState", (state) => {
         // if (localStorage.getItem('userState')) {
-          this.userState = state.userState
+          if (state.userState.token) {
+            this.userState = state.userState;
+          } else {
+            this.dialogVisible = true;
+          }
         // }
       })
       .on("userCenterData", (data) => {
@@ -78,7 +94,13 @@ export default {
       const asterisks = '*'.repeat(length - 2); // 生成中间的 * 号
 
       return start + asterisks + end; // 拼接并返回
-  },
+    },
+    userSuccess(userState) {
+      // console.log('#####%*&^**^*^*&',userState)
+      this.userState = userState;
+      vscodeEvent.emit("loginSuccess", userState);
+      this.dialogVisible = false;
+    },
     resetMainPwd(){
       this.$prompt(this.$t("Reset main password will delete all connect's password in cloud, you need fill every conns's password later."), this.$t('Tip'), {
           confirmButtonText: this.$t('Confirm'),
