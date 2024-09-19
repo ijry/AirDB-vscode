@@ -12,7 +12,7 @@ import crypto from 'crypto';
 export class Util {
 
     public static getIv() {
-        return crypto.randomBytes(16); // 生成随机的IV  
+        return crypto.randomBytes(16).toString('hex'); // 生成随机的IV  
     }
 
     public static aesEncrypt(text: string, secretKey: string) {  
@@ -20,7 +20,7 @@ export class Util {
         let key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32); // 密钥需要是32字节（AES-256）  
         let iv = Util.getIv();
       
-        let cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'utf8'), iv);  
+        let cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'utf8'), Buffer.from(iv, 'hex'));  
         let encrypted = cipher.update(text, 'utf8', 'hex');  
         encrypted += cipher.final('hex');  
       
@@ -39,11 +39,6 @@ export class Util {
 
     // 加密数据库连接的密码主要用于云端同步避免泄露
     public static encryptPassword(password: string): object {
-        if (password == '') return {
-            iv: '',
-            password: ''
-        }
-
         // 获取本地存储的主密码
         let mainPwd = GlobalState.get<any>('mainPwd') || '';
         if (!mainPwd) {
