@@ -1,3 +1,4 @@
+import { Console } from "@/common/Console";
 import { GlobalState, WorkState } from "@/common/state";
 import { CatalogNode } from "@/model/database/catalogNode";
 import { EsConnectionNode } from "@/model/es/model/esConnectionNode";
@@ -71,6 +72,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
     }
 
     public async openConnection(connectionNode: ConnectionNode) {
+        Console.log('开启数据库')
         connectionNode.disable = false;
         connectionNode.indent({ command: CommandKey.update })
     }
@@ -109,7 +111,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         }
 
         node.connectionKey = newKey
-        // 添加新连接
+        // 添加新连接，存储到context中。
         await node.indent({ command: CommandKey.add, connectionKey: newKey })
 
     }
@@ -196,9 +198,9 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
                             node.sshConfig.password = Util.decryptPassword(node.sshConfig.password, node.cryptoIv);
                         }
                     }
-                    list2.push(this.getNode(node, element.id, false, connetKey));
+                    list2.push(this.getNode(node, element.key, false, connetKey));
                 } catch (error) {
-                    list2.push(this.getNode(node, element.id, false, connetKey));
+                    list2.push(this.getNode(node, element.key, false, connetKey));
                     vscode.window.showErrorMessage(error.message)
                 }
             });
@@ -232,11 +234,10 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         node.connectionKey = connectionKey;
         node.provider = this
         node.global = global;
-        if (node.isCloud == 0) {
-            node.context = node.global ? this.context.globalState : this.context.workspaceState;
-            if (!node.global) {
-                node.description = `${node.description || ''} workspace`
-            }
+        // 这里context存在才能支持关闭连接等功能
+        node.context = node.global || node.isCloud ? this.context.globalState : this.context.workspaceState;
+        if (!node.global && !node.isCloud) {
+            node.description = `${node.description || ''} workspace`
         }
         return node;
     }

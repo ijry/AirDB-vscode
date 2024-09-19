@@ -16,6 +16,7 @@
 	"command.connection.add": "Add Connection",
 	"command.connection.edit": "Edit Connection",
 	"command.connection.config": "Edit Connection Config",
+	"command.connection.open": "Open Connection",
 	"command.connection.disable": "Close Connection",
 	"command.struct.diff": "Database Struct Sync",
 	"command.server.info": "Server Status",

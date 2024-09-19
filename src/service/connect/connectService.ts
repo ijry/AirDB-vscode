@@ -96,6 +96,8 @@ export class ConnectService {
                             let iv = crypto.randomBytes(16).toString('hex');
                             // iv = 'b6caf215d36a96a1710e3e25c2dae22d'
                             node.cryptoIv = iv;
+                            node.global = true;
+                            node.disable = false; // 默认连接
 
                             // 密码加密存储云端
                             let cryRes = Util.encryptPassword(node.password, iv);

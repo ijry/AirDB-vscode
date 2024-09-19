@@ -1,4 +1,5 @@
 import { Console } from "@/common/Console";
+import { GlobalState, WorkState } from "@/common/state";
 import { DatabaseType, ModelType } from "@/common/constants";
 import { getKey } from "@/common/state";
 import { Util } from "@/common/util";
@@ -16,6 +17,7 @@ import { DatabaseCache } from "../../service/common/databaseCache";
 import { NodeUtil } from "../nodeUtil";
 import { CopyAble } from "./copyAble";
 import { SSHConfig } from "./sshConfig";
+import axios, { AxiosRequestConfig } from "axios";
 
 export interface SwitchOpt {
     isGlobal?: boolean;
@@ -184,10 +186,34 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
                 case CommandKey.add:
                     connections[key] = NodeUtil.removeParent(this);
                     break;
+                // 关闭连接
                 case CommandKey.update:
-                    connections[key] = NodeUtil.removeParent(this);
+                    if (this.isCloud) {
+                        // 设置请求头       
+                        let userStateExist = GlobalState.get<any>('userState') || '';
+                        const headers = {
+                            'Content-Type': 'application/json',
+                            'Authorization': userStateExist ? userStateExist.token: ''
+                        };
+                        let url = `https://airdb.lingyun.net/api/v1/airdb/conns/edit`;
+                        let response = await axios.post(url, {
+                            id: this.cloudId,
+                            node: {
+                                disable: this.disable
+                            }
+                        }, { headers: headers });
+                        let res = response.data
+                        // 登录失效充值用户状态
+                        if (response.data.code == 401 || response.data.code == 402) {
+                            vscode.window.showErrorMessage('AirDb登录失效')
+                            GlobalState.update('userState', '');
+                        }
+                    } else {
+                        connections[key] = NodeUtil.removeParent(this);
+                    }
                     ConnectionManager.removeConnection(key)
                     break;
+                // 删除连接
                 case CommandKey.delete:
                     ConnectionManager.removeConnection(key)
                     delete connections[key]
@@ -195,8 +221,9 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
                     break;
             }
 
-
-            await this.context.update(connectionKey, connections);
+            if (!this.isCloud) {
+                await this.context.update(connectionKey, connections);
+            }
 
             if (command.refresh !== false) {
                 DbTreeDataProvider.refresh();

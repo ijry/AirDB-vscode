@@ -48,7 +48,8 @@ export class ConnectionNode extends Node implements CopyAble {
         } else if (this.dbType == DatabaseType.MONGO_DB) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/mongodb-icon.svg");
         }
-        if (this.disable) {
+        // Console.log('$$$$$$$$$$$$' + this.name + this.disable)
+        if (this.disable || this.disable == undefined) {
             this.collapsibleState = vscode.TreeItemCollapsibleState.None;
             this.description = (this.description || '') + " closed"
             return;
