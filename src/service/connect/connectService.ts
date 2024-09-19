@@ -95,10 +95,10 @@ export class ConnectService {
                             let cryRes = Util.encryptPassword(node.password)
                             node.password = cryRes.password;
                             node.cryptoIv = cryRes.iv;
-                            if (node.ssh && node.ssh.password) {
-                                let cryResSSH = Util.encryptPassword(node.ssh.password)
-                                node.ssh.password = cryResSSH.password;
-                            }
+                            // if (node.ssh && node.ssh.password) {
+                            //     let cryResSSH = Util.encryptPassword(node.ssh.password)
+                            //     node.ssh.password = cryResSSH.password;
+                            // }
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
                             const response = await axios.post(url, {
                                 type: node.connectionKey == CacheKey.DATBASE_CONECTIONS ? 'sql' : 'nosql',

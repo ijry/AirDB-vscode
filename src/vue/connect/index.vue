@@ -127,7 +127,7 @@
         <div class="inline-block mb-2 mr-10">
           <label class="inline-block w-32 mr-5 font-bold">{{$t('Password')}}</label>
           <input class="w-64 field__input" :placeholder="$t('Password')"
-            type="password" v-model="connectionOption.password" />
+            type="password" v-model="connectionOption.password" show-password	/>
         </div>
       </section>
 

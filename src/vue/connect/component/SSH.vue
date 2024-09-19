@@ -66,10 +66,11 @@
           Password
           <span class="mr-1 text-red-600" title="required">*</span>
         </label>
-        <input
+        <el-input
           class="w-64 field__input"
           placeholder="Password"
           required
+          show-password	
           type="password"
           v-model="connectionOption.ssh.password"
         />
