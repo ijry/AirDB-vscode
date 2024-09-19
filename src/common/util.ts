@@ -15,10 +15,12 @@ export class Util {
         return crypto.randomBytes(16).toString('hex'); // 生成随机的IV  
     }
 
-    public static aesEncrypt(text: string, secretKey: string) {  
+    public static aesEncrypt(text: string, secretKey: string, iv: string = '') {  
         let algorithm = 'aes-256-cbc'; // 你可以根据需要选择其他算法，如 aes-128-cbc  
-        let key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32); // 密钥需要是32字节（AES-256）  
-        let iv = Util.getIv();
+        let key = crypto.createHash('sha256').update(secretKey).digest('base64').substr(0, 32); // 密钥需要是32字节（AES-256） 
+        if (iv == '')  {
+            iv = Util.getIv();
+        }
       
         let cipher = crypto.createCipheriv(algorithm, Buffer.from(key, 'utf8'), Buffer.from(iv, 'hex'));  
         let encrypted = cipher.update(text, 'utf8', 'hex');  
@@ -38,7 +40,13 @@ export class Util {
     }
 
     // 加密数据库连接的密码主要用于云端同步避免泄露
-    public static encryptPassword(password: string): object {
+    public static encryptPassword(password: string, iv: string = ''): object {
+        if (password == '') {
+            return {
+                iv: '',
+                password: ''
+            }
+        }
         // 获取本地存储的主密码
         let mainPwd = GlobalState.get<any>('mainPwd') || '';
         if (!mainPwd) {
@@ -51,7 +59,7 @@ export class Util {
                 throw new Error("main password not set correct");
             }
         }
-        let res = Util.aesEncrypt(password + '-airdb', mainPwd);
+        let res = Util.aesEncrypt(password + '-airdb', mainPwd, iv);
 
         return {
             iv: res.iv,

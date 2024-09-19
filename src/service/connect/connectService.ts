@@ -17,6 +17,7 @@ import { ConnnetionConfig } from "./config/connnetionConfig";
 import { readFileSync } from "fs";
 import { GlobalState, WorkState } from "@/common/state";
 import axios, { AxiosRequestConfig } from "axios";
+import crypto from 'crypto';
 var commandExistsSync = require('command-exists').sync;
 
 export class ConnectService {
@@ -92,13 +93,15 @@ export class ConnectService {
                                 'Authorization': userStateExist ? userStateExist.token: ''
                             };
                             // 密码加密存储云端
-                            let cryRes = Util.encryptPassword(node.password)
+                            let cryRes = Util.encryptPassword(node.password);
                             node.password = cryRes.password;
                             node.cryptoIv = cryRes.iv;
-                            // if (node.ssh && node.ssh.password) {
-                            //     let cryResSSH = Util.encryptPassword(node.ssh.password)
-                            //     node.ssh.password = cryResSSH.password;
-                            // }
+                            let iv = crypto.randomBytes(16).toString('hex');
+                            if (node.ssh && node.ssh.password) {
+                                let cryResSSH = Util.encryptPassword(node.ssh.password, iv)
+                                node.ssh.cryptoIv = cryResSSH.iv;
+                                node.ssh.password = cryResSSH.password;
+                            }
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
                             const response = await axios.post(url, {
                                 type: node.connectionKey == CacheKey.DATBASE_CONECTIONS ? 'sql' : 'nosql',
