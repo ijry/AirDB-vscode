@@ -92,15 +92,21 @@ export class ConnectService {
                                 'Content-Type': 'application/json',
                                 'Authorization': userStateExist ? userStateExist.token: ''
                             };
-                            // 密码加密存储云端
-                            let cryRes = Util.encryptPassword(node.password);
-                            node.password = cryRes.password;
-                            node.cryptoIv = cryRes.iv;
+
                             let iv = crypto.randomBytes(16).toString('hex');
+                            // iv = 'b6caf215d36a96a1710e3e25c2dae22d'
+                            node.cryptoIv = iv;
+
+                            // 密码加密存储云端
+                            let cryRes = Util.encryptPassword(node.password, iv);
+                            node.password = cryRes.password;
                             if (node.ssh && node.ssh.password) {
                                 let cryResSSH = Util.encryptPassword(node.ssh.password, iv)
-                                node.ssh.cryptoIv = cryResSSH.iv;
                                 node.ssh.password = cryResSSH.password;
+                            }
+                            if (node.sshConfig && node.sshConfig.password) {
+                                let cryResSSHConfig = Util.encryptPassword(node.sshConfig.password, iv)
+                                node.sshConfig.password = cryResSSHConfig.password;
                             }
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;
                             const response = await axios.post(url, {

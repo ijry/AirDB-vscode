@@ -177,13 +177,23 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
                 node.cloudId = element.id; // 云端记录ID便于修改
                 try {
                     // 云端密码应该加密后解密
-                    if (node.cryptoIv) {
+                    if (node.cryptoIv && node.password) {
                         node.password = Util.decryptPassword(node.password, node.cryptoIv);
                     }
                     // ssh解密
                     if (node.ssh && node.ssh.password) {
                         if (node.ssh.cryptoIv) {
                             node.ssh.password = Util.decryptPassword(node.ssh.password, node.ssh.cryptoIv);
+                        } else if (node.cryptoIv) {
+                            node.ssh.password = Util.decryptPassword(node.ssh.password, node.cryptoIv);
+                        }
+                    }
+                    // ssh解密
+                    if (node.sshConfig && node.sshConfig.password) {
+                        if (node.sshConfig.cryptoIv) {
+                            node.sshConfig.password = Util.decryptPassword(node.sshConfig.password, node.sshConfig.cryptoIv);
+                        } else if (node.cryptoIv) {
+                            node.sshConfig.password = Util.decryptPassword(node.sshConfig.password, node.cryptoIv);
                         }
                     }
                     list2.push(this.getNode(node, element.id, false, connetKey));

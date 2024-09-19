@@ -41,12 +41,12 @@ export class Util {
 
     // 加密数据库连接的密码主要用于云端同步避免泄露
     public static encryptPassword(password: string, iv: string = ''): object {
-        if (password == '') {
-            return {
-                iv: '',
-                password: ''
-            }
-        }
+        // if (password == '') {
+        //     return {
+        //         iv: '',
+        //         password: ''
+        //     }
+        // }
         // 获取本地存储的主密码
         let mainPwd = GlobalState.get<any>('mainPwd') || '';
         if (!mainPwd) {
