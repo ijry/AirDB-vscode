@@ -81,7 +81,7 @@
 			"activitybar": [
 				{
 					"id": "activitybar-airdb-sql",
-					"title": "Database",
+					"title": "%command.airdb.app.name%",
 					"icon": "resources/icon/database-container.png"
 				},
 				{
