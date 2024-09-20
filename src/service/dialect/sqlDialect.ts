@@ -1,9 +1,13 @@
 import { CreateIndexParam } from "./param/createIndexParam";
+import { AddColumnParam } from "./param/addColumnParam";
 import { UpdateColumnParam } from "./param/updateColumnParam";
 import { UpdateTableParam } from "./param/updateTableParam";
 
 export abstract class SqlDialect {
     dropIndex(table: string, indexName: string): string {
+        throw new Error("Method not implemented.");
+    }
+    addColumnSql(updateColumnParam: AddColumnParam): string {
         throw new Error("Method not implemented.");
     }
     updateColumnSql(updateColumnParam: UpdateColumnParam): string {

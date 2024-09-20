@@ -15,7 +15,7 @@
         </label>
         <input class="w-64 field__input" v-model="table.comment" />
       </div>
-      <el-button @click="rename" size="medium" type="success">{{ $t('Design.Update') }}</el-button>
+      <el-button @click="rename" size="small" type="default">{{ $t('Design.Update') }}</el-button>
     </div>
   </div>
 </template>

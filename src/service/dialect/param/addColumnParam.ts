@@ -1,8 +1,7 @@
-export interface UpdateColumnParam {
+export interface AddColumnParam {
     table: string;
     comment: string;
     columnName: string;
-    newColumnName: string;
     columnType: string;
     nullable: boolean;
     defaultValue: any;

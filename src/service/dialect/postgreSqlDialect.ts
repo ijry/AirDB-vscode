@@ -1,4 +1,5 @@
 import { CreateIndexParam } from "./param/createIndexParam";
+import { AddColumnParam } from "./param/addColumnParam";
 import { UpdateColumnParam } from "./param/updateColumnParam";
 import { UpdateTableParam } from "./param/updateTableParam";
 import { SqlDialect } from "./sqlDialect";
@@ -94,8 +95,20 @@ export class PostgreSqlDialect extends SqlDialect {
         return `ALTER TABLE ${table} ALTER COLUMN ${column} TYPE ${type};
 ALTER TABLE ${table} ALTER RENAME COLUMN ${column} TO [newColumnName];`;
     }
+    addColumnSql(addColumnParam: AddColumnParam): string {
+        let {columnName, columnType, comment, nullable, table, defaultValue} = addColumnParam
+        const defaultDefinition = nullable ? "DROP NOT NULL" : "SET NOT NULL";
+        let sql = `ALTER TABLE\n\t${table} ADD COLUMN ${columnName} ${columnType};`
+        if (nullable == false) {
+            sql = sql + `ALTER TABLE ${table} ALTER COLUMN ${columnName} ${defaultDefinition};`
+        }
+        if (comment) {
+            sql = sql + `COMMENT ON COLUMN ${table}.${columnName} is '${comment}';`
+        }
+        return sql;
+    }
     updateColumnSql(updateColumnParam: UpdateColumnParam): string {
-        let { columnName, columnType, newColumnName, comment, nullable, table } = updateColumnParam
+        let { columnName, columnType, newColumnName, comment, nullable, table, defaultValue } = updateColumnParam
         const defaultDefinition = nullable ? "DROP NOT NULL" : "SET NOT NULL";
         let sql = `ALTER TABLE ${table} ALTER COLUMN ${columnName} TYPE ${columnType};
 ALTER TABLE ${table} ALTER COLUMN ${columnName} ${defaultDefinition};`;

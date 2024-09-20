@@ -1,4 +1,5 @@
 import { CreateIndexParam } from "./param/createIndexParam";
+import { AddColumnParam } from "./param/addColumnParam";
 import { UpdateColumnParam } from "./param/updateColumnParam";
 import { UpdateTableParam } from "./param/updateTableParam";
 import { SqlDialect } from "./sqlDialect";
@@ -36,8 +37,14 @@ export class MysqlDialect extends SqlDialect {
         comment = comment ? ` comment '${comment}'` : "";
         return `ALTER TABLE\n\t${table} CHANGE ${column} ${column} ${type}${defaultDefinition}${comment};`;
     }
+    addColumnSql(addColumnParam: AddColumnParam): string {
+        let {columnName, columnType, comment, nullable, table, defaultValue} = addColumnParam
+        const defaultDefinition = nullable ? "" : " NOT NULL";
+        comment = comment ? ` comment '${comment}'` : "";
+        return `ALTER TABLE\n\t${table} ADD COLUMN ${columnName} ${columnType}${defaultDefinition}${comment};`;
+    }
     updateColumnSql(updateColumnParam: UpdateColumnParam): string {
-        let {columnName,columnType,newColumnName,comment,nullable,table}=updateColumnParam
+        let {columnName, columnType, newColumnName, comment, nullable, table, defaultValue}=updateColumnParam
         const defaultDefinition = nullable ? "" : " NOT NULL";
         comment = comment ? ` comment '${comment}'` : "";
         return `ALTER TABLE\n\t${table} CHANGE ${columnName} ${newColumnName} ${columnType}${defaultDefinition}${comment};`;

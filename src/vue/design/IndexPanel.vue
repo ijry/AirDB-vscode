@@ -1,7 +1,8 @@
 <template>
   <div>
-    <div class="design-toolbar">
-      <el-button @click="index.visible=true" type="primary" title="Insert" icon="el-icon-circle-plus-outline" size="mini" circle> </el-button>
+    <div class="design-toolbar mt-2 mb-3">
+      <el-button @click="index.visible=true" type="default" title="Insert"
+        icon="el-icon-circle-plus-outline" size="mini">{{ $t('Add Index') }}</el-button>
     </div>
     <ux-grid :data="designData.editIndex" stripe style="width: 100%" :cell-style="{height: '35px'}">
       <ux-table-column align="center" field="index_name" :title="$t('Index Name')"
@@ -19,14 +20,14 @@
         </template>
       </ux-table-column>
     </ux-grid>
-    <el-dialog :title="$t('Add Index')" :visible.sync="index.visible" top="3vh" size="mini">
-      <el-form :inline='true'>
-        <el-form-item :label="$t('Design.Column')">
+    <el-dialog :title="$t('Add Index')" :visible.sync="index.visible" top="5vh" size="mini">
+      <el-form :inline='true' label-width="100px" label-suffix=":">
+        <el-form-item :label="$t('Design.Column')" required>
           <el-select v-model="index.column">
             <el-option :label="column.name" :value="column.name" :key="column.name" v-for="column in designData.columnList"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="Index Type">
+        <el-form-item label="Index Type" required>
           <el-select v-model="index.type">
             <el-option :label="'UNIQUE'" value="UNIQUE"></el-option>
             <el-option :label="'INDEX'" value="INDEX"></el-option>

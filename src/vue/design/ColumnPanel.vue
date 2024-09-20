@@ -1,9 +1,11 @@
 <template>
   <div>
     <InfoPanel/>
-    <div class="design-toolbar">
-      <el-button @click="column.visible=true" type="primary" :title="$t('Design.Insert')"
-        icon="el-icon-circle-plus-outline" size="mini" circle> </el-button>
+    <div class="design-toolbar mb-3">
+      <el-button @click="column.visible=true" type="default" :title="$t('Design.Insert')"
+        icon="el-icon-circle-plus-outline" size="mini">
+        {{ $t('Add Column') }}
+      </el-button>
     </div>
     <ux-grid :data="designData.editColumnList" stripe style="width: 100%"
       :cell-style="{height: '25px'}" :height="remainHeight()">
@@ -46,15 +48,15 @@
         </template>
       </ux-table-column>
     </ux-grid>
-    <el-dialog :title="$t('Update Column')" :visible.sync="column.editVisible" top="3vh" size="mini">
-      <el-form :inline='true'>
-        <el-form-item label="Name">
+    <el-dialog :title="$t('Update Column')" :visible.sync="column.editVisible" top="5vh" size="default">
+      <el-form :inline='true' label-width="100px" label-suffix=":">
+        <el-form-item :label="$t('Design.Column.Name')" required>
           <el-input v-model="editColumn.name"></el-input>
         </el-form-item>
-        <el-form-item label="Type">
+        <el-form-item :label="$t('Design.Column.Type')" required>
           <el-input v-model="editColumn.type"></el-input>
         </el-form-item>
-        <el-form-item label="Comment">
+        <el-form-item :label="$t('Design.Column.Comment')">
           <el-input type="textarea" v-model="editColumn.comment"></el-input>
         </el-form-item>
         <el-form-item label="Not Null">
@@ -62,22 +64,36 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="column.editloading" @click="updateColumn">Update</el-button>
-        <el-button @click="column.editVisible=false">Cancel</el-button>
+        <el-button type="primary" :loading="column.editloading" @click="updateColumn">
+            {{ $t('Design.Update') }}
+        </el-button>
+        <el-button @click="column.editVisible=false">
+          {{ $t('Cancel') }}
+        </el-button>
       </span>
     </el-dialog>
-    <el-dialog :title="'Add Column'" :visible.sync="column.visible" top="3vh" size="mini">
-      <el-form :inline='true'>
-        <el-form-item label="Name">
+    <el-dialog :title="$t('Add Column')" :visible.sync="column.visible" top="5vh" size="default">
+      <el-form :inline='true' label-width="100px" label-suffix=":">
+        <el-form-item :label="$t('Design.Column.Name')" required>
           <el-input v-model="column.name"></el-input>
         </el-form-item>
-        <el-form-item label="Type">
+        <el-form-item :label="$t('Design.Column.Type')" required>
           <el-input v-model="column.type"></el-input>
+        </el-form-item>
+        <el-form-item :label="$t('Design.Column.Comment')">
+          <el-input type="textarea" v-model="column.comment"></el-input>
+        </el-form-item>
+        <el-form-item label="Not Null">
+          <el-checkbox v-model="column.isNotNull"></el-checkbox>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="column.loading" @click="createcolumn">Create</el-button>
-        <el-button @click="column.visible=false">Cancel</el-button>
+        <el-button type="primary" :loading="column.loading" @click="createcolumn">
+          {{ $t('Design.Create') }}
+        </el-button>
+        <el-button @click="column.visible=false">
+          {{ $t('Cancel') }}
+        </el-button>
       </span>
     </el-dialog>
   </div>
@@ -104,9 +120,9 @@ export default {
         editVisible: false,
         loading: false,
         editLoading: false,
-
-        column: null,
+        name: '',
         type: null,
+        isNotNull: false,
         nullable: false,
       },
     };
@@ -144,14 +160,21 @@ export default {
     },
     createcolumn() {
       this.column.loading = true;
-      this.execute(
-        `ALTER TABLE ${wrapByDb(
-          this.designData.table,
-          this.designData.dbType
-        )} ADD ${wrapByDb(this.column.name, this.designData.dbType)} ${
-          this.column.type
-        }`
-      );
+      this.emit("addColumn", {
+        columnType: this.column.type,
+        comment: this.column.comment,
+        nullable: !this.column.isNotNull,
+        table: this.designData.table,
+        columnName: this.column.name,
+      });
+      // this.execute(
+      //   `ALTER TABLE ${wrapByDb(
+      //     this.designData.table,
+      //     this.designData.dbType
+      //   )} ADD ${wrapByDb(this.column.name, this.designData.dbType)} ${
+      //     this.column.type
+      //   }`
+      // );
     },
     openEdit(row) {
       this.column.name = row.name;
@@ -160,9 +183,9 @@ export default {
       this.column.editLoading = false;
     },
     deleteConfirm(row) {
-      this.$confirm("Are you sure you want to delete this column?", "Warning", {
-        confirmButtonText: "OK",
-        cancelButtonText: "Cancel",
+      this.$confirm(this.$t("Are you sure you want to delete this column?"), this.$t("Warning"), {
+        confirmButtonText: this.$t("OK"),
+        cancelButtonText: this.$t("Cancel"),
         type: "warning",
       }).then(() => {
         this.execute(

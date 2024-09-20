@@ -144,6 +144,11 @@ export class TableNode extends Node implements CopyAble {
                     await executeAndRefresh(sql, handler)
                     this.parent.setChildCache(null)
                     this.provider.reload(this.parent)
+                }).on("addColumn", async (addColumnParam) => {
+                    const sql = this.dialect.addColumnSql(addColumnParam);
+                    await executeAndRefresh(sql, handler)
+                    this.setChildCache(null)
+                    this.provider.reload(this.parent)
                 }).on("updateColumn", async (updateColumnParam) => {
                     const sql = this.dialect.updateColumnSql(updateColumnParam);
                     await executeAndRefresh(sql, handler)

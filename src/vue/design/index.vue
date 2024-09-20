@@ -1,9 +1,16 @@
 <template>
   <div class="px-4 py-4 ">
-    <el-button @click="init" type="success" title="Refresh" size="small">{{ $t('Refresh') }} </el-button>
-    <el-tag>{{ $t('Design.Table') }}:</el-tag>
-    {{table}}
-    <ul class="tab">
+    <!-- <el-tag>{{ $t('Design.Table') }}:</el-tag>
+    {{table}} -->
+    <div class="flex justify-between">
+      <div class="text-lg">
+        数据库类型：{{ dbType }}
+      </div>
+      <div>
+        <el-button @click="init" type="default" title="Refresh" size="mini">{{ $t('Refresh') }} </el-button>
+      </div>
+    </div>
+    <ul class="tab mt-2">
       <li class="tab__item " :class="{'tab__item--active':activePanel=='column'}"
         @click="activePanel='column'">{{ $t('Design.Column') }} </li>
       <li class="tab__item " :class="{'tab__item--active':activePanel=='index'}"
@@ -26,12 +33,14 @@ export default {
   data() {
     return {
       table: null,
+      dbType: '',
       activePanel: "column",
     };
   },
   mounted() {
     this.on("design-data", (data) => {
       this.table = data.table;
+      this.dbType = data.dbType;
     });
   },
 };
