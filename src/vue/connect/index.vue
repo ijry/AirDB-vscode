@@ -120,9 +120,10 @@
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
           <label class="inline-block w-32 mr-5 font-bold">
             {{$t('Username')}}
-            <span class="mr-1 text-red-600" title="required">*</span>
+            <span class="mr-1 text-red-600" v-if="connectionOption.dbType != 'MongoDB'" title="required">*</span>
           </label>
-          <input class="w-64 field__input" placeholder="Username" required v-model="connectionOption.user" />
+          <input class="w-64 field__input" placeholder="Username"
+            :required="connectionOption.dbType != 'MongoDB'" v-model="connectionOption.user" />
         </div>
         <div class="inline-block mb-2 mr-10">
           <label class="inline-block w-32 mr-5 font-bold pa-0">{{$t('Password')}}</label>

@@ -109,31 +109,31 @@
 			{
 				"command": "airdb.user.center",
 				"title": "%command.user.center%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "resources/icon/user.svg"
 			},
 			{
 				"command": "airdb.struct.diff",
 				"title": "%command.struct.diff%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(sync)"
 			},
 			{
 				"command": "airdb.history.open",
 				"title": "%command.history.open%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(history)"
 			},
 			{
 				"command": "airdb.setting.open",
 				"title": "%command.setting.open%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "resources/icon/settings.svg"
 			},
 			{
 				"command": "airdb.refresh",
 				"title": "%command.refresh%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(refresh)"
 			},
 			{
@@ -204,7 +204,7 @@
 			{
 				"command": "airdb.connection.delete",
 				"title": "%command.connection.delete%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(trash)"
 			},
 			{
@@ -221,19 +221,19 @@
 			{
 				"command": "airdb.runQuery",
 				"title": "%command.runQuery%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(run)"
 			},
 			{
 				"command": "airdb.runAllQuery",
 				"title": "%command.runAllQuery%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(run)"
 			},
 			{
 				"command": "airdb.query.switch",
 				"title": "%command.query.switch%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(symbol-file)"
 			},
 			{
@@ -279,7 +279,7 @@
 			{
 				"command": "airdb.mock.run",
 				"title": "%command.mock.run%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(run)"
 			},
 			{
@@ -305,13 +305,13 @@
 			{
 				"command": "airdb.column.up",
 				"title": "%command.column.up%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(arrow-up)"
 			},
 			{
 				"command": "airdb.column.down",
 				"title": "%command.column.down%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(arrow-down)"
 			},
 			{
@@ -327,7 +327,7 @@
 			{
 				"command": "airdb.table.show",
 				"title": "%command.table.show%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(list-flat)"
 			},
 			{
@@ -343,43 +343,43 @@
 			{
 				"command": "airdb.template.sql",
 				"title": "%command.template.sql%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(symbol-file)"
 			},
 			{
 				"command": "airdb.template.table",
 				"title": "%command.template.table%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(add)"
 			},
 			{
 				"command": "airdb.template.view",
 				"title": "%command.template.view%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(add)"
 			},
 			{
 				"command": "airdb.template.procedure",
 				"title": "%command.template.procedure%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(add)"
 			},
 			{
 				"command": "airdb.template.trigger",
 				"title": "%command.template.trigger%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(add)"
 			},
 			{
 				"command": "airdb.template.function",
 				"title": "%command.template.function%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(add)"
 			},
 			{
 				"command": "airdb.template.user",
 				"title": "%command.template.user%",
-				"category": "MySQL",
+				"category": "AirDB",
 				"icon": "$(add)"
 			},
 			{

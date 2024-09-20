@@ -27,8 +27,6 @@ export class RedisConnection extends IConnection {
             }
         }
         this.client = new IoRedis(config);
-
-
     }
     query(sql: string, callback?: queryCallback): void;
     query(sql: string, values: any, callback?: queryCallback): void;
