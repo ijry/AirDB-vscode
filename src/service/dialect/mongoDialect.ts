@@ -15,10 +15,12 @@ export class MongoDialect implements SqlDialect{
         throw new Error("Method not implemented.");
     }
     showIndex(database: string, table: string): string {
-        throw new Error("Method not implemented.");
+        return `db('${database}').collection('${table}').indexes();`;
     }
     createIndex(createIndexParam: CreateIndexParam): string {
-        throw new Error("Method not implemented.");
+        let { database, table, column } = createIndexParam;
+        let sql = `db('${database}').collection('${table}').createIndex({${column}: 1 });`;
+        return sql;
     }
     showSchemas(): string {
         throw new Error("Method not implemented.");
@@ -69,7 +71,8 @@ export class MongoDialect implements SqlDialect{
         throw new Error("Method not implemented.");
     }
     createDatabase(database: string): string {
-        throw new Error("Method not implemented.");
+        let sql = `db(${database}).createCollection("collection")`;
+        return sql;
     }
     truncateDatabase(database: string): string {
         throw new Error("Method not implemented.");
