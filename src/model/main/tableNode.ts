@@ -143,6 +143,9 @@ export class TableNode extends Node implements CopyAble {
                     const sql = this.dialect.updateTable({ table: this.table, newTableName, comment: this.meta.comment, newComment });
                     await executeAndRefresh(sql, handler)
                     this.parent.setChildCache(null)
+                    // 下面两行缺失会导致设计表页面修改后页面还是老数据
+                    this.table = newTableName;
+                    this.meta.comment = newComment;
                     this.provider.reload(this.parent)
                 }).on("addColumn", async (addColumnParam) => {
                     const sql = this.dialect.addColumnSql(addColumnParam);
