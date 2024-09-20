@@ -20,7 +20,7 @@ export default class KeyNode extends RedisBaseNode {
         }
         this.command = {
             title: 'View Key Detail',
-            command: 'mysql.redis.key.detail',
+            command: 'airdb.redis.key.detail',
             arguments: [this]
         }
     }

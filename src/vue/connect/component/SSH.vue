@@ -34,7 +34,7 @@
 
       <div class="inline-block mb-2 mr-10">
         <label class="inline-block font-bold mr-9 w-28">SSH Cipher</label>
-        <el-select v-model="connectionOption.ssh.algorithms.cipher[0]" placeholder="Default">
+        <el-select size="mini" v-model="connectionOption.ssh.algorithms.cipher[0]" placeholder="Default">
           <el-option value="aes128-cbc">aes128-cbc</el-option>
           <el-option value="aes192-cbc">aes192-cbc</el-option>
           <el-option value="aes256-cbc">aes256-cbc</el-option>
@@ -67,7 +67,8 @@
           <span class="mr-1 text-red-600" title="required">*</span>
         </label>
         <el-input
-          class="w-64 field__input"
+          size="mini"
+          class="w-64 border-0"
           placeholder="Password"
           required
           show-password	

@@ -2,6 +2,7 @@ import { Node } from "@/model/interface/node";
 import { IConnection, queryCallback } from "./connection";
 import * as fs from "fs";
 import IoRedis from "ioredis";
+import { Console } from "../../common/Console";
 
 export class RedisConnection extends IConnection {
     private conneted: boolean;
@@ -42,6 +43,7 @@ export class RedisConnection extends IConnection {
     }
 
     connect(callback: (err: Error) => void): void {
+        Console.log('start connect redis')
         let timeout = true;
         setTimeout(() => {
             if (timeout) {

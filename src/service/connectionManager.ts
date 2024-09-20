@@ -127,7 +127,7 @@ export class ConnectionManager {
                             await QueryUnit.queryPromise(newConnection, sql, false)
                         }
                     } catch (error) {
-                        console.log(err)
+                        Console.log(err)
                     }
 
                     resolve(newConnection);

@@ -9,33 +9,33 @@
     </div>
     <ux-grid :data="designData.editColumnList" stripe style="width: 100%"
       :cell-style="{height: '25px'}" :height="remainHeight()">
-      <ux-table-column align="center" field="name" :title="$t('Design.Column.Name')"
+      <ux-table-column align="center" field="name" minWidth="130" :title="$t('Design.Column.Name')"
         show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="type" :title="$t('Design.Column.Type')"
+      <ux-table-column align="center" field="type" width="110" :title="$t('Design.Column.Type')"
         show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="comment" :title="$t('Design.Column.Comment')"
+      <ux-table-column align="center" field="comment" minWidth="150"  :title="$t('Design.Column.Comment')"
         show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="maxLength" width="80" :title="$t('Design.Column.Length')"
+      <ux-table-column align="center" field="maxLength" width="60" :title="$t('Design.Column.Length')"
         show-overflow-tooltip="true"></ux-table-column>
       <ux-table-column align="center" field="defaultValue" width="120" :title="$t('Design.Column.Default')"
         show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" width="100" :title="$t('Primary Key')"
+      <ux-table-column align="center" width="60" :title="$t('Primary Key')"
         show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isPrimary"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" :title="$t('Unique')" width="80" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Unique')" width="60" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isUnique"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" :title="$t('Not Null')" width="80" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Not Null')" width="60" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.nullable=='NO'"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" :title="$t('Auto Incrment')" width="140" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Auto Incrment')" width="60" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isAutoIncrement"></el-checkbox>
         </template>
