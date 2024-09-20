@@ -115,21 +115,25 @@ export class ConnectionManager {
                 }
             }
             const newConnection = this.create(connectOption);
+
             this.alivedConnection[key] = { connection: newConnection, ssh };
             newConnection.connect(async (err: Error) => {
                 if (err) {
+                    // Console.log('s111')
                     this.end(key, this.alivedConnection[key])
                     reject(err)
                 } else {
+                    // Console.log('s222')
                     try {
-                        const sql = connectionNode?.dialect?.pingDataBase(connectionNode.schema);
-                        if (connectionNode.schema && sql) {
-                            await QueryUnit.queryPromise(newConnection, sql, false)
+                        if (connectionNode?.dialect) {
+                            const sql = connectionNode?.dialect?.pingDataBase(connectionNode.schema);
+                            if (connectionNode.schema && sql) {
+                                await QueryUnit.queryPromise(newConnection, sql, false)
+                            }
                         }
                     } catch (error) {
                         Console.log(err)
                     }
-
                     resolve(newConnection);
                 }
             });
@@ -152,6 +156,7 @@ export class ConnectionManager {
             case DatabaseType.MONGO_DB:
                 return new MongoConnection(opt);
             case DatabaseType.REDIS:
+                // Console.log('redisredis')
                 return new RedisConnection(opt);
             case DatabaseType.FTP:
                 return new FTPConnection(opt);

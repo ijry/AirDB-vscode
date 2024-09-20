@@ -12,8 +12,8 @@ import { Node } from "../interface/node";
 import { MongoTableGroup } from "../mongo/mongoTableGroup";
 import axios, { AxiosRequestConfig } from "axios";
 
+// 为了区分本地和云端增加的根节点
 export class RootNode extends Node implements CopyAble {
-
 
     public contextValue: string = ModelType.ROOTGROUP;
     public iconPath: string|vscode.ThemeIcon = new vscode.ThemeIcon("database");

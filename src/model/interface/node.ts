@@ -153,6 +153,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         if (!this.provider) this.provider = source.provider
         if (!this.context) this.context = source.context
         // init dialect
+        // redis不需要dialect，其它类型需要。
         if (!this.dialect && this.dbType != DatabaseType.REDIS) {
             this.dialect = ServiceManager.getDialect(this.dbType)
         }

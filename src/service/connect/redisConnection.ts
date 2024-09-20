@@ -26,6 +26,7 @@ export class RedisConnection extends IConnection {
                 minVersion: 'TLSv1'
             }
         }
+        Console.log(config)
         this.client = new IoRedis(config);
     }
     query(sql: string, callback?: queryCallback): void;
@@ -53,6 +54,7 @@ export class RedisConnection extends IConnection {
             if (timeout) {
                 this.conneted = true;
                 timeout = false;
+                Console.log('连接' + JSON.stringify(err))
                 callback(err)
             }
         })

@@ -5,7 +5,8 @@ import * as path from "path";
 import { ThemeColor, ThemeIcon } from "vscode";
 import KeyNode from "./keyNode";
 import RedisBaseNode from "./redisBaseNode";
-
+import { DbNode } from "./dbNode";
+import { Console } from "../../common/Console";
 
 export class RedisFolderNode extends RedisBaseNode {
     contextValue = ModelType.REDIS_FOLDER;
@@ -18,11 +19,12 @@ export class RedisFolderNode extends RedisBaseNode {
         this.level = parent.hasOwnProperty('level') ? parent.level + 1 : 0
     }
 
-    public async getChildren() {
-        return RedisFolderNode.buildChilds(this, this.childens)
+    public async getChildren(keyList) {
+        // return this.buildChildren(this, keyList)
+        return [];
     }
 
-    public static buildChilds(parent: RedisBaseNode, keys: string[]) {
+    public static buildChildren(parent: DbNode, keys: string[]) {
         const prefixMap: { [key: string]: string[] } = {}
         for (const key of keys.sort()) {
             let prefix = key.split(":")[parent.level];
