@@ -441,44 +441,44 @@
 			},
 			{
 				"command": "airdb.ssh.path.copy",
-				"title": "Copy Path"
+				"title": "%command.ssh.path.copy%"
 			},
 			{
 				"command": "airdb.ssh.file.new",
-				"title": "New File"
+				"title": "%command.ssh.file.new%"
 			},
 			{
 				"command": "airdb.ssh.folder.new",
-				"title": "New Folder"
+				"title": "%command.ssh.folder.new%"
 			},
 			{
 				"command": "airdb.ssh.host.copy",
-				"title": "Copy Host"
+				"title": "%command.ssh.host.copy%"
 			},
 			{
 				"command": "airdb.ssh.forward.port",
-				"title": "Forward Port"
+				"title": "%command.ssh.forward.port%"
 			},
 			{
 				"command": "airdb.ssh.socks.port",
-				"title": "Start Socks5 Proxy"
+				"title": "%command.ssh.socks.port%"
 			},
 			{
 				"command": "airdb.ssh.folder.open",
-				"title": "Open In Terminal"
+				"title": "%command.ssh.folder.open%"
 			},
 			{
 				"command": "airdb.ssh.file.delete",
-				"title": "Delete"
+				"title": "%command.ssh.file.delete%"
 			},
 			{
 				"command": "airdb.ssh.file.download",
-				"title": "Download File",
+				"title": "%command.ssh.file.download%",
 				"icon": "$(cloud-download)"
 			},
 			{
 				"command": "airdb.ssh.file.upload",
-				"title": "Upload File",
+				"title": "%command.ssh.file.upload%",
 				"icon": "$(cloud-upload)"
 			}
 		],

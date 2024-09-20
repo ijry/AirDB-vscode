@@ -55,7 +55,7 @@
           <el-input v-model="editColumn.type"></el-input>
         </el-form-item>
         <el-form-item label="Comment">
-          <el-input v-model="editColumn.comment"></el-input>
+          <el-input type="textarea" v-model="editColumn.comment"></el-input>
         </el-form-item>
         <el-form-item label="Not Null">
           <el-checkbox v-model="editColumn.isNotNull"></el-checkbox>

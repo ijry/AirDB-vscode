@@ -39,6 +39,7 @@ export default {
     'Design.Column.Comment': '字段备注',
     'Design.Column.Length': '字段长度',
     'Design.Column.Default': '默认值',
+    'Are you sure you want to delete this column?': '确认要删除该字段吗，数据不可恢复！',
     'Primary Key': '主键',
     'Update Column': '修改字段',
     'Operation': '操作',
