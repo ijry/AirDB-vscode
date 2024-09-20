@@ -50,14 +50,21 @@
     </ux-grid>
     <el-dialog :title="$t('Update Column')" :visible.sync="column.editVisible" top="5vh" size="default">
       <el-form :inline='true' label-width="100px" label-suffix=":">
-        <el-form-item :label="$t('Design.Column.Name')" required>
-          <el-input v-model="editColumn.name"></el-input>
+        <el-form-item :label="$t('Design.Column.Name')"required>
+          <el-input v-model="editColumn.name" :placeholder="$t('Design.Column.Name')"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Type')" required>
-          <el-input v-model="editColumn.type"></el-input>
+          <!-- <el-input v-model="editColumn.type" :placeholder="$t('Design.Column.Type')"></el-input> -->
+          <el-select v-model="editColumn.type" :placeholder="$t('Design.Column.Type')" clearable filterable>
+            <template v-for="item in typeList">
+              <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
+                :label="item.label" :value="item.label"></el-option>
+            </template>
+          </el-select>
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Comment')">
-          <el-input type="textarea" v-model="editColumn.comment"></el-input>
+          <el-input type="textarea"  :placeholder="$t('Design.Column.Comment')"
+            v-model="editColumn.comment"></el-input>
         </el-form-item>
         <el-form-item label="Not Null">
           <el-checkbox v-model="editColumn.isNotNull"></el-checkbox>
@@ -74,14 +81,21 @@
     </el-dialog>
     <el-dialog :title="$t('Add Column')" :visible.sync="column.visible" top="5vh" size="default">
       <el-form :inline='true' label-width="100px" label-suffix=":">
-        <el-form-item :label="$t('Design.Column.Name')" required>
-          <el-input v-model="column.name"></el-input>
+        <el-form-item :label="$t('Design.Column.Name')" :placeholder="$t('Design.Column.Name')" required>
+          <el-input v-model="column.name" :placeholder="$t('Design.Column.Name')"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Type')" required>
-          <el-input v-model="column.type"></el-input>
+          <!-- <el-input v-model="column.type" :placeholder="$t('Design.Column.Type')"></el-input> -->
+          <el-select v-model="column.type" :placeholder="$t('Design.Column.Type')" clearable filterable>
+            <template v-for="item in typeList">
+              <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
+                :label="item.label" :value="item.label"></el-option>
+            </template>
+          </el-select>
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Comment')">
-          <el-input type="textarea" v-model="column.comment"></el-input>
+          <el-input type="textarea" :placeholder="$t('Design.Column.Comment')"
+            v-model="column.comment"></el-input>
         </el-form-item>
         <el-form-item label="Not Null">
           <el-checkbox v-model="column.isNotNull"></el-checkbox>
@@ -108,6 +122,16 @@ export default {
   components:{InfoPanel},
   data() {
     return {
+      typeList: [
+        {label: 'tinyint(1)', label: 'smallint(3)', onlyType: ['MySQL']},{label: 'int(11)'},{label: 'bigint(20)'},
+        {label: 'char(20)'},{label: 'varchar(64)'},{label: 'varchar(256)'},
+        {label: 'date'},{label: 'datetime'},{label: 'timestamp', onlyType: ['MySQL']},
+        {label: 'text'},{label: 'longtext'},
+        {label: 'float'},
+        {label: 'double', onlyType: ['MySQL', 'PostgreSQL']},
+        {label: 'decimal(11,2)'},
+        {label: 'boolean', onlyType: ['PostgreSQL']},
+      ],
       designData: {
         table: null,
         dbType: null,
