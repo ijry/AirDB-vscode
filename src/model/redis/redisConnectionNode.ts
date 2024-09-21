@@ -94,14 +94,6 @@ export class RedisConnectionNode extends RedisBaseNode {
         return databases.map(dbInfo => new DbNode(dbInfo, this));  
     }
 
-    // async getChildren(): Promise<RedisBaseNode[]> {
-    //     const client = await this.getClient()
-    //     let keys: string[] = await client.keys(this.pattern)
-    //     let list = RedisFolderNode.buildChilds(this, keys);
-    //     Console.log(JSON.stringify(keys))
-    //     Console.log(JSON.stringify(list))
-    //     return list;
-    // }
     async openTerminal(): Promise<any> {
         if (!this.password && commandExistsSync('redis-cli')) {
             super.openTerminal();

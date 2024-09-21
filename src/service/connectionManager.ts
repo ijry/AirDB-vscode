@@ -82,6 +82,7 @@ export class ConnectionManager {
             const connection = this.alivedConnection[key];
             if (connection) {
                 if (connection.connection.isAlive()) {
+                    // Console.log("&&&&&&&&&&&&&"+connection.schema + connectionNode.schema)
                     if (connection.schema != connectionNode.schema) {
                         const sql = connectionNode?.dialect?.pingDataBase(connectionNode.schema);
                         try {
@@ -143,7 +144,7 @@ export class ConnectionManager {
     }
 
     private static create(opt: Node) {
-        if (!opt.dbType) opt.dbType = DatabaseType.MYSQL
+        // if (!opt.dbType) opt.dbType = DatabaseType.MYSQL
         switch (opt.dbType) {
             case DatabaseType.MSSQL:
                 return new MSSqlConnnection(opt)
@@ -160,8 +161,11 @@ export class ConnectionManager {
                 return new RedisConnection(opt);
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
+            default:
+                Console.log(opt)
+                throw new Error('no dbType')
         }
-        return new MysqlConnection(opt)
+        // return new MysqlConnection(opt)
     }
 
     private static end(key: string, connection: ConnectionWrapper) {
