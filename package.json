@@ -1033,7 +1033,8 @@
 	},
 	"scripts": {
 		"dev": "webpack --progress",
-		"build": "webpack --progress --mode=production",
+		"clean": "rimraf out", 
+		"build": "npm run clean && webpack --progress --mode=production",
 		"lib": "webpack --config webpack.config.lib.js --progress -p",
 		"package": "vsce package",
 		"publish": "vsce publish"
@@ -1054,6 +1055,7 @@
 		"html-webpack-plugin": "^4.3.0",
 		"postcss": "^8.2.1",
 		"postcss-loader": "^4.1.0",
+		"rimraf": "^6.0.1",
 		"style-loader": "^1.2.1",
 		"tailwindcss": "^2.0.2",
 		"ts-loader": "^7.0.5",
