@@ -146,6 +146,8 @@ export class ConnectionManager {
     private static create(opt: Node) {
         // if (!opt.dbType) opt.dbType = DatabaseType.MYSQL
         switch (opt.dbType) {
+            case DatabaseType.MYSQL:
+                return new MysqlConnection(opt)
             case DatabaseType.MSSQL:
                 return new MSSqlConnnection(opt)
             case DatabaseType.PG:
@@ -162,10 +164,9 @@ export class ConnectionManager {
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
             default:
-                Console.log(opt)
+                Console.log('创建连接出错' + JSON.stringify(opt))
                 throw new Error('no dbType')
         }
-        // return new MysqlConnection(opt)
     }
 
     private static end(key: string, connection: ConnectionWrapper) {
