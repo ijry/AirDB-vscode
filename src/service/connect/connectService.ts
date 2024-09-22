@@ -101,13 +101,18 @@ export class ConnectService {
 
                             // 密码加密存储云端
                             let cryRes = Util.encryptPassword(node.password, iv);
+                            // @ts-ignore
                             node.password = cryRes.password;
                             if (node.ssh && node.ssh.password) {
-                                let cryResSSH = Util.encryptPassword(node.ssh.password, iv)
+                                let cryResSSH = Util.encryptPassword(node.ssh.password, iv);
+                                // @ts-ignore
                                 node.ssh.password = cryResSSH.password;
                             }
+                            // @ts-ignore
                             if (node.sshConfig && node.sshConfig.password) {
-                                let cryResSSHConfig = Util.encryptPassword(node.sshConfig.password, iv)
+                                // @ts-ignore
+                                let cryResSSHConfig = Util.encryptPassword(node.sshConfig.password, iv);
+                                // @ts-ignore
                                 node.sshConfig.password = cryResSSHConfig.password;
                             }
                             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/add`;

@@ -13,7 +13,6 @@ import { Node } from "../../model/interface/node";
 import { NodeUtil } from "../../model/nodeUtil";
 import { DbTreeDataProvider } from "../../provider/treeDataProvider";
 import { ClientManager } from "../ssh/clientManager";
-import { ConnnetionConfig } from "./config/connnetionConfig";
 import { readFileSync } from "fs";
 import { GlobalState, WorkState } from "@/common/state";
 import axios, { AxiosRequestConfig } from "axios";

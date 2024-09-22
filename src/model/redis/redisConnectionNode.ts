@@ -17,6 +17,7 @@ export class RedisConnectionNode extends RedisBaseNode {
 
     contextValue = ModelType.REDIS_CONNECTION;
     iconPath: string | vscode.ThemeIcon = path.join(Constants.RES_PATH, `image/redis_connection.png`);
+    dbCount: number = 16
 
     constructor(readonly key: string, readonly parent: Node) {
         super(key)
@@ -39,27 +40,46 @@ export class RedisConnectionNode extends RedisBaseNode {
         try {
             // 获取redise实例
             const client = await this.getClient();
+
             // 根据keyspace获取信息，client.info中包含很多redis基础信息。
-            const keySpaceInfo = await client.info("keyspace");
+            const [keyspaceStr, dbs] = await Promise.all([
+                client.info('keyspace'),
+                client.config('GET', 'databases')
+            ]);
+            this.dbCount = parseInt(dbs[1]);
             const listData = {};
-
-            keySpaceInfo.split('\n').filter(line => line.trim().startsWith("db")).forEach(line => {
-                const [dbPrefix, keysString] = line.trim().split(":", 2);
-                if (!keysString) return;
-
-                const dbNumber = dbPrefix.replace("db", "");  // 数据库编号比如db8的8
-                const keyEntries = keysString.split(",").map(key => key.split("="));
-                listData[dbNumber] = {
-                    name: dbNumber,
-                    ...Object.fromEntries(keyEntries)
-                };
-            });
+            const keyspace = this.parseKeyspace(keyspaceStr);
+            for (let i = 0; i < this.dbCount; i++) {
+                const dbNumber = i;  // 数据库编号比如db8的8
+                if (keyspace[`db${i}`]?.keys && keyspace[`db${i}`]?.keys > 0) {
+                    listData[dbNumber] = {
+                        name: i,
+                        keys: keyspace[`db${i}`]?.keys || 0
+                    };
+                }
+            }
 
             return listData;  
         } catch (error) {  
             Console.log(error);  
             return {};  
         }  
+    }
+
+    private parseKeyspace(str: string) {
+        const result = Object.create(null);
+        const lines = str.split('\r\n');
+        lines.shift();
+        lines.pop();
+        lines.forEach(e => {
+            const [name, info] = e.split(':') as [string, string];
+            result[name] = Object.create(null);
+            info.split(',').forEach(e => {
+                const key = e.split('=') as [string, string];
+                result[name][key[0]] = key[1];
+            });
+        });
+        return result;
     }
 
     // 获取redis数据库，比如db0/db8
@@ -69,9 +89,9 @@ export class RedisConnectionNode extends RedisBaseNode {
       
         // 初始化一个数组，其长度等于 Redis 数据库的数量（默认为16），  
         // 并填充默认对象（如果数据库列表中没有对应索引的数据库）  
-        // 注意：这里假设redis.databaseCount是Redis服务器配置的数据库数量，或者默认为16  
+        // 注意：这里假设dbCount是Redis服务器配置的数据库数量，或者默认为16  
         // 同时，检查是否应该包含所有数据库（this.redis?.showAllDb.database）  
-        const databases = Array(16)  
+        const databases = Array(this.dbCount)  
             .fill(0)  
             .map((_, index) => {  
                 // 如果dbList中有对应的数据库信息，则使用它；否则使用默认信息  

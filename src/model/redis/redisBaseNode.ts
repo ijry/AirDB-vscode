@@ -3,12 +3,13 @@ import { RedisConnection } from "@/service/connect/redisConnection";
 import { ConnectionManager } from "@/service/connectionManager";
 import {Redis} from "ioredis";
 import { Console } from "../../common/Console";
+import * as vscode from "vscode";
 
 export default abstract class RedisBaseNode extends Node {
     pattern = "";
     level = 0;
     keyList = null;
-    currentCursor = '0';
+    currentCursor = 0;
     currentTemp = {};
     pageLimit = 500;
 
@@ -25,6 +26,7 @@ export default abstract class RedisBaseNode extends Node {
     }
 
     // 根据pattern获取key列表
+    // 参考https://github.com/pikadun/vscode-redis等
     async getKeyList() {
         let client = await this.getClient();
         // 切换数据库

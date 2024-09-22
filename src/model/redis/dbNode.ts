@@ -45,27 +45,46 @@ export class DbNode extends RedisBaseNode {
       // Console.log("$$$$$$$$$" + initialCall)
       // 如果initialCall为真，或者当前没有keyList，或者keyList长度为0，则重置currentCursor和currentTemp，并保存状态  
       if (initialCall || !this.keyList || this.keyList.length === 0) {  
-          this.currentCursor = "0";  
+          this.currentCursor = 0;  
           this.currentTemp = {};  
           this.keyList = await this.getKeyList(); // 假设getKeys方法异步获取keys
       }  
-    
+
       // 构建子节点  
       let children = await RedisFolderNode.buildChilds(this, this.keyList);  
     
-      // 如果还有更多数据并且children数组为空，则添加一个特殊的节点表示无数据  
+      // 如果还有更多数据并且children数组为空，则添加一个特殊的节点。
       if (this.hasLeftData() && children.length === 0) {  
-          let message = this.contextValue === "redisFolder" ? "Folder empty" : "Database empty.";  
-          // children.unshift(new InfoNode(message)); // 假设at是一个构造函数，用于创建无数据时的提示节点  
+          let message = this.contextValue === "redisFolder" ? "Folder empty" : "Db empty";  
+          // children.unshift(new InfoNode(message));  
       }
     
       // 返回子节点数组  
       return children;  
     }
 
+    // 筛选
+    async filter(): Promise<void> {
+      const pattern = await vscode.window.showInputBox({
+          prompt: 'pattern',
+          value: this.pattern,
+      });
+      if (pattern === undefined) {
+          return;
+      }
+      this.currentCursor = 0;
+      this.pattern = pattern || '';
+
+      // 刷新
+      this.refresh();
+  }
+
     hasLeftData() {
-      for (let index in this.currentTemp)
-        if (this.currentTemp[index] != "0") return !0;
+      for (let index in this.currentTemp) {
+        if (this.currentTemp[index] != "0") {
+          return !0;
+        }
+      }
       return !1;
     }
     async openTerminal() {

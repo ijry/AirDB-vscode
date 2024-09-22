@@ -1,5 +1,5 @@
 export interface CreateIndexParam{
-    database:string,
+    database?:string,
     table:string;
     column:string;
     type:string;
