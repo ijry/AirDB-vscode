@@ -1,5 +1,6 @@
 {
 	"command.airdb.app.name": "AirDB DBMS",
+	"command.connection.hideName": "Hide Name",
 	"command.ssh.path.copy": "Copy Path",
 	"command.ssh.file.new": "New File",
 	"command.ssh.folder.new": "New Folder",

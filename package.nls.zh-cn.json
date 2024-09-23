@@ -1,5 +1,6 @@
 {
 	"command.airdb.app.name": "零云®AirDB数据库管理客户端",
+	"command.connection.hideName": "名称防窥",
 	"command.ssh.path.copy": "拷贝路径",
 	"command.ssh.file.new": "新建文件",
 	"command.ssh.folder.new": "新建文件夹",
