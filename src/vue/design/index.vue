@@ -4,10 +4,10 @@
     {{table}} -->
     <div class="flex justify-between">
       <div class="text-lg">
-        数据库类型：{{ dbType }}
+        {{$t('Db Type:')}} {{ dbType }}
       </div>
       <div>
-        <el-button @click="init" type="default" title="Refresh" size="mini">{{ $t('Refresh') }} </el-button>
+        <el-button @click="init" type="default" title="Refresh" size="small">{{ $t('Refresh') }} </el-button>
       </div>
     </div>
     <ul class="tab mt-2">

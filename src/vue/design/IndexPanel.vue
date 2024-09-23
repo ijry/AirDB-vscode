@@ -2,7 +2,7 @@
   <div>
     <div class="design-toolbar mt-2 mb-3">
       <el-button @click="index.visible=true" type="default" title="Insert"
-        icon="el-icon-circle-plus-outline" size="mini">{{ $t('Add Index') }}</el-button>
+        icon="el-icon-circle-plus-outline" size="small">{{ $t('Add Index') }}</el-button>
     </div>
     <ux-grid :data="designData.editIndex" stripe style="width: 100%" :cell-style="{height: '35px'}">
       <ux-table-column align="center" field="index_name" :title="$t('Index Name')"
@@ -36,8 +36,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="index.loading" @click="createIndex">{{ $t('Design.Create') }}</el-button>
-        <el-button @click="index.visible=false">{{ $t('Cancel') }}</el-button>
+        <el-button size="medium" type="primary" :loading="index.loading" @click="createIndex">{{ $t('Design.Create') }}</el-button>
+        <el-button size="medium" @click="index.visible=false">{{ $t('Cancel') }}</el-button>
       </span>
     </el-dialog>
   </div>

@@ -15,11 +15,11 @@
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
-      <el-button @click="visible = false">{{$t('Cancel')}}</el-button>
-      <el-button v-if="model=='update'" type="primary" :loading="loading" @click="confirmUpdate(editModel)">
+      <el-button size="medium" @click="visible = false">{{$t('Cancel')}}</el-button>
+      <el-button v-if="model=='update'" type="primary" size="medium" :loading="loading" @click="confirmUpdate(editModel)">
         {{$t('Update')}}
       </el-button>
-      <el-button v-if="model=='insert'||model=='copy'" type="primary" :loading="loading" @click="confirmInsert(editModel)">
+      <el-button v-if="model=='insert'||model=='copy'" size="medium" type="primary" :loading="loading" @click="confirmInsert(editModel)">
          {{$t('Insert')}}
       </el-button>
     </span>

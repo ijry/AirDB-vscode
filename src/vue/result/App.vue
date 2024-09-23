@@ -1,11 +1,28 @@
+<style>
+.el-textarea__inner {
+  line-height: 1.1;
+}
+.edit-column {
+  padding: 0px 3px !important;
+  line-height: 25px !important;
+}
+.plx-body--column .edit-filter input {
+  height: 25px !important;
+  line-height: 25px !important;
+}
+.el-popover__reference {
+  border: var(--border-color) !important;
+  background-color: var(--vscode-editor-background) !important;
+}
+</style>
 <template>
   <div id="app">
-    <div class="hint" style="margin-bottom: 5px;">
+    <div ref="hint" class="hint" style="margin-bottom: 5px;">
       <div class="relative" style="width:100%;margin-top: 10px;margin-bottom: 15px;position: relative;">
-        <el-input type="textarea" :autosize="{ minRows:4, maxRows:8}"
-          v-model="toolbar.sql" class="sql-pannel" @keypress.native="panelInput" />
+        <el-input class="sql-pannel" type="textarea" :autosize="{ minRows:2, maxRows:8}"
+          v-model="toolbar.sql" @keypress.native="panelInput" />
           <div style="position: absolute;bottom: 5px;right: 10px;">
-            <el-button size="mini" :title="$t('Execute Sql')" @click="info.message = false;execute(toolbar.sql);">
+            <el-button size="small" :title="$t('Execute Sql')" @click="info.message = false;execute(toolbar.sql);">
               {{ $t('Execute Sql') }}
             </el-button>
             <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
@@ -13,7 +30,7 @@
             </div>
           </div>
       </div>
-      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" style="margin-bottom: 15px;"
+      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" style="margin-bottom: 8px;"
         :costTime="result.costTime" @changePage="changePage"
         @sendToVscode="sendToVscode" @export="exportOption.visible = true"
         @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm"
@@ -25,7 +42,7 @@
     </div>
     <!-- trigger when click -->
     <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading'
-      size='small' :cell-style="{height: '35px'}" @sort-change="sort" :height="remainHeight"
+      size='small' :cell-style="{height: '24px', 'overflow': 'hidden'}" @sort-change="sort" :height="remainHeight"
       width="100vw" stripe :checkboxConfig="{ checkMethod: selectable}">
       <ux-table-column type="checkbox" width="40" fixed="left"></ux-table-column>
       <ux-table-column type="index" width="40" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
@@ -68,6 +85,7 @@ export default {
   },
   data() {
     return {
+      hinHeight: 90,
       showFullBtn: false,
       remainHeight: 0,
       connection: {},
@@ -115,10 +133,11 @@ export default {
     };
   },
   mounted() {
-    this.remainHeight = window.innerHeight - 90;
+    this.observeWithResizeObserver();
+    this.remainHeight = window.innerHeight - this.hinHeight;
     this.showFullBtn = window.outerWidth / window.innerWidth >= 2;
     window.addEventListener("resize", () => {
-      this.remainHeight = window.innerHeight - 90;
+      this.remainHeight = window.innerHeight - this.hinHeight;
       this.showFullBtn = window.outerWidth / window.innerWidth >= 2;
     });
     const handlerData = (data, sameTable) => {
@@ -249,6 +268,24 @@ export default {
     });
   },
   methods: {
+    observeWithResizeObserver() {
+      const element = this.$refs.hint;
+      const observer = new ResizeObserver(entries => {
+        entries.forEach(entry => {
+          console.log('Height changed:', entry.contentRect.height);
+          this.hinHeight = entry.contentRect.height + 15;
+          this.remainHeight = window.innerHeight - this.hinHeight;
+          this.showFullBtn = window.outerWidth / window.innerWidth >= 2;
+        });
+      });
+
+      observer.observe(element);
+
+      // 销毁时移除监听
+      this.$once('hook:beforeDestroy', () => {
+        observer.disconnect();
+      });
+    },
     panelInput(event){
       if(event.code=='Enter' && event.ctrlKey){
         this.execute(this.toolbar.sql)

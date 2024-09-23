@@ -1,9 +1,9 @@
 <template>
-  <el-dialog :title="$t('Export Option')" :visible="visible" width="380px" top="3vh"
+  <el-dialog :title="$t('Export Option')" :visible="visible" width="580px" top="6vh"
      size="mini" @close="$emit('update:visible',false)">
     <el-form :model="exportOption">
       <el-form-item :label="$t('Export File Type')">
-        <el-select v-model="exportOption.type">
+        <el-select v-model="exportOption.type" size="small">
           <el-option :label="'Sql'" value="sql"></el-option>
           <el-option :label="'Xlsx'" value="xlsx"></el-option>
           <el-option :label="'Json'" value="json"></el-option>
@@ -15,10 +15,10 @@
       </el-form-item>
     </el-form>
     <span slot="footer" class="dialog-footer">
-      <el-button type="primary" :loading="loading" @click="loading=true;$emit('exportHandle', exportOption);">
+      <el-button type="primary" size="medium" :loading="loading" @click="loading=true;$emit('exportHandle', exportOption);">
         {{$t('Export')}}
       </el-button>
-      <el-button @click="$emit('update:visible',false)">
+      <el-button @click="$emit('update:visible',false)" size="medium">
         {{$t('Cancel')}}
       </el-button>
     </span>

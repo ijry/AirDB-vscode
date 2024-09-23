@@ -3,7 +3,7 @@
     <InfoPanel/>
     <div class="design-toolbar mb-3">
       <el-button @click="column.visible=true" type="default" :title="$t('Design.Insert')"
-        icon="el-icon-circle-plus-outline" size="mini">
+        icon="el-icon-circle-plus-outline" size="small">
         {{ $t('Add Column') }}
       </el-button>
     </div>
@@ -71,10 +71,10 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="column.editloading" @click="updateColumn">
+        <el-button type="primary" size="medium" :loading="column.editloading" @click="updateColumn">
             {{ $t('Design.Update') }}
         </el-button>
-        <el-button @click="column.editVisible=false">
+        <el-button  size="medium" @click="column.editVisible=false">
           {{ $t('Cancel') }}
         </el-button>
       </span>
@@ -102,10 +102,10 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" :loading="column.loading" @click="createcolumn">
+        <el-button size="medium" type="primary" :loading="column.loading" @click="createcolumn">
           {{ $t('Design.Create') }}
         </el-button>
-        <el-button @click="column.visible=false">
+        <el-button size="medium" @click="column.visible=false">
           {{ $t('Cancel') }}
         </el-button>
       </span>

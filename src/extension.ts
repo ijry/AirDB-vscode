@@ -243,6 +243,7 @@ export function activate(context: vscode.ExtensionContext) {
                 "airdb.view.source": (tableNode: TableNode) => {
                     if (tableNode) { tableNode.showSource(); }
                 },
+                // 在新的面板打开表数据页面
                 "airdb.table.show": (tableNode: TableNode) => {
                     if (tableNode) { tableNode.openInNew(); }
                 },
@@ -268,7 +269,9 @@ export function activate(context: vscode.ExtensionContext) {
             // template
             ...{
                 "airdb.table.find": (tableNode: TableNode) => {
-                    tableNode.openTable();
+                    // tableNode.openTable();
+                    // 在新TAB打开
+                    tableNode.openInNew();
                 },
                 "airdb.codeLens.run": (sql: string) => {
                     QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
