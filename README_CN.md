@@ -52,18 +52,18 @@
 1. 打开左侧数据库面板, 点击添加按钮
 2. 在连接页面配置相应的数据库信息
 
-![connection](images/connection.jpg)
+![connection](images/connection.png)
 
 创建两个面板是因为部分情况下你需要同时查看SQL和NoSQL的数据, 可通过长按拖动面板到另一个里面.
 
 ## 数据表
 
 1. 点击数据库表打开数据页, 点击表旁边的按钮则是打开新的数据页.
-2. 之后就可在页面进行CRUD、数据导出(**Excel、JSON**)等操作.![query](images/QueryTable.jpg)
+2. 之后就可在页面进行CRUD、数据导出(**Excel、JSON**)等操作.![query](images/QueryTable.png)
 
 ## 执行SQL
 
-点击数据库节点的 `Open Query` 按钮.![newquery](images/newquery.jpg)
+点击数据库节点的 `Open Query` 按钮.![newquery](images/newquery.png)
 
 将会打开新的SQL编辑器, 可编辑和执行SQL, 提供了以下功能
 
@@ -77,7 +77,7 @@
 ![run](images/run.jpg)
 
 该扩展支持了codelen, 但不支持存储过程和函数, 如果你经常使用他们, 则建议禁用codelen.
-![image](https://user-images.githubusercontent.com/27798227/144196926-e581872e-5392-4744-a646-a644749c548c.png)
+![image](images/settings.png)
 
 ## 缓存
 
