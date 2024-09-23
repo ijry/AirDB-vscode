@@ -194,7 +194,6 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
                 node.cloudId = element.id; // 云端记录ID便于修改
                  // 防窥模式
                 let hideName = GlobalState.get('hideName', 0);
-                vscode.window.showErrorMessage(hideName.toString())
                 if (hideName == 1) {
                     node.name = this.replaceFromFourthChar(node.name);
                 }
@@ -260,7 +259,6 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         }
         // 防窥模式
         let hideName = GlobalState.get('hideName', 0);
-        vscode.window.showErrorMessage(hideName.toString())
         if (hideName == 1) {
             node.name = this.replaceFromFourthChar(node.name);
         }
