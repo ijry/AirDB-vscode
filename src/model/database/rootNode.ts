@@ -17,8 +17,9 @@ export class RootNode extends Node implements CopyAble {
 
     public contextValue: string = ModelType.ROOTGROUP;
     public iconPath: string|vscode.ThemeIcon = new vscode.ThemeIcon("database");
-    constructor(public label: string, readonly provider: DbTreeDataProvider) {
+    constructor(public label: string, key: string, readonly provider: DbTreeDataProvider) {
         super(label)
+        this.key = key;
         this.provider = provider;
         this.collapsibleState = 2;
         // const lcp = ConnectionManager.activeNode;
@@ -27,6 +28,16 @@ export class RootNode extends Node implements CopyAble {
         // } else {
         //     this.iconPath=new vscode.ThemeIcon("database", new vscode.ThemeColor('charts.blue'));
         // }
+        switch (this.key) {
+            case 'local':
+                this.iconPath = new vscode.ThemeIcon("vm");
+                break;
+            case 'cloud':
+                this.iconPath = new vscode.ThemeIcon("cloud");
+                break;
+            default:
+                break;
+        }
     }
 
     // 获取根节点的子项目，一般是连接列表，分为本地和云端。

@@ -21,6 +21,18 @@ var commandExistsSync = require('command-exists').sync;
 // 用户中心服务
 export class UserCenterService {
 
+    // 切换隐藏连接名称
+    public async hideName(provider: DbTreeDataProvider) {
+        let hideName = GlobalState.get('hideName', 0);
+        if (hideName == 1) {
+            GlobalState.update('hideName', 0);
+        } else {
+            GlobalState.update('hideName', 1);
+        }
+        // 刷新
+        provider.reload();
+    }
+
     // 打开用户中心webview页面
     public async openPage(provider: DbTreeDataProvider) {
         ViewManager.createWebviewPanel({

@@ -84,6 +84,9 @@ export function activate(context: vscode.ExtensionContext) {
             },
             // connection
             ...{
+                "airdb.connection.hideName": () => {
+                    serviceManager.userCenterService.hideName(serviceManager.provider)
+                },
                 "airdb.connection.add": () => {
                     serviceManager.connectService.openConnect(serviceManager.provider)
                 },

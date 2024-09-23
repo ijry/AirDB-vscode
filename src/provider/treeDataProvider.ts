@@ -40,10 +40,8 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         return new Promise(async (res, rej) => {
             if (!element) {
                 // 左侧树根节点
-                let local = new RootNode(vscode.env.language.startsWith('zh-') ? '本地' : 'Local', this);
-                local.key = 'local'
-                let local2 = new RootNode(vscode.env.language.startsWith('zh-') ? '云端' : 'Cloud', this);
-                local2.key = 'cloud'
+                let local = new RootNode(vscode.env.language.startsWith('zh-') ? '本地' : 'Local', 'local', this);
+                let local2 = new RootNode(vscode.env.language.startsWith('zh-') ? '云端' : 'Cloud', 'cloud', this);
                 res([
                     local,local2
                 ])
@@ -153,6 +151,23 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         )
     }
 
+    // 替换喂*号
+    private  replaceFromFourthChar(str, len = 5) {
+        // 如果字符串长度小于4，则直接返回原字符串或根据需要调整
+        if (str.length < len) {
+          return str; // 或者你可以选择返回前几个字符加*  
+        }
+          
+        // 提取前三个字符
+        let firstThreeChars = str.slice(0, len - 1);
+        // 计算剩余字符的数量
+        let remainingChars = str.length - (len - 1) ;
+        // 生成相应数量的*
+        let stars = '*'.repeat(remainingChars);
+        // 拼接前三个字符和*
+        return firstThreeChars + stars;
+    }
+
     // 获取云端连接
     public async getCloudConnectionNodes(): Promise<Node[]> {
         const connetKey = this.connectionKey;
@@ -177,6 +192,12 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             list.forEach(element => {
                 let node:Node = element.node as Node;
                 node.cloudId = element.id; // 云端记录ID便于修改
+                 // 防窥模式
+                let hideName = GlobalState.get('hideName', 0);
+                vscode.window.showErrorMessage(hideName.toString())
+                if (hideName == 1) {
+                    node.name = this.replaceFromFourthChar(node.name);
+                }
                 try {
                     // 云端密码应该加密后解密
                     if (node.cryptoIv && node.password) {
@@ -236,6 +257,12 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             node = new FTPConnectionNode(key, connectInfo)
         } else {
             node = new ConnectionNode(key, connectInfo)
+        }
+        // 防窥模式
+        let hideName = GlobalState.get('hideName', 0);
+        vscode.window.showErrorMessage(hideName.toString())
+        if (hideName == 1) {
+            node.name = this.replaceFromFourthChar(node.name);
         }
         node.connectionKey = connectionKey;
         node.provider = this

@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "MySQL Redis Client AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "1.1.6",
+	"version": "1.1.7",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
@@ -107,10 +107,16 @@
 		},
 		"commands": [
 			{
+				"command": "airdb.connection.hideName",
+				"title": "%command.connection.hideName%",
+				"category": "AirDB",
+				"icon": "$(eye)"
+			},
+			{
 				"command": "airdb.user.center",
 				"title": "%command.user.center%",
 				"category": "AirDB",
-				"icon": "resources/icon/user.svg"
+				"icon": "$(account)"
 			},
 			{
 				"command": "airdb.struct.diff",
@@ -574,6 +580,11 @@
 					"command": "airdb.user.center",
 					"when": "view =~ /activitybar.airdb.+?ql/",
 					"group": "navigation@-4"
+				},
+				{
+					"command": "airdb.connection.hideName",
+					"when": "view =~ /activitybar.airdb.+?ql/",
+					"group": "navigation@-5"
 				}
 			],
 			"view/item/context": [
@@ -884,92 +895,92 @@
 				},
 				{
 					"command": "airdb.connection.terminal",
-					"when": "view == activitybar.airdb.nosql && viewItem == redisConnection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == redisConnection",
 					"group": "inline@1"
 				},
 				{
 					"command": "airdb.redis.connection.status",
-					"when": "view == activitybar.airdb.nosql && viewItem == redisConnection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == redisConnection",
 					"group": "connection"
 				},
 				{
 					"command": "airdb.redis.key.del",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /^(redisKey|redisFolder)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(redisKey|redisFolder)$/",
 					"group": "inline"
 				},
 				{
 					"command": "airdb.connection.delete",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "inline@0"
 				},
 				{
 					"command": "airdb.connection.terminal",
-					"when": "view == activitybar.airdb.nosql && viewItem == sshConnection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == sshConnection",
 					"group": "inline@1"
 				},
 				{
 					"command": "airdb.ssh.host.copy",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "0_connection@-2"
 				},
 				{
 					"command": "airdb.ssh.forward.port",
-					"when": "view == activitybar.airdb.nosql && viewItem == sshConnection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == sshConnection",
 					"group": "1_nosql@0"
 				},
 				{
 					"command": "airdb.ssh.socks.port",
-					"when": "view == activitybar.airdb.nosql && viewItem == sshConnection",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == sshConnection",
 					"group": "1_nosql@1"
 				},
 				{
 					"command": "airdb.ssh.file.new",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@2"
 				},
 				{
 					"command": "airdb.ssh.folder.new",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(sshConnection|ftpConnection)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "2_connection@4"
 				},
 				{
 					"command": "airdb.ssh.path.copy",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|file|link)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(folder|file|link)/",
 					"group": "ssh@1"
 				},
 				{
 					"command": "airdb.ssh.folder.open",
-					"when": "view == activitybar.airdb.nosql && viewItem == folder",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem == folder",
 					"group": "ssh@2"
 				},
 				{
 					"command": "airdb.ssh.file.new",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@0"
 				},
 				{
 					"command": "airdb.ssh.folder.new",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(folder|ftpFolder)/",
 					"group": "folder@1"
 				},
 				{
 					"command": "airdb.ssh.file.upload",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|ftpFolder)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(folder|ftpFolder)/",
 					"group": "inline@-2"
 				},
 				{
 					"command": "airdb.ssh.file.delete",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /^(folder|ftpFolder|file|ftpFile|redisFolder)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(folder|ftpFolder|file|ftpFile|redisFolder)$/",
 					"group": "folder@4"
 				},
 				{
 					"command": "airdb.ssh.file.download",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(folder|file|ftpFile)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(folder|file|ftpFile)/",
 					"group": "file@1"
 				},
 				{
 					"command": "airdb.ssh.file.download",
-					"when": "view == activitybar.airdb.nosql && viewItem =~ /(file|ftpFile)/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(file|ftpFile)/",
 					"group": "inline@1"
 				}
 			]
