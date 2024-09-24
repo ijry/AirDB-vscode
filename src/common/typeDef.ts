@@ -114,4 +114,7 @@ export interface TableMeta{
      * clustered bytes * pagesize
      */
     index_length?:string;
+
+    // pined
+    pined?:boolean;
 }

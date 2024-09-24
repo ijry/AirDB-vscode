@@ -58,6 +58,8 @@
 	"command.table.source": "Show Table Source",
 	"command.view.source": "Show View Source",
 	"command.table.show": "Open In New Panel",
+	"command.table.pin": "Pin",
+	"command.table.unpin": "Unpin",
 	"command.column.update": "Modify Column",
 	"command.column.drop": "Drop column",
 	"command.template.table": "Create New Table",

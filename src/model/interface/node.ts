@@ -29,6 +29,8 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     public isCloud:number;
     public cloudId?:string;
+    public pinedTablesMap?:Object = {};
+    public pinedTables?: string[] = [];
     public cryptoVersion :number = 1;
     public cryptoIv :string = '';
     public host: string;
@@ -112,7 +114,11 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     protected init(source: Node) {
         this.isCloud = source?.isCloud ? 1 : 0
+        // 上下文关键字，这会决定表上按钮的选项显隐。
+        vscode.commands.executeCommand('setContext', 'airdb.isCloud', this.isCloud);
         this.cloudId = source?.cloudId ? source?.cloudId : ''
+        this.pinedTablesMap = source?.pinedTablesMap ? source?.pinedTablesMap : null
+        this.pinedTables = source?.pinedTables ? source?.pinedTables : []
         this.cryptoIv = source?.cryptoIv ? source?.cryptoIv : ''
         this.host = source.host
         this.port = source.port
@@ -158,6 +164,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
             this.dialect = ServiceManager.getDialect(this.dbType)
         }
         if (this.disable) {
+            // 节点默认点击的事件
             this.command = { command: "airdb.connection.open", title: "Open Connection", arguments: [this] }
         }
         this.key = source.key || this.key;

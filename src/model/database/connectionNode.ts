@@ -86,6 +86,7 @@ export class ConnectionNode extends Node implements CopyAble {
         }
 
         const hasCatalog = this.dbType != DatabaseType.MYSQL && this.contextValue == ModelType.CONNECTION;
+        // pg/mssql与mysql相比多一层Catalog
         const sql = hasCatalog ? this.dialect.showDatabases() : this.dialect.showSchemas();
         return this.execute<any[]>(sql)
             .then((databases) => {

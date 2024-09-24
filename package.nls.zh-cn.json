@@ -58,6 +58,8 @@
 	"command.table.source": "查看表源码",
 	"command.view.source": "查看视图源码",
 	"command.table.show": "在新的面板打开",
+	"command.table.pin": "设为置顶",
+	"command.table.unpin": "取消置顶",
 	"command.column.update": "修改列",
 	"command.column.drop": "删除列",
 	"command.template.table": "新建表",

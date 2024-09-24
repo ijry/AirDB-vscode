@@ -331,10 +331,16 @@
 				"category": "MySQL"
 			},
 			{
-				"command": "airdb.table.show",
-				"title": "%command.table.show%",
+				"command": "airdb.table.pin",
+				"title": "%command.table.pin%",
 				"category": "AirDB",
-				"icon": "$(list-flat)"
+				"icon": "$(pinned)"
+			},
+			{
+				"command": "airdb.table.unpin",
+				"title": "%command.table.unpin%",
+				"category": "AirDB",
+				"icon": "$(pin)"
 			},
 			{
 				"command": "airdb.column.update",
@@ -749,8 +755,13 @@
 					"group": "mysql@8"
 				},
 				{
-					"command": "airdb.table.show",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table|view)$/",
+					"command": "airdb.table.pin",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table|view)$/ && table.pined == false && airdb.isCloud == 1",
+					"group": "inline@3"
+				},
+				{
+					"command": "airdb.table.unpin",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(table|view)$/ && table.pined == true  && airdb.isCloud == 1",
 					"group": "inline@3"
 				},
 				{

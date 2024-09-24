@@ -250,6 +250,14 @@ export function activate(context: vscode.ExtensionContext) {
                 "airdb.table.show": (tableNode: TableNode) => {
                     if (tableNode) { tableNode.openInNew(); }
                 },
+                // 表置顶
+                "airdb.table.pin": (tableNode: TableNode) => {
+                    if (tableNode) { tableNode.pin(tableNode); }
+                },
+                // 取消表置顶
+                "airdb.table.unpin": (tableNode: TableNode) => {
+                    if (tableNode) { tableNode.unpin(tableNode); }
+                }
             },
             // column node
             ...{

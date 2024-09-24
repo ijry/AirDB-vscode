@@ -12,27 +12,60 @@ import { CopyAble } from "../interface/copyAble";
 import { Node } from "../interface/node";
 import { ColumnNode } from "../other/columnNode";
 import { InfoNode } from "../other/infoNode";
+import { TableGroup } from "./tableGroup";
+import { Console } from "@/common/Console";
 
 export class TableNode extends Node implements CopyAble {
 
     public iconPath = new vscode.ThemeIcon("split-horizontal")
     public contextValue: string = ModelType.TABLE;
     public table: string;
+    public pined: boolean = false;
 
-    constructor(readonly meta: TableMeta, readonly parent: Node) {
+    constructor(readonly meta: TableMeta, readonly parent: TableGroup) {
         super(`${meta.name}`)
         this.table = meta.name
+        this.pined = meta.pined
         this.description = `${meta.comment || ''} ${(meta.rows != null) ? `Rows ${meta.rows}` : ''}`
         if (Util.supportColorIcon) {
             // this.iconPath=new vscode.ThemeIcon("split-horizontal",new vscode.ThemeColor("problemsWarningIcon.foreground"))
         }
+        if (parent != null) {
+            // parent.pinedTablesMap = null; // 防止向子级传递导致多余的内存占用
+        }
         this.init(parent)
         this.tooltip = this.getToolTipe(meta)
         this.cacheSelf()
+        // 默认点击事件
         this.command = {
             command: "airdb.table.find",
             title: "Run Select Statement",
             arguments: [this, true],
+        }
+
+        // 上下文关键字，这会决定表上按钮的选项显隐。
+        // vscode.commands.executeCommand('setContext', 'table.pined', this.pined);
+    }
+
+    // 表置顶
+    public async pin(table: TableNode) {
+        if (this.isCloud) {
+            // 请求接口
+            // this.pined = !this.pined;
+            if (this.pined) {
+                this.parent?.unpinTable(this.table);
+            } else {
+                this.parent?.pinTable(this.table);
+            }
+        }
+    }
+
+    // 表取消置顶
+    public async unpin(table: TableNode) {
+        if (this.isCloud) {
+            // 请求接口
+            this.pined = false;
+            this.parent.unpinTable(this.table);
         }
     }
 
@@ -174,6 +207,7 @@ export class TableNode extends Node implements CopyAble {
 
     }
 
+    // 在新标签页打开表
     public async openInNew() {
         const pageSize = Global.getConfig<number>(ConfigKey.DEFAULT_LIMIT);
         const sql = this.dialect.buildPageSql(this.wrap(this.schema), this.wrap(this.table), pageSize);
@@ -181,6 +215,7 @@ export class TableNode extends Node implements CopyAble {
         ConnectionManager.changeActive(this)
     }
 
+    // 在同一标签页打开表
     public async openTable() {
         const pageSize = Global.getConfig<number>(ConfigKey.DEFAULT_LIMIT);
         const sql = this.dialect.buildPageSql(this.wrap(this.schema), this.wrap(this.table), pageSize);
