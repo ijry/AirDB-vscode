@@ -54,24 +54,22 @@ export class TableNode extends Node implements CopyAble {
 
     // 表置顶
     public async pin(table: TableNode) {
-        if (this.isCloud) {
-            // 请求接口
+        // if (this.isCloud) {
             // this.pined = !this.pined;
             if (this.pined) {
                 this.parent?.unpinTable(this.table);
             } else {
                 this.parent?.pinTable(this.table);
             }
-        }
+        // }
     }
 
     // 表取消置顶
     public async unpin(table: TableNode) {
-        if (this.isCloud) {
-            // 请求接口
+        // if (this.isCloud) {
             this.pined = false;
             this.parent.unpinTable(this.table);
-        }
+        // }
     }
 
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {

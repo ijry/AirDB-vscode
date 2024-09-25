@@ -9,6 +9,7 @@ import * as vscode from 'vscode';
 import { Console } from "@/common/Console";
 import axios, { AxiosRequestConfig } from "axios";
 import { GlobalState } from "@/common/state";
+import { NodeUtil } from "../nodeUtil";
 
 export class TableGroup extends Node {
 
@@ -39,38 +40,60 @@ export class TableGroup extends Node {
     }
 
     public async updatePinedTables() {
-        // 本地缓存更新
+        if (this.isCloud) {
+            // 本地缓存更新
 
-        // 远程更新
-        // 设置请求头
-        let userStateExist = GlobalState.get<any>('userState') || '';
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': userStateExist ? userStateExist.token: ''
-        };
-        let url = `https://airdb.lingyun.net/api/v1/airdb/conns/updatePinedTables`;
-        let pinedTablesMap = {}
-        if (this.dbType == DatabaseType.MYSQL) {
-            // @ts-ignore
-            pinedTablesMap.default = this.pinedTables
+            // 远程更新
+            // 设置请求头
+            let userStateExist = GlobalState.get<any>('userState') || '';
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': userStateExist ? userStateExist.token: ''
+            };
+            let url = `https://airdb.lingyun.net/api/v1/airdb/conns/updatePinedTables`;
+            let pinedTablesMap = {}
+            if (this.dbType == DatabaseType.MYSQL) {
+                // @ts-ignore
+                pinedTablesMap.default = this.pinedTables
+            } else {
+                // todo
+                return;
+            }
+            const response = await axios.post(url, {
+                id: this.cloudId,
+                pinedTablesMap
+            }, {
+                headers: headers
+            });
+            // 登录失效重置用户状态
+            if (response.data.code == 401 || response.data.code == 402) {
+                vscode.window.showErrorMessage('AirDb登录失效')
+                GlobalState.update('userState', '');
+            }
+            if (response.data.code != 200) {
+                vscode.window.showErrorMessage('pin failed')
+                return;
+            }
         } else {
-            // todo
-            return;
-        }
-        const response = await axios.post(url, {
-            id: this.cloudId,
-            pinedTablesMap
-        }, {
-            headers: headers
-        });
-        // 登录失效重置用户状态
-        if (response.data.code == 401 || response.data.code == 402) {
-            vscode.window.showErrorMessage('AirDb登录失效')
-            GlobalState.update('userState', '');
-        }
-        if (response.data.code != 200) {
-            vscode.window.showErrorMessage('pin failed')
-            return;
+            // 本地更新
+            const connectionKey = this.connectionKey;
+            const key = this.key
+            const connections = this.context.get<{ [key: string]: Node }>(connectionKey, {});
+            if (this.dbType == DatabaseType.MYSQL) {
+                Console.log(this.pinedTables)
+                // @ts-ignore
+                if (this.pinedTables != null) {
+                    // schemeNode
+                    // @ts-ignore
+                    this.parent.parent.pinedTablesMap = {
+                        default: this.pinedTables
+                    }
+                }
+            } else {
+    
+            }
+            connections[key] = NodeUtil.removeParent(this.parent.parent);
+            await this.context.update(connectionKey, connections);
         }
     }
 
