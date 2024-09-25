@@ -7,6 +7,8 @@ import { InfoNode } from "../other/infoNode";
 import { TableNode } from "./tableNode";
 import * as vscode from 'vscode';
 import { Console } from "@/common/Console";
+import axios, { AxiosRequestConfig } from "axios";
+import { GlobalState } from "@/common/state";
 
 export class TableGroup extends Node {
 
@@ -15,20 +17,20 @@ export class TableGroup extends Node {
     public pinedTables: string[] = ['xy_cloud_index']; // 获取当前数据库置顶表的列表
     constructor(readonly parent: Node) {
         super(vscode.env.language.startsWith('zh-') ? "表" : "Table");
+        this.init(parent);
 
         if (parent.dbType == DatabaseType.MYSQL) {
             // @ts-ignore
             if (parent.pinedTablesMap != null && parent.pinedTablesMap.default != null) {
                 // schemeNode
                 // @ts-ignore
-                // parent.pinedTables = parent.pinedTablesMap.default;
+                this.pinedTables = parent.pinedTablesMap.default;
             }
         } else {
 
         }
 
-        this.init(parent);
-        Console.log(this.pinedTables)
+        // Console.log(this.pinedTables)
         
         
         if(Util.supportColorIcon){
@@ -36,15 +38,53 @@ export class TableGroup extends Node {
         }
     }
 
+    public async updatePinedTables() {
+        // 本地缓存更新
+
+        // 远程更新
+        // 设置请求头
+        let userStateExist = GlobalState.get<any>('userState') || '';
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': userStateExist ? userStateExist.token: ''
+        };
+        let url = `https://airdb.lingyun.net/api/v1/airdb/conns/updatePinedTables`;
+        let pinedTablesMap = {}
+        if (this.dbType == DatabaseType.MYSQL) {
+            // @ts-ignore
+            pinedTablesMap.default = this.pinedTables
+        } else {
+            // todo
+            return;
+        }
+        const response = await axios.post(url, {
+            id: this.cloudId,
+            pinedTablesMap
+        }, {
+            headers: headers
+        });
+        // 登录失效重置用户状态
+        if (response.data.code == 401 || response.data.code == 402) {
+            vscode.window.showErrorMessage('AirDb登录失效')
+            GlobalState.update('userState', '');
+        }
+        if (response.data.code != 200) {
+            vscode.window.showErrorMessage('pin failed')
+            return;
+        }
+    }
+
     public async pinTable(table: string) {
         if (!this.pinedTables.includes(table)) {
             this.pinedTables.push(table);
         }
+        this.updatePinedTables();
         this.reload();
     }
 
     public async unpinTable(table: string) {
         this.pinedTables = this.pinedTables.filter(ele => ele !== table);
+        this.updatePinedTables();
         this.reload();
     }
 
@@ -76,27 +116,33 @@ export class TableGroup extends Node {
             }
             return tableNodesNew;
         }
+        if (tableNodes == null) {
+            tableNodes = [];
+        }
         return this.execute<any[]>(this.dialect.showTables(this.schema))
             .then((tables) => {
                 let tableNodesPined = [];
-                tableNodes = tables.map<TableNode>((table) => {
+                // Console.log(this.pinedTables)
+                tables.forEach(table => {
                     // 过滤置顶的表
                     if (!this.pinedTables.includes(table.name)) {
-                        return new TableNode({...table, pined: false}, this);
+                        tableNodes.push(new TableNode({...table, pined: false}, this));
                     } else {
                         tableNodesPined.push(new TableNode({...table, pined: true}, this))
                     }
-                });
+                })
                 if (tableNodesPined.length > 0) {
                     tableNodes = tableNodesPined.concat(tableNodes);
                 }
-                if (tableNodes.length == 0) {
+                if (tableNodes == null || tableNodes.length == 0) {
                     tableNodes = [new InfoNode("This schema has no table")];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;
             })
             .catch((err) => {
+                Console.log(err)
+                err.message = 'asdasd'
                 return [new InfoNode(err)];
             });
     }

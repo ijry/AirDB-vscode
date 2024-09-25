@@ -26,6 +26,11 @@ export class TableNode extends Node implements CopyAble {
         super(`${meta.name}`)
         this.table = meta.name
         this.pined = meta.pined
+        if (!this.pined) {
+            this.iconPath=new vscode.ThemeIcon("split-horizontal");
+        } else {
+            this.iconPath=new vscode.ThemeIcon("pinned");
+        }
         this.description = `${meta.comment || ''} ${(meta.rows != null) ? `Rows ${meta.rows}` : ''}`
         if (Util.supportColorIcon) {
             // this.iconPath=new vscode.ThemeIcon("split-horizontal",new vscode.ThemeColor("problemsWarningIcon.foreground"))

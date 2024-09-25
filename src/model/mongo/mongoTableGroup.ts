@@ -25,6 +25,7 @@ export class MongoTableGroup extends MonggoBaseNode {
             const tables = await client.db(this.database).listCollections().toArray()
 
             const tableNodes = tables.map<TableNode>((table) => {
+                // @ts-ignore todo
                 const mongoNode: TableNode = new MongoTableNode({ name: table.name } as TableMeta, this);
                 mongoNode.schema = mongoNode.database
                 return mongoNode;
