@@ -22,10 +22,10 @@
       <div class="mb-2 mr-10">
         <label class="inline-block mr-5 font-bold">{{$t('Connection Storge')}}</label>
         <div class="inline-flex items-center">
-          <el-radio v-model="connectionOption.isCloud" :label="0">
+          <el-radio v-model="connectionOption.isCloud" :label="0" :disabled="editModel">
             {{$t('Local')}}
           </el-radio>
-          <el-radio v-model="connectionOption.isCloud" :label="1">
+          <el-radio v-model="connectionOption.isCloud" :label="1" :disabled="editModel">
             {{$t('Cloud')}}
           </el-radio>
         </div>

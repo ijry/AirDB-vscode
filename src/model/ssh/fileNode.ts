@@ -62,7 +62,7 @@ export class FileNode extends Node {
             if (err) {
                 vscode.window.showErrorMessage(err.message)
             } else {
-                ConnectionProvider.tempRemoteMap.set(path.resolve(tempPath), { remote: this.fullPath, sshConfig: this.sshConfig })
+                ConnectionProvider.tempRemoteMap.set(path.resolve(tempPath), { cate: 'sftp', remote: this.fullPath, sshConfig: this.sshConfig })
                 vscode.commands.executeCommand('vscode.open', vscode.Uri.file(tempPath))
             }
         })

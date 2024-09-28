@@ -104,7 +104,7 @@ export class ConnectionNode extends Node implements CopyAble {
                 });
 
                 if (Global.getConfig("showUser") && !hasCatalog) {
-                    databaseNodes.unshift(new UserGroup("USER", this));
+                    databaseNodes.unshift(new UserGroup(vscode.env.language.startsWith('zh-') ? "用户" : "USER", this));
                 }
                 DatabaseCache.setSchemaListOfConnection(this.uid, databaseNodes);
 

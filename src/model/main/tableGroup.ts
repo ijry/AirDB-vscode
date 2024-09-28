@@ -15,7 +15,7 @@ export class TableGroup extends Node {
 
     public iconPath=new ThemeIcon("list-flat")
     public contextValue: string = ModelType.TABLE_GROUP;
-    public pinedTables: string[] = ['xy_cloud_index']; // 获取当前数据库置顶表的列表
+    public pinedTables: string[] = []; // 获取当前数据库置顶表的列表
     constructor(readonly parent: Node) {
         super(vscode.env.language.startsWith('zh-') ? "表" : "Table");
         this.init(parent);
@@ -32,7 +32,6 @@ export class TableGroup extends Node {
         }
 
         // Console.log(this.pinedTables)
-        
         
         if(Util.supportColorIcon){
             this.iconPath = new ThemeIcon("list-flat", new ThemeColor("terminal.ansiBlue"));

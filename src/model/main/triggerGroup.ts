@@ -32,7 +32,7 @@ export class TriggerGroup extends Node {
                     return new TriggerNode(table.TRIGGER_NAME, this);
                 });
                 if (tableNodes.length == 0) {
-                    tableNodes = [new InfoNode("This schema has no trigger")];
+                    tableNodes = [new InfoNode(vscode.env.language.startsWith('zh-') ? "不存在触发器" :"This schema has no trigger")];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;

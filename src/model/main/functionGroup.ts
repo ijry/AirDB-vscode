@@ -27,7 +27,7 @@ export class FunctionGroup extends Node {
                     return new FunctionNode(table.ROUTINE_NAME, this);
                 });
                 if (tableNodes.length == 0) {
-                    tableNodes = [new InfoNode("This schema has no function")];
+                    tableNodes = [new InfoNode(vscode.env.language.startsWith('zh-') ? "不存在函数": "This schema has no function")];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;

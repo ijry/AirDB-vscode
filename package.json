@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "MySQL Redis Client AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "1.1.10",
+	"version": "1.1.11",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
@@ -1022,7 +1022,7 @@
 				},
 				"airdb-config.showUser": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "Show user on tree view."
 				},
 				"airdb-config.showView": {
@@ -1032,7 +1032,7 @@
 				},
 				"airdb-config.showQuery": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "Show query on tree view."
 				},
 				"airdb-config.showProcedure": {
@@ -1047,7 +1047,7 @@
 				},
 				"airdb-config.showTrigger": {
 					"type": "boolean",
-					"default": false,
+					"default": true,
 					"description": "Show trigger on tree view."
 				}
 			}
