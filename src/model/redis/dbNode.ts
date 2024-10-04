@@ -55,7 +55,7 @@ export class DbNode extends RedisBaseNode {
     
       // 如果还有更多数据并且children数组为空，则添加一个特殊的节点。
       if (this.hasLeftData() && children.length === 0) {  
-          let message = this.contextValue === "redisFolder" ? "Folder empty" : "Db empty";  
+          let message = this.contextValue === "redisFolder" ? vscode.l10n.t("Folder empty") : vscode.l10n.t("Db empty");  
           // children.unshift(new InfoNode(message));  
       }
     

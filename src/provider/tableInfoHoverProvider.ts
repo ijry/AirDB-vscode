@@ -15,7 +15,7 @@ export class TableInfoHoverProvider implements HoverProvider {
             const args = [{ sql: `SELECT * FROM ${tableNode.table}` }];
             const runCommandUri = vscode.Uri.parse(`command:airdb.runQuery?${encodeURIComponent(JSON.stringify(args))}`);
             const markdownStr = new vscode.MarkdownString(`[Query Table](${runCommandUri})`);
-            markdownStr.isTrusted=true;
+            markdownStr.isTrusted = true;
             markdownStr.appendCodeblock(sourceCode[0]['Create Table'], "sql");
             return new vscode.Hover(markdownStr);
         }

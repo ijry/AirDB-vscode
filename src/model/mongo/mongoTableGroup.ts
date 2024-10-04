@@ -11,7 +11,7 @@ export class MongoTableGroup extends MonggoBaseNode {
     contextValue = ModelType.TABLE_GROUP;
     public iconPath = new ThemeIcon("list-flat")
     constructor(readonly parent: Node) {
-        super("COLLECTION")
+        super(vscode.l10n.t("COLLECTION"))
         this.uid = `${parent.getConnectId()}_${parent.database}_${ModelType.TABLE_GROUP}`;
         this.init(parent)
     }

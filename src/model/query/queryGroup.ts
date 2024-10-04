@@ -16,7 +16,7 @@ export class QueryGroup extends Node {
     public iconPath = new vscode.ThemeIcon("code")
     private storePath: string;
     constructor(readonly parent: Node) {
-        super(vscode.env.language.startsWith('zh-') ? "查询" : "Query")
+        super(vscode.l10n.t("Query"))
         this.init(parent)
         this.storePath = `${FileManager.storagePath}/query/${this.getConnectId({ withSchema: true })}`;
     }
@@ -37,7 +37,7 @@ export class QueryGroup extends Node {
             let res = response.data
             // 登录失效重置用户状态
             if (response.data.code == 401 || response.data.code == 402) {
-                vscode.window.showErrorMessage('AirDb登录失效')
+                vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                 GlobalState.update('userState', '');
             }
             if (res.code != 200) {
@@ -51,7 +51,7 @@ export class QueryGroup extends Node {
             queries = this.readdir(this.storePath)?.map(fileName => new QueryNode(fileName.replace(/\.[^/.]+$/, ""), this));
         }
         if (!queries || queries.length == 0) {
-            return [new InfoNode(vscode.env.language.startsWith('zh-') ? "无查询语句" :"There is no saved query.")]
+            return [new InfoNode(vscode.l10n.t("There is no saved query."))]
         }
         return queries
     }
@@ -87,7 +87,7 @@ export class QueryGroup extends Node {
                     let res = response.data
                     // 登录失效重置用户状态
                     if (response.data.code == 401 || response.data.code == 402) {
-                        vscode.window.showErrorMessage('AirDb登录失效')
+                        vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                         GlobalState.update('userState', '');
                     }
                     if (res.code != 200) {

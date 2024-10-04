@@ -14,7 +14,7 @@ export class ViewGroup extends Node {
     public contextValue = ModelType.VIEW_GROUP
     public pinedTables: string[] = []; // 获取当前数据库置顶表的列表
     constructor(readonly parent: Node) {
-        super(vscode.env.language.startsWith('zh-') ? "视图" : "View")
+        super(vscode.l10n.t("View"))
         this.init(parent)
         if(Util.supportColorIcon){
             this.iconPath=new ThemeIcon("menu",new ThemeColor("problemsWarningIcon.foreground"))
@@ -53,7 +53,7 @@ export class ViewGroup extends Node {
                     return new ViewNode(table, this);
                 });
                 if (tableNodes.length == 0) {
-                    tableNodes = [new InfoNode("This schema has no views")];
+                    tableNodes = [new InfoNode(vscode.l10n.t("This schema has no views"))];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;

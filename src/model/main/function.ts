@@ -14,7 +14,7 @@ export class FunctionNode extends Node {
         this.init(parent)
         this.command = {
             command: "airdb.show.function",
-            title: "Show Function Create Source",
+            title: vscode.l10n.t("Show Function Create Source"),
             arguments: [this, true],
         }
     }
@@ -23,7 +23,8 @@ export class FunctionNode extends Node {
         this.execute<any[]>( this.dialect.showFunctionSource(this.schema,this.name))
             .then((procedDtails) => {
                 const procedDtail = procedDtails[0];
-                QueryUnit.showSQLTextDocument(this,`DROP FUNCTION IF EXISTS ${this.name};\n${procedDtail['Create Function']}`);
+                QueryUnit.showSQLTextDocument(this,
+                    `DROP FUNCTION IF EXISTS ${this.name};\n${procedDtail['Create Function']}`);
             });
     }
 
@@ -34,7 +35,7 @@ export class FunctionNode extends Node {
 
     public drop() {
 
-        Util.confirm(`Are you sure you want to drop function ${this.name} ?`, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to drop function {0} ?`, this.name), async () => {
             this.execute( `DROP function ${this.wrap(this.name)}`).then(() => {
                 this.parent.setChildCache(null)
                 DbTreeDataProvider.refresh(this.parent);

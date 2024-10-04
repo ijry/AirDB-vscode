@@ -26,7 +26,7 @@ export class QueryNode extends Node {
         this.collapsibleState = TreeItemCollapsibleState.None
         this.command = {
             command: "airdb.query.open",
-            title: "Open Query",
+            title: vscode.l10n.t("Open Query"),
             arguments: [this, true],
         }
     }
@@ -44,7 +44,7 @@ export class QueryNode extends Node {
             let res = response.data
             // 登录失效重置用户状态
             if (response.data.code == 401 || response.data.code == 402) {
-                vscode.window.showErrorMessage('AirDb登录失效')
+                vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                 GlobalState.update('userState', '');
             }
             if (res.code != 200) {
@@ -84,7 +84,7 @@ export class QueryNode extends Node {
     }
 
     public async rename() {
-        vscode.window.showInputBox({ placeHolder: "Input new name" }).then(async newName => {
+        vscode.window.showInputBox({ placeHolder: vscode.l10n.t("Input new name") }).then(async newName => {
             if (newName) {
                 if (this.isCloud) {
                     // 设置请求头       
@@ -101,7 +101,7 @@ export class QueryNode extends Node {
                     let res = response.data
                     // 登录失效重置用户状态
                     if (response.data.code == 401 || response.data.code == 402) {
-                        vscode.window.showErrorMessage('AirDb登录失效')
+                        vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                         GlobalState.update('userState', '');
                     }
                     if (res.code != 200) {

@@ -15,7 +15,7 @@ export class UserNode extends Node implements CopyAble {
         this.init(parent)
         this.command = {
             command: "airdb.user.sql",
-            title: "Run User Detail Statement",
+            title: vscode.l10n.t("Run User Detail Statement"),
             arguments: [this, true],
         }
     }
@@ -36,9 +36,9 @@ export class UserNode extends Node implements CopyAble {
 
     public drop() {
 
-        Util.confirm(`Are you sure you want to drop user ${this.username} ?`, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to drop user {0} ?`, this.username), async () => {
             this.execute(`DROP user ${this.username}`).then(() => {
-                vscode.window.showInformationMessage(`Drop user ${this.username} success!`);
+                vscode.window.showInformationMessage(vscode.l10n.t(`Drop user {0} success!`, this.username));
                 this.parent.setChildCache(null)
                 DbTreeDataProvider.refresh(this.parent);
             });

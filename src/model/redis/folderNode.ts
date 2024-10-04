@@ -8,6 +8,7 @@ import RedisBaseNode from "./redisBaseNode";
 import { DbNode } from "./dbNode";
 import { Console } from "../../common/Console";
 import { InfoNode } from "../other/infoNode";
+import * as vscode from "vscode";
 
 export class RedisFolderNode extends RedisBaseNode {
     contextValue = ModelType.REDIS_FOLDER;
@@ -31,7 +32,7 @@ export class RedisFolderNode extends RedisBaseNode {
     // 这里folderNode与keyNode公用一个获取子级方法，是因为实际上redis里floder是从key的同一前缀而衍生的概念。
     public static buildChilds(parent: RedisBaseNode, keys: string[]) {
         // 如果没有数据显示一个InfoNode节点
-        if (!keys) return [new InfoNode('no data')];
+        if (!keys) return [new InfoNode(vscode.l10n.t('no data'))];
         const prefixMap: { [key: string]: string[] } = {}
         if (parent.level <= 2) {
             for (const key of keys.sort()) {
@@ -55,7 +56,7 @@ export class RedisFolderNode extends RedisBaseNode {
     }
 
     public async delete() {
-        Util.confirm(`Are you sure you want to delete folder ${this.label} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to delete folder {0} ? `, this.label), async () => {
             const client = await this.getClient();
             for (const child of this.childens) {
                 await client.del(child) 

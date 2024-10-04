@@ -19,7 +19,7 @@ export default class KeyNode extends RedisBaseNode {
             this.iconPath = new ThemeIcon("key", new ThemeIcon('charts.yellow'))
         }
         this.command = {
-            title: 'View Key Detail',
+            title: vscode.l10n.t('View Key Detail'),
             command: 'airdb.redis.key.detail',
             arguments: [this]
         }
@@ -30,7 +30,7 @@ export default class KeyNode extends RedisBaseNode {
     }
 
     public async delete() {
-        Util.confirm(`Are you sure you want to delete key ${this.label} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to delete key {0} ? `, this.label), async () => {
             const client = await this.getClient();
             await client.del(this.label)
             this.provider.reload()

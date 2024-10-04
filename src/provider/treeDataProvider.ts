@@ -184,7 +184,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             let res = response.data
             // 登录失效充值用户状态
             if (response.data.code == 401 || response.data.code == 402) {
-                vscode.window.showErrorMessage('AirDb登录失效')
+                vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                 GlobalState.update('userState', '');
             }
             let list = res.data.dataList;
@@ -277,7 +277,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
         const node = ConnectionManager.getByActiveFile()
         if (node) {
-            vscode.window.showErrorMessage("Query file can not change active database.")
+            vscode.window.showErrorMessage(vscode.l10n.t("Query file can not change active database."))
             return;
         }
 

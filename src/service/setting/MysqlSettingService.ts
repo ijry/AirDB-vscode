@@ -8,14 +8,14 @@ export class MysqlSettingService implements SettingService {
     private x86 = "C:\\Program Files (x86)\\MySQL";
     public open() {
         if (!process.platform.match(/win/ig)) {
-            vscode.window.showErrorMessage("Only Support Windows OS.");
+            vscode.window.showErrorMessage(vscode.l10n.t("Only Support Windows OS."));
             return;
         }
         let isOpen = this.check(this.x86);
         if (!isOpen) {
             isOpen = this.check(this.x64);
             if (!isOpen) {
-                vscode.window.showErrorMessage("Cannot find mysql setting in your machine.");
+                vscode.window.showErrorMessage(vscode.l10n.t("Cannot find mysql setting in your machine."));
             }
         }
     }

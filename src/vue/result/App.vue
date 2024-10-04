@@ -177,6 +177,8 @@ export default {
       let locale = 'en'
       if (state.lang == 'zh-cn' || state.lang == 'zh-tw') {
         locale = 'zh'
+      } else {
+        locale = state.lang
       }
       this.$i18n.locale = locale
       console.log(this.$i18n)

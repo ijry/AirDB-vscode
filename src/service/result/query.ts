@@ -13,6 +13,7 @@ import { ColumnNode } from "../../model/other/columnNode";
 import { ExportService } from "../export/exportService";
 import { QueryOption, QueryUnit } from "../queryUnit";
 import { DataResponse } from "./queryResponse";
+import * as vscode from 'vscode';
 
 export class QueryParam<T> {
     public connection: Node;
@@ -35,7 +36,7 @@ export class QueryPage {
         ViewManager.createWebviewPanel({
             singlePage: true,
             splitView: this.isActiveSql(queryParam.queryOption),
-            path: 'result', title: 'Query', type,
+            path: 'result', title: vscode.l10n.t('Query'), type,
             iconPath: Global.getExtPath("resources", "icon", "query.svg"),
             eventHandler: async (handler) => {
                 handler.on("init", () => {

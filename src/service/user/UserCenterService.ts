@@ -36,7 +36,7 @@ export class UserCenterService {
     // 打开用户中心webview页面
     public async openPage(provider: DbTreeDataProvider) {
         ViewManager.createWebviewPanel({
-            path: "app", title: vscode.env.language.startsWith('zh-') ? "用户中心" : "UserCenter",
+            path: "app", title: vscode.l10n.t("UserCenter"),
             splitView: false, iconPath: Global.getExtPath("resources", "icon", "cloud-sync.svg"),
             eventHandler: (handler => {
                 handler.on("init", () => {
@@ -50,7 +50,7 @@ export class UserCenterService {
                     try {
                         // 更新主密码
                         GlobalState.update('mainPwd', data.pwd);
-                        vscode.window.showInformationMessage(`Main password set success!` + data.pwd)
+                        vscode.window.showInformationMessage(vscode.l10n.t(`Main password set success!`) + data.pwd)
                         // handler.emit("success") // 成功提示
 
                         // 刷新左侧目录树

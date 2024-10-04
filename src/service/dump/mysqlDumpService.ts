@@ -27,7 +27,8 @@ export class MysqlDumpService extends DumpService {
                 const command = `mysqldump -h ${host} -P ${port} -u ${node.user} -p${node.password}${data} --skip-add-locks ${node.schema} ${tables}>${folderPath.fsPath}`
                 // Console.log(`Executing: ${command}`);
                 Util.execute(command).then(() => {
-                    vscode.window.showInformationMessage(`Backup ${node.getHost()}_${node.schema} success!`, 'open').then(action => {
+                    vscode.window.showInformationMessage(vscode.l10n.t(`Backup {0}_{1} success!`, node.getHost(), node.schema),
+                        'open').then(action => {
                         if (action == 'open') {
                             vscode.commands.executeCommand('vscode.open', vscode.Uri.file(folderPath.fsPath));
                         }

@@ -36,8 +36,8 @@ export class ConnectService {
         let plat: string = platform();
         ViewManager.createWebviewPanel({
             path: "app", title: connectionNode
-                ? vscode.env.language.startsWith('zh-') ? "修改连接" : "edit"
-                : vscode.env.language.startsWith('zh-') ? "新增连接" : "connect",
+                ? vscode.l10n.t("edit")
+                : vscode.l10n.t("connect"),
             splitView: false, iconPath: Global.getExtPath("resources", "icon", "connection.svg"),
             eventHandler: (handler) => {
                 handler.on("init", () => {
@@ -124,11 +124,11 @@ export class ConnectService {
                             });
                             // 登录失效重置用户状态
                             if (response.data.code == 401 || response.data.code == 402) {
-                                vscode.window.showErrorMessage('AirDb登录失效')
+                                vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                                 GlobalState.update('userState', '');
                             }
                             if (response.data.code != 200) {
-                                handler.emit("error", 'save to cloud fail ' + response.data.msg)
+                                handler.emit("error", vscode.l10n.t('save to cloud fail ') + response.data.msg)
                                 return;
                             }
                             // 刷新左侧目录树
@@ -187,7 +187,7 @@ export class ConnectService {
             await WorkState.update(CacheKey.NOSQL_CONNECTION, connectonConfig.nosql.workspace);
             DbTreeDataProvider.refresh();
         } catch (error) {
-            window.showErrorMessage("Parse connect config fail!")
+            window.showErrorMessage(vscode.l10n.t("Parse connect config fail!"))
         }
     }
 

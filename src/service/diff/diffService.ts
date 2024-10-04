@@ -13,6 +13,7 @@ import { SchemaNode } from "@/model/database/schemaNode";
 import { UserGroup } from "@/model/database/userGroup";
 import { TableGroup } from "@/model/main/tableGroup";
 import { InfoNode } from "@/model/other/infoNode";
+import * as vscode from "vscode";
 
 export class DiffService {
     startDiff(provider: DbTreeDataProvider) {
@@ -30,7 +31,7 @@ export class DiffService {
                         try {
                             databaseList[node.uid] = (await node.getChildren()).filter(dbNode => !(dbNode instanceof UserGroup))
                         } catch (error) {
-                            databaseList[node.uid] = [new InfoNode("Load fail.")]
+                            databaseList[node.uid] = [new InfoNode(vscode.l10n.t("Load fail."))]
                         }
                     }
                     const data = { nodes: NodeUtil.removeParent(nodes), databaseList: NodeUtil.removeParent(databaseList) };

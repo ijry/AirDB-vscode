@@ -150,7 +150,7 @@ export class RedisConnectionNode extends RedisBaseNode {
         const client = await this.getClient()
         client.info((err, reply) => {
             ViewManager.createWebviewPanel({
-                title: "Redis Server Status", splitView: false,
+                title: vscode.l10n.t("Redis Server Status"), splitView: false,
                 path: "app",
                 eventHandler: (handler) => {
                     handler.on("init", () => {
@@ -169,7 +169,7 @@ export class RedisConnectionNode extends RedisBaseNode {
 
     public async deleteConnection(context: vscode.ExtensionContext) {
 
-        Util.confirm(`Are you sure you want to Delete Connection ${this.label} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to Delete Connection {0} ? `, this.label), async () => {
             this.indent({ command: CommandKey.delete })
         })
 

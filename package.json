@@ -2,12 +2,13 @@
 	"name": "airdb",
 	"displayName": "MySQL Redis Client AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "1.1.11",
+	"version": "1.1.12",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
-		"vscode": "^1.51.0"
+		"vscode": "^1.73.0"
 	},
+	"l10n": "./l10n",
 	"categories": [
 		"Programming Languages",
 		"Keymaps"
@@ -1055,7 +1056,7 @@
 	},
 	"scripts": {
 		"dev": "webpack --progress",
-		"clean": "rimraf out", 
+		"clean": "rimraf out",
 		"build": "npm run clean && webpack --progress --mode=production",
 		"lib": "webpack --config webpack.config.lib.js --progress -p",
 		"package": "vsce package",
@@ -1070,7 +1071,8 @@
 		"@types/redis": "^2.8.18",
 		"@types/ssh2": "^0.5.43",
 		"@types/tedious": "^4.0.3",
-		"@types/vscode": "1.51.0",
+		"@types/vscode": "1.73.0",
+		"@vscode/l10n-dev": "^0.0.35",
 		"copy-webpack-plugin": "^6.3.0",
 		"css-loader": "^3.5.3",
 		"file-loader": "^6.0.0",
@@ -1090,6 +1092,7 @@
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
+		"@vscode/l10n": "^0.0.18",
 		"axios": "^0.21.1",
 		"command-exists": "^1.2.9",
 		"comment-json": "^4.1.0",

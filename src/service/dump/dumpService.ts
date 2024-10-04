@@ -81,9 +81,11 @@ export class DumpService {
         if (!withData) {
             option.dump.data = false;
         }
-        Util.process(`Doing backup ${node.host}_${node.schema}...`, (done) => {
+        Util.process(vscode.l10n.t('Doing backup ') + `${node.host}_${node.schema}...`, (done) => {
             mysqldump(option, node).then(() => {
-                vscode.window.showInformationMessage(`Backup ${node.getHost()}_${node.schema} success!`, 'open').then(action => {
+                vscode.window.showInformationMessage(
+                    vscode.l10n.t(`Backup {0}_{1} success!`, node.getHost(), node.schema),
+                'open').then(action => {
                     if (action == 'open') {
                         vscode.commands.executeCommand('vscode.open', vscode.Uri.file(dumpFilePath));
                     }
@@ -97,7 +99,7 @@ export class DumpService {
 
         const exportSqlName = `${format('yyyy-MM-dd_hhmmss', new Date())}_${node.schema}.docx`;
 
-        vscode.window.showSaveDialog({ saveLabel: "Select export file path", defaultUri: vscode.Uri.file(exportSqlName), filters: { 'docx': ['docx'] } }).then(async (generatePath) => {
+        vscode.window.showSaveDialog({ saveLabel: vscode.l10n.t("Select export file path"), defaultUri: vscode.Uri.file(exportSqlName), filters: { 'docx': ['docx'] } }).then(async (generatePath) => {
             if (generatePath) {
                 const nodes = await new TableGroup(node).getChildren();
                 const officegen = require('officegen')
@@ -143,7 +145,7 @@ export class DumpService {
                     console.log(err)
                 })
                 out.on("close", () => {
-                    vscode.window.showInformationMessage(`Generate ${node.schema} document success!`, 'open').then(action => {
+                    vscode.window.showInformationMessage(vscode.l10n.t(`Generate {0} document success!`, node.schema), 'open').then(action => {
                         if (action == 'open') {
                             vscode.commands.executeCommand('vscode.open', generatePath);
                         }

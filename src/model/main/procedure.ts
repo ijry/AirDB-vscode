@@ -15,7 +15,7 @@ export class ProcedureNode extends Node {
         this.init(parent)
         this.command = {
             command: "airdb.show.procedure",
-            title: "Show Procedure Create Source",
+            title: vscode.l10n.t("Show Procedure Create Source"),
             arguments: [this, true]
         }
     }
@@ -35,7 +35,7 @@ export class ProcedureNode extends Node {
 
     public drop() {
 
-        Util.confirm(`Are you sure you want to drop procedure ${this.name} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to drop procedure {0} ? `, this.name), async () => {
             this.execute(`DROP procedure ${this.wrap(this.name)}`).then(() => {
                 this.parent.setChildCache(null)
                 DbTreeDataProvider.refresh(this.parent)

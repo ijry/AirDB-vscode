@@ -27,7 +27,7 @@ export class ColumnNode extends Node implements CopyAble {
         }
         this.command = {
             command: "airdb.column.update",
-            title: "Update Column Statement",
+            title: vscode.l10n.t("Update Column Statement"),
             arguments: [this, true],
         }
     }
@@ -83,7 +83,7 @@ ${this.column.type} ${this.column.nullable == "YES" ? "Nullable" : "NotNull"}`
 
         const dropSql = `ALTER TABLE \n\t${this.wrap(this.table)} DROP COLUMN ${this.wrap(this.column.name)};`;
         await QueryUnit.showSQLTextDocument(this, dropSql, Template.alter);
-        Util.confirm(`Are you sure you want to drop column ${this.column.name} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to drop column {0} ? `, this.column.name), async () => {
             this.execute(dropSql).then(() => {
                 this.parent.setChildCache(null)
                 DbTreeDataProvider.refresh(this.parent);
@@ -98,7 +98,7 @@ ${this.column.type} ${this.column.nullable == "YES" ? "Nullable" : "NotNull"}`
         const columns = (await this.parent.getChildren()) as ColumnNode[]
         const afterColumnNode = columns[this.index + 1];
         if (!afterColumnNode) {
-            vscode.window.showErrorMessage("Column is at last.")
+            vscode.window.showErrorMessage(vscode.l10n.t("Column is at last."))
             return;
         }
         const sql = `ALTER TABLE ${this.wrap(this.schema)}.${this.wrap(this.table)} MODIFY COLUMN ${this.wrap(this.column.name)} ${this.column.type} AFTER ${this.wrap(afterColumnNode.column.name)};`
@@ -111,7 +111,7 @@ ${this.column.type} ${this.column.nullable == "YES" ? "Nullable" : "NotNull"}`
         const columns = (await this.parent.getChildren()) as ColumnNode[]
         const beforeColumnNode = columns[this.index - 1];
         if (!beforeColumnNode) {
-            vscode.window.showErrorMessage("Column is at first.")
+            vscode.window.showErrorMessage(vscode.l10n.t("Column is at first."))
             return;
         }
         const sql = `ALTER TABLE ${this.wrap(this.schema)}.${this.wrap(this.table)} MODIFY COLUMN ${this.wrap(beforeColumnNode.column.name)} ${beforeColumnNode.column.type} AFTER ${this.wrap(this.column.name)};`
@@ -124,8 +124,8 @@ ${this.column.type} ${this.column.nullable == "YES" ? "Nullable" : "NotNull"}`
         if (this.dbType == DatabaseType.MYSQL || !this.dbType) {
             return;
         }
-        vscode.window.showErrorMessage("Only mysql support change column position.")
-        throw new Error("Only mysql support change column position.");
+        vscode.window.showErrorMessage(vscode.l10n.t("Only mysql support change column position."))
+        throw new Error(vscode.l10n.t("Only mysql support change column position."));
     }
 
 }

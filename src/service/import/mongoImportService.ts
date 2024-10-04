@@ -26,7 +26,7 @@ export class MongoImportService extends ImportService {
                 }
             })
         } else {
-            vscode.window.showErrorMessage("Command mongoimport not found!")
+            vscode.window.showErrorMessage(vscode.l10n.t("Command mongoimport not found!"))
         }
 
     }

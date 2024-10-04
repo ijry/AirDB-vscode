@@ -17,7 +17,7 @@ export class TableGroup extends Node {
     public contextValue: string = ModelType.TABLE_GROUP;
     public pinedTables: string[] = []; // 获取当前数据库置顶表的列表
     constructor(readonly parent: Node) {
-        super(vscode.env.language.startsWith('zh-') ? "表" : "Table");
+        super(vscode.l10n.t("Table"));
         this.init(parent);
 
         if (parent.dbType == DatabaseType.MYSQL) {
@@ -66,7 +66,7 @@ export class TableGroup extends Node {
             });
             // 登录失效重置用户状态
             if (response.data.code == 401 || response.data.code == 402) {
-                vscode.window.showErrorMessage('AirDb登录失效')
+                vscode.window.showErrorMessage('AirDb ' + vscode.l10n.t('login expired'))
                 GlobalState.update('userState', '');
             }
             if (response.data.code != 200) {
@@ -157,7 +157,7 @@ export class TableGroup extends Node {
                     tableNodes = tableNodesPined.concat(tableNodes);
                 }
                 if (tableNodes == null || tableNodes.length == 0) {
-                    tableNodes = [new InfoNode("This schema has no table")];
+                    tableNodes = [new InfoNode(vscode.l10n.t("This schema has no table"))];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;

@@ -51,7 +51,7 @@ export class SSHConnectionNode extends Node {
 
     public async deleteConnection(context: vscode.ExtensionContext) {
 
-        Util.confirm(`Are you sure you want to Delete Connection ${this.label} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to Delete Connection {0} ? `, this.label), async () => {
             this.indent({ command: CommandKey.delete })
         })
 
@@ -89,7 +89,7 @@ export class SSHConnectionNode extends Node {
                     }
                 })
             } else {
-                vscode.window.showInformationMessage("Create File Cancel!")
+                vscode.window.showInformationMessage(vscode.l10n.t("Create File Cancel!"))
             }
         })
     }
@@ -106,13 +106,13 @@ export class SSHConnectionNode extends Node {
                     }
                 })
             } else {
-                vscode.window.showInformationMessage("Create Folder Cancel!")
+                vscode.window.showInformationMessage(vscode.l10n.t("Create Folder Cancel!"))
             }
         })
     }
 
     upload(): any {
-        vscode.window.showOpenDialog({ canSelectFiles: true, canSelectMany: false, canSelectFolders: false, openLabel: "Select Upload Path" })
+        vscode.window.showOpenDialog({ canSelectFiles: true, canSelectMany: false, canSelectFolders: false, openLabel: vscode.l10n.t("Select Upload Path") })
             .then(async uri => {
                 if (uri) {
                     const { sftp } = await ClientManager.getSSH(this.sshConfig)
@@ -120,7 +120,7 @@ export class SSHConnectionNode extends Node {
 
                     vscode.window.withProgress({
                         location: vscode.ProgressLocation.Notification,
-                        title: `Start uploading ${targetPath}`,
+                        title: vscode.l10n.t(`Start uploading {0}`, targetPath),
                         cancellable: true
                     }, (progress, token) => {
                         return new Promise((resolve) => {
@@ -133,7 +133,9 @@ export class SSHConnectionNode extends Node {
                             str.on("progress", (progressData: any) => {
                                 if (progressData.percentage == 100) {
                                     resolve(null)
-                                    vscode.window.showInformationMessage(`Upload ${targetPath} success, cost time: ${progressData.runtime}s`)
+                                    vscode.window.showInformationMessage(
+                                        vscode.l10n.t(`Upload {0} success, cost time: {1}s`, targetPath, progressData.runtime)
+                                    )
                                     return;
                                 }
                                 progress.report({ increment: progressData.percentage - before, message: `remaining : ${prettyBytes(progressData.remaining)}` });
@@ -192,7 +194,7 @@ export class SSHConnectionNode extends Node {
     }
 
     delete(): any {
-        Util.confirm("Are you wang to delete this folder?", async () => {
+        Util.confirm(vscode.l10n.t("Are you wang to delete this folder?"), async () => {
             const { sftp } = await ClientManager.getSSH(this.sshConfig)
             sftp.rmdir(this.fullPath, (err) => {
                 if (err) {
@@ -221,7 +223,7 @@ export class SSHConnectionNode extends Node {
                     if (err) {
                         resolve([new InfoNode(err.message)]);
                     } else if (fileList.length == 0) {
-                        resolve([new InfoNode("There are no files in this folder.")]);
+                        resolve([new InfoNode(vscode.l10n.t("There are no files in this folder."))]);
                     } else {
                         const parent = this.file ? `${this.parentName + this.name}/` : '/';
                         resolve(this.build(fileList, parent))

@@ -73,7 +73,10 @@ export class SchemaNode extends Node implements CopyAble {
     public dropDatatabase() {
 
         const target = this.dbType == DatabaseType.MSSQL || this.dbType == DatabaseType.PG ? 'schema' : 'database';
-        vscode.window.showInputBox({ prompt: `Are you sure you want to drop ${target} ${this.schema} ?     `, placeHolder: `Input ${target} name to confirm.` }).then(async (inputContent) => {
+        vscode.window.showInputBox({
+            prompt: vscode.l10n.t(`Are you sure you want to drop {0} {1} ?`, target, this.schema),
+            placeHolder: vscode.l10n.t(`Input {0} name to confirm.`, target)
+        }).then(async (inputContent) => {
             if (inputContent && inputContent.toLowerCase() == this.schema.toLowerCase()) {
                 this.execute(`DROP ${target} ${this.wrap(this.schema)}`).then(async () => {
                     for (const child of await this.getChildren()) {
@@ -94,15 +97,18 @@ export class SchemaNode extends Node implements CopyAble {
     public async truncateDb() {
 
 
-        vscode.window.showInputBox({ prompt: `Dangerous: Are you sure you want to truncate database ${this.schema} ?     `, placeHolder: 'Input database name to confirm.' }).then(async (inputContent) => {
+        vscode.window.showInputBox({
+                prompt: vscode.l10n.t(`Dangerous: Are you sure you want to truncate database {0} ?`, this.schema),
+                placeHolder: vscode.l10n.t('Input database name to confirm.')
+            }).then(async (inputContent) => {
             if (inputContent && inputContent.toLowerCase() == this.schema.toLowerCase()) {
                 const connection = await ConnectionManager.getConnection(this);
                 QueryUnit.queryPromise(connection, this.dialect.truncateDatabase(this.schema)).then(async (res: any) => {
                     await QueryUnit.runBatch(connection, res.map(data => data.trun))
-                    vscode.window.showInformationMessage(`Truncate database ${this.schema} success!`)
+                    vscode.window.showInformationMessage(vscode.l10n.t(`Truncate database {0} success!`, this.schema)
                 })
             } else {
-                vscode.window.showInformationMessage(`Cancel truncate database ${this.schema}!`)
+                vscode.window.showInformationMessage(vscode.l10n.t(`Cancel truncate database {0}!`, this.schema))
             }
         })
 

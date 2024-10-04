@@ -27,11 +27,11 @@ function createConfig(config) {
     });
 
     if (!config.host) {
-        throw new ConfigError('host not set');
+        throw new ConfigError(vscode.l10n.t('host not set'));
     }
 
     if (!config.dstPort) {
-        throw new ConfigError('dstPort not set');
+        throw new ConfigError(vscode.l10n.t('dstPort not set'));
     }
     return config;
 }

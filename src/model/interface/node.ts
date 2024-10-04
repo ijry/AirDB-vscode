@@ -165,7 +165,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         }
         if (this.disable) {
             // 节点默认点击的事件
-            this.command = { command: "airdb.connection.open", title: "Open Connection", arguments: [this] }
+            this.command = { command: "airdb.connection.open", title: vscode.l10n.t("Open Connection"), arguments: [this] }
         }
         this.key = source.key || this.key;
         this.initUid();
@@ -349,7 +349,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         } else if (this.dbType == DatabaseType.SQLITE) {
             command = `${getSqliteBinariesPath()} ${this.dbPath} \n`;
         } else {
-            vscode.window.showErrorMessage(`Database type ${this.dbType} not support open terminal.`)
+            vscode.window.showErrorMessage(vscode.l10n.t(`Database type {0} not support open terminal.`, this.dbType))
             return;
         }
         const terminal = vscode.window.createTerminal(this.dbType.toString())
@@ -359,7 +359,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     checkCommand(command: string) {
         if (!commandExistsSync(command)) {
-            const errText = `Command ${command} not exists in path!`;
+            const errText = vscode.l10n.t(`Command {0} not exists in path!`, command);
             vscode.window.showErrorMessage(errText)
             throw new Error(errText);
         }

@@ -11,7 +11,7 @@ export class ProcedureGroup extends Node {
     public contextValue = ModelType.PROCEDURE_GROUP
     public iconPath =new ThemeIcon("gear")
     constructor(readonly parent: Node) {
-        super(vscode.env.language.startsWith('zh-') ? "存储过程" : "Procedure")
+        super(vscode.l10n.t("Procedure")) // 存储过程
         this.init(parent)
     }
 
@@ -28,7 +28,7 @@ export class ProcedureGroup extends Node {
                 });
                 if (tableNodes.length == 0) {
                     tableNodes = [new InfoNode(
-                        vscode.env.language.startsWith('zh-') ? '不存在存储过程' : "This schema has no procedure"
+                        vscode.l10n.t("This schema has no procedure")
                     )];
                 }
                 this.setChildCache(tableNodes);

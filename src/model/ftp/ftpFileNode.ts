@@ -26,7 +26,7 @@ export class FTPFileNode extends FtpBaseNode {
         this.command = {
             command: "airdb.ssh.file.open",
             arguments: [this],
-            title: "Open File"
+            title: vscode.l10n.t("Open File")
         }
     }
 
@@ -49,12 +49,12 @@ export class FTPFileNode extends FtpBaseNode {
     }
     async open() {
         if (this.file.size > 10485760) {
-            vscode.window.showErrorMessage("File size except 10 MB, not support open!")
+            vscode.window.showErrorMessage(vscode.l10n.t("File size except 10 MB, not support open!"))
             return;
         }
         const extName = path.extname(this.file.name).toLowerCase();
         if (extName == ".gz" || extName == ".exe" || extName == ".7z" || extName == ".jar" || extName == ".bin" || extName == ".tar") {
-            vscode.window.showErrorMessage(`Not support open ${extName} file!`)
+            vscode.window.showErrorMessage(vscode.l10n.t(`Not support open {0} file!`, extName))
             return;
         }
         const client = await this.getClient()
@@ -79,7 +79,7 @@ export class FTPFileNode extends FtpBaseNode {
                     const client = await this.getClient()
                     vscode.window.withProgress({
                         location: vscode.ProgressLocation.Notification,
-                        title: `Start downloading ${this.fullPath}`,
+                        title: vscode.l10n.t(`Start downloading {0}`, this.fullPath),
                         cancellable: true
                     }, (progress, token) => {
                         return new Promise((resolve) => {
@@ -92,14 +92,16 @@ export class FTPFileNode extends FtpBaseNode {
                                 str.on("progress", (progressData: any) => {
                                     if (progressData.percentage == 100) {
                                         resolve(null)
-                                        vscode.window.showInformationMessage(`Download ${this.fullPath} success, cost time: ${progressData.runtime}s`, 'Open').then(action => {
+                                        vscode.window.showInformationMessage(
+                                            vscode.l10n.t(`Download {0} success, cost time: {1}s`, this.fullPath, progressData.runtime),
+                                            'Open').then(action => {
                                             if (action) {
                                                 vscode.commands.executeCommand('vscode.open', uri);
                                             }
                                         })
                                         return;
                                     }
-                                    progress.report({ increment: progressData.percentage - before, message: `remaining : ${prettyBytes(progressData.remaining)}` });
+                                    progress.report({ increment: progressData.percentage - before, message: vscode.l10n.t(`remaining : {0}`, prettyBytes(progressData.remaining)) });
                                     before = progressData.percentage
                                 })
                                 str.on("error", err => {

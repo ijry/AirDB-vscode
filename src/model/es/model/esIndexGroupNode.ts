@@ -9,7 +9,7 @@ export class EsIndexGroup extends TableGroup {
     public iconPath = new ThemeIcon("type-hierarchy");
     constructor(readonly parent: Node) {
         super(parent)
-        this.label = "Index"
+        this.label = vscode.l10n.t("Index")
     }
 
     async getChildren(): Promise<Node[]> {
@@ -17,7 +17,7 @@ export class EsIndexGroup extends TableGroup {
             let indexes = [];
             const results = res.match(/[^\r\n]+/g);
             if(!results){
-                return [new InfoNode("This server has no index!")]
+                return [new InfoNode(vscode.l10n.t("This server has no index!"))]
             }
             for (const result of results) {
                 indexes.push(new ESIndexNode(result, this))

@@ -65,6 +65,7 @@ export class ConnectionNode extends Node implements CopyAble {
         }
     }
 
+    // 获取连接节点下层
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {
 
 
@@ -104,7 +105,7 @@ export class ConnectionNode extends Node implements CopyAble {
                 });
 
                 if (Global.getConfig("showUser") && !hasCatalog) {
-                    databaseNodes.unshift(new UserGroup(vscode.env.language.startsWith('zh-') ? "用户" : "USER", this));
+                    databaseNodes.unshift(new UserGroup(vscode.l10n.t("USER"), this));
                 }
                 DatabaseCache.setSchemaListOfConnection(this.uid, databaseNodes);
 
@@ -116,6 +117,7 @@ export class ConnectionNode extends Node implements CopyAble {
         Util.copyToBoard(this.host)
     }
 
+    // 新建查询
     public async newQuery() {
 
         await FileManager.show(`${this.label}.sql`);
@@ -129,25 +131,28 @@ export class ConnectionNode extends Node implements CopyAble {
             dbName = dbNameList[0]
         }
         if (dbNameList.length > 1) {
-            dbName = await vscode.window.showQuickPick(dbNameList, { placeHolder: "active database" })
+            dbName = await vscode.window.showQuickPick(dbNameList, { placeHolder: vscode.l10n.t("active database") })
         }
         ConnectionManager.changeActive(dbName ? childMap[`${this.getConnectId()}@${dbName}`] : this)
 
     }
 
+    // 新建数据库
     public createDatabase() {
-        vscode.window.showInputBox({ placeHolder: 'Input you want to create new database name.' }).then(async (inputContent) => {
-            if (!inputContent) { return; }
-            this.execute(this.dialect.createDatabase(inputContent)).then(() => {
-                DatabaseCache.clearDatabaseCache(this.uid);
-                DbTreeDataProvider.refresh(this);
-                vscode.window.showInformationMessage(`create database ${inputContent} success!`);
+        vscode.window.showInputBox({ placeHolder: vscode.l10n.t('Input you want to create new database name.') })
+            .then(async (inputContent) => {
+                if (!inputContent) { return; }
+                this.execute(this.dialect.createDatabase(inputContent)).then(() => {
+                    DatabaseCache.clearDatabaseCache(this.uid);
+                    DbTreeDataProvider.refresh(this);
+                    vscode.window.showInformationMessage(`create database ${inputContent} success!`);
+                });
             });
-        });
     }
 
+    // 删除连接
     public async deleteConnection(context: vscode.ExtensionContext) {
-        Util.confirm(`Are you sure you want to delete Connection ${this.label} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to delete Connection {0} ? `, this.label), async () => {
             if (this.isCloud) {
                 // 云端删除
                 // 设置请求头
@@ -178,6 +183,5 @@ export class ConnectionNode extends Node implements CopyAble {
     }
 
     public static init() { }
-
 
 }

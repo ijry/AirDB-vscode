@@ -11,7 +11,7 @@ export class FunctionGroup extends Node {
     public contextValue = ModelType.FUNCTION_GROUP;
     public iconPath = new ThemeIcon("symbol-function")
     constructor(readonly parent: Node) {
-        super(vscode.env.language.startsWith('zh-') ? "函数" : "Function")
+        super(vscode.l10n.t("Function"))
         this.init(parent)
     }
 
@@ -27,7 +27,7 @@ export class FunctionGroup extends Node {
                     return new FunctionNode(table.ROUTINE_NAME, this);
                 });
                 if (tableNodes.length == 0) {
-                    tableNodes = [new InfoNode(vscode.env.language.startsWith('zh-') ? "不存在函数": "This schema has no function")];
+                    tableNodes = [new InfoNode(vscode.l10n.t("This schema has no function"))];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;

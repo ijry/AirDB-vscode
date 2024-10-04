@@ -44,7 +44,7 @@ export class FTPConnectionNode extends FtpBaseNode {
 
     public async deleteConnection(context: vscode.ExtensionContext) {
 
-        Util.confirm(`Are you sure you want to Delete Connection ${this.label} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to Delete Connection {0} ?`, this.label), async () => {
             this.indent({ command: CommandKey.delete })
         })
 
@@ -59,7 +59,7 @@ export class FTPConnectionNode extends FtpBaseNode {
                     if (err) {
                         resolve([new InfoNode(err.message)]);
                     } else if (list.length == 0) {
-                        resolve([new InfoNode("There are no files in this folder.")]);
+                        resolve([new InfoNode(vscode.l10n.t("There are no files in this folder."))]);
                     } else {
                         resolve(this.build(list))
                     }

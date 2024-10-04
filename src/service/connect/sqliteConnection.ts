@@ -2,6 +2,7 @@ import { Node } from "@/model/interface/node";
 import { EventEmitter } from "events";
 import { IConnection, queryCallback } from "./connection";
 import SQLite from "./sqlite";
+import * as vscode from "vscode";
 
 export class SqliteConnection extends IConnection {
     private sqlite: SQLite;
@@ -36,7 +37,7 @@ export class SqliteConnection extends IConnection {
     }
     connect(callback: (err: Error) => void): void {
         if(!this.sqlite.dbPath){
-            callback(new Error("Sqlite db path cannot be null!"))
+            callback(new Error(vscode.l10n.t("Sqlite db path cannot be null!")))
             return;
         }
         callback(null)

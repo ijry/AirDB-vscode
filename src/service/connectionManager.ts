@@ -72,7 +72,7 @@ export class ConnectionManager {
 
     public static getConnection(connectionNode: Node, getRequest: GetRequest = { retryCount: 1 }): Promise<IConnection> {
         if (!connectionNode) {
-            throw new Error("Connection is dead!")
+            throw new Error(vscode.l10n.t("Connection is dead!"))
         }
         return new Promise(async (resolve, reject) => {
 
@@ -111,7 +111,7 @@ export class ConnectionManager {
                     this.alivedConnection[key] = null
                 })
                 if (!connectOption) {
-                    reject("create ssh tunnel fail!");
+                    reject(vscode.l10n.t("create ssh tunnel fail!"));
                     return;
                 }
             }
@@ -165,7 +165,7 @@ export class ConnectionManager {
                 return new FTPConnection(opt);
             default:
                 Console.log('创建连接出错' + JSON.stringify(opt))
-                throw new Error('no dbType')
+                throw new Error(vscode.l10n.t('no dbType'))
         }
     }
 
@@ -181,7 +181,7 @@ export class ConnectionManager {
     public static getByActiveFile(): Node {
         if (vscode.window.activeTextEditor) {
             const fileName = vscode.window.activeTextEditor.document.fileName;
-            if (fileName.includes('cweijan')) {
+            if (fileName.includes('jry.airdb')) {
                 const queryName = path.basename(path.resolve(fileName, '..'))
                 const [host, port, database, schema] = queryName
                     .replace(/^.*@@/, '') // new connection id

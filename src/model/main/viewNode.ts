@@ -21,11 +21,11 @@ export class ViewNode extends TableNode {
 
     public drop() {
 
-        Util.confirm(`Are you sure you want to drop view ${this.table} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to drop view {0} ? `, this.table), async () => {
             this.execute(`DROP view ${this.wrap(this.table)}`).then(() => {
                 this.parent.setChildCache(null)
                 DbTreeDataProvider.refresh(this.parent);
-                vscode.window.showInformationMessage(`Drop view ${this.table} success!`);
+                vscode.window.showInformationMessage(vscode.l10n.t(`Drop view {0} success!`, this.table));
             });
         })
 

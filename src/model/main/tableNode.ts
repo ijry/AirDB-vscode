@@ -44,7 +44,7 @@ export class TableNode extends Node implements CopyAble {
         // 默认点击事件
         this.command = {
             command: "airdb.table.find",
-            title: "Run Select Statement",
+            title: vscode.l10n.t("Run Select Statement"),
             arguments: [this, true],
         }
 
@@ -124,7 +124,7 @@ export class TableNode extends Node implements CopyAble {
 
     public dropTable() {
 
-        Util.confirm(`Are you sure you want to drop table ${this.table} ? `, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to drop table {0} ? `, this.table), async () => {
             this.execute(`DROP TABLE ${this.wrap(this.table)}`).then(() => {
                 this.parent.setChildCache(null)
                 DbTreeDataProvider.refresh(this.parent);
@@ -137,10 +137,10 @@ export class TableNode extends Node implements CopyAble {
 
     public truncateTable() {
 
-        Util.confirm(`Are you sure you want to clear table ${this.table} all data ?`, async () => {
+        Util.confirm(vscode.l10n.t(`Are you sure you want to clear table {0} all data ?`, this.table), async () => {
             const truncateSql = this.dbType == DatabaseType.SQLITE ? `DELETE FROM ${this.wrap(this.table)}` : `truncate table ${this.wrap(this.table)}`;
             this.execute(truncateSql).then(() => {
-                vscode.window.showInformationMessage(`Clear table ${this.table} all data success!`);
+                vscode.window.showInformationMessage(vscode.l10n.t(`Clear table {0} all data success!`, this.table));
             });
         })
 
@@ -160,7 +160,7 @@ export class TableNode extends Node implements CopyAble {
         }
 
         ViewManager.createWebviewPanel({
-            path: "app", title: vscode.env.language.startsWith('zh-') ? "设计表" : "Design Table",
+            path: "app", title: vscode.l10n.t("Design Table"),
             splitView: false, iconPath: Global.getExtPath("resources", "icon", "dropper.svg"),
             eventHandler: (handler => {
                 handler.on("init", () => {

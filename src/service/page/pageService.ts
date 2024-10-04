@@ -20,7 +20,7 @@ export abstract class AbstractPageSerivce implements PageService {
     public build(sql: string, page: number, pageSize: number): string {
 
         if (!sql) {
-            throw new Error("Not support empty sql!");
+            throw new Error(vscode.l10n.t("Not support empty sql!"));
         }
 
         if (!pageSize) {

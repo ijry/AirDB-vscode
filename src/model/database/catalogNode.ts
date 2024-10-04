@@ -24,7 +24,7 @@ export class CatalogNode extends Node implements CopyAble {
             if (Util.supportColorIcon()) {
                 this.iconPath=new vscode.ThemeIcon("database", new vscode.ThemeColor('charts.blue'));
             }else{
-                this.description = `Active`
+                this.description = vscode.l10n.t(`Active`)
             }
         }
     }
@@ -44,15 +44,18 @@ export class CatalogNode extends Node implements CopyAble {
 
     public dropDatatabase() {
 
-        vscode.window.showInputBox({ prompt: `Are you sure you want to drop database ${this.schema} ?     `, placeHolder: 'Input database name to confirm.' }).then(async (inputContent) => {
+        vscode.window.showInputBox({
+            prompt: vscode.l10n.t(`Are you sure you want to drop database {0} ?`, this.schema),
+            placeHolder: vscode.l10n.t('Input database name to confirm.')
+        }).then(async (inputContent) => {
             if (inputContent && inputContent.toLowerCase() == this.database.toLowerCase()) {
                 this.execute(`DROP DATABASE ${this.wrap(this.database)}`).then(() => {
                     DatabaseCache.clearDatabaseCache(`${this.getConnectId()}`)
                     DbTreeDataProvider.refresh(this.parent);
-                    vscode.window.showInformationMessage(`Drop database ${this.schema} success!`)
+                    vscode.window.showInformationMessage(vscode.l10n.t(`Drop database {0} success!`, this.schema))
                 })
             } else {
-                vscode.window.showInformationMessage(`Cancel drop database ${this.schema}!`)
+                vscode.window.showInformationMessage(vscode.l10n.t(`Cancel drop database {0}!`, this.schema))
             }
         })
 

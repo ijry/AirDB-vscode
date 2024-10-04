@@ -5,6 +5,7 @@ import { join } from 'path';
 import { Constants } from '@/common/constants';
 import { SSHConfig } from '@/model/interface/sshConfig';
 import { Util } from '@/common/util';
+import * as vscode from 'vscode';
 
 export class ForwardInfo {
     id: any;
@@ -77,7 +78,7 @@ export class ForwardService {
                 const forwards = this.list(sshConfig)
                 for (const forward of forwards) {
                     if (forward.id == id) {
-                        reject({ message: "This forward is exists!" })
+                        reject({ message: vscode.l10n.t("This forward is exists!") })
                         return;
                     }
                 }

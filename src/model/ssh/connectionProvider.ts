@@ -36,7 +36,7 @@ export default class ConnectionProvider  {
                         let res = response.data
                         // 登录失效重置用户状态
                         if (response.data.code == 401 || response.data.code == 402) {
-                            vscode.window.showErrorMessage('AirDb登录失效')
+                            vscode.window.showErrorMessage('AirDb' + vscode.l10n.t('login expired'))
                             GlobalState.update('userState', '');
                         }
                         if (res.code != 200) {
@@ -58,7 +58,7 @@ export default class ConnectionProvider  {
                 vscode.window.showErrorMessage(err.message)
             } else {
                 vscode.commands.executeCommand(CodeCommand.Refresh)
-                vscode.window.showInformationMessage("Update to remote success!")
+                vscode.window.showInformationMessage(vscode.l10n.t("Update to remote success!"))
             }
         })
     }

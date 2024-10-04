@@ -13,7 +13,7 @@ export class TriggerGroup extends Node {
     public contextValue = ModelType.TRIGGER_GROUP
 
     constructor(readonly parent: Node) {
-        super(vscode.env.language.startsWith('zh-') ? "触发器" : "Trigger")
+        super(vscode.l10n.t("Trigger"))
         this.init(parent)
         if(Util.supportColorIcon){
             this.iconPath=new ThemeIcon("zap",new ThemeColor("terminal.ansiYellow"))
@@ -32,7 +32,7 @@ export class TriggerGroup extends Node {
                     return new TriggerNode(table.TRIGGER_NAME, this);
                 });
                 if (tableNodes.length == 0) {
-                    tableNodes = [new InfoNode(vscode.env.language.startsWith('zh-') ? "不存在触发器" :"This schema has no trigger")];
+                    tableNodes = [new InfoNode(vscode.l10n.t("This schema has no trigger"))];
                 }
                 this.setChildCache(tableNodes);
                 return tableNodes;
