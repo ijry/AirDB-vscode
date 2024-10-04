@@ -5,6 +5,7 @@ import { Node } from "@/model/interface/node";
 import * as path from "path";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import RedisBaseNode from "./redisBaseNode";
+import * as vscode from "vscode";
 
 export default class KeyNode extends RedisBaseNode {
 

@@ -11,6 +11,7 @@ import { ConnectionManager } from "../../../service/connectionManager";
 import { CommandKey, Node } from "../../interface/node";
 import { EsIndexGroup } from "./esIndexGroupNode";
 import { EsTemplate } from "./esTemplate";
+import * as vscode from "vscode";
 const extPackage=require("@/../package.json")
 
 /**

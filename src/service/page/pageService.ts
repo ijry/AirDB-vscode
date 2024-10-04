@@ -1,5 +1,6 @@
 import { ConfigKey } from "@/common/constants";
 import { Global } from "@/common/global";
+import * as vscode from "vscode";
 
 export interface PageService {
     /**

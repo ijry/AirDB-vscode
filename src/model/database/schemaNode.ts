@@ -105,7 +105,7 @@ export class SchemaNode extends Node implements CopyAble {
                 const connection = await ConnectionManager.getConnection(this);
                 QueryUnit.queryPromise(connection, this.dialect.truncateDatabase(this.schema)).then(async (res: any) => {
                     await QueryUnit.runBatch(connection, res.map(data => data.trun))
-                    vscode.window.showInformationMessage(vscode.l10n.t(`Truncate database {0} success!`, this.schema)
+                    vscode.window.showInformationMessage(vscode.l10n.t(`Truncate database {0} success!`, this.schema))
                 })
             } else {
                 vscode.window.showInformationMessage(vscode.l10n.t(`Cancel truncate database {0}!`, this.schema))

@@ -4,6 +4,7 @@ import { InfoNode } from "@/model/other/infoNode";
 import { QueryUnit } from "@/service/queryUnit";
 import { ThemeIcon } from "vscode";
 import { ESIndexNode } from "./esIndexNode";
+import * as vscode from "vscode";
 
 export class EsIndexGroup extends TableGroup {
     public iconPath = new ThemeIcon("type-hierarchy");

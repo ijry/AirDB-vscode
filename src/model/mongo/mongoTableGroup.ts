@@ -5,6 +5,7 @@ import { Node } from "../interface/node";
 import { TableNode } from "../main/tableNode";
 import { MonggoBaseNode } from "./mongoBaseNode";
 import { MongoTableNode } from "./mongoTableNode";
+import * as vscode from "vscode";
 
 export class MongoTableGroup extends MonggoBaseNode {
 
