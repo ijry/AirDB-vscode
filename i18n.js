@@ -1,9 +1,9 @@
-const p=require('./package.json')
-const content={}
+const p = require('./package.json')
+const content = {}
 for (const command of p.contributes.commands) {
     const key = command.command.replace("airdb", 'command');
-    content[key]=command.title;
-    command.title=`%${key}%`
+    content[key] = command.title;
+    command.title = `%${key}%`
 }
 console.log(JSON.stringify(content))
 console.log('--------------------------------------------')

@@ -34,12 +34,14 @@
         "body": [
             "UPDATE $1 SET $2 WHERE $3"
         ]
-    },"JoinTemplate": {
+    },
+    "JoinTemplate": {
         "prefix": "joi",
         "body": [
             "JOIN $1 ON $2"
         ]
-    },"BetweenTemplate": {
+    },
+    "BetweenTemplate": {
         "prefix": "bet",
         "body": [
             "BETWEEN $1 AND $2"
