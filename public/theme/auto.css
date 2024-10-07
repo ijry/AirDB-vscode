@@ -4794,7 +4794,7 @@ body {
 }
 
 .el-form-item--mini.el-form-item, .el-form-item--small.el-form-item {
-    margin-bottom: 18px
+    margin-bottom: 15px
 }
 
 .el-form-item .el-input__validateIcon {
@@ -12524,12 +12524,12 @@ body {
 }
 
 .el-input--small .el-input__inner {
-    height: 24px;
-    line-height: 24px
+    height: 25px;
+    line-height: 25px
 }
 
 .el-input--small .el-input__icon {
-    line-height: 24px
+    line-height: 25px
 }
 
 .el-input--mini {

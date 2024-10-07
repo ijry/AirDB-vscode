@@ -9,6 +9,9 @@
     <template v-else-if="isDateTime(type)">
       <el-date-picker value-format="yyyy-MM-dd HH:mm:ss" type="datetime" :value="value" @input="sync"></el-date-picker>
     </template>
+    <template v-else-if="isText(type, value) > 0">
+      <el-input class="w-full" :rows="isText(type, value)" type="textarea" :value="value" @input="sync"></el-input>
+    </template>
     <el-input v-else :value="value" @input="sync"></el-input>
   </div>
 </template>
@@ -21,6 +24,17 @@ export default {
       if(!type)return false;
       type=type.toUpperCase()
       return type=='DATETIME' || type=='TIMESTAMP' || type=='TIMESTAMP WITHOUT TIME ZONE' ||type=='TIMESTAMP WITH TIME ZONE'
+    },
+    isText(type, value){
+      if (!type) return 0;
+      let rows = 0
+      // 判断内容长度超过一定字数则显示textarea
+      if (value.length > 100) rows = 2
+      if (value.length > 200) rows = 5
+      if (type=='text' || type=='mediumtext' || type=='longtext') {
+        rows = 5
+      }
+      return rows
     },
     sync(value) {
       // console.log(value)

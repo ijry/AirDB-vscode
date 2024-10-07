@@ -176,6 +176,9 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         try {
             // 设置请求头
             let userStateExist = GlobalState.get<any>('userState') || '';
+            if (!userStateExist?.token) {
+                return [new InfoNode(vscode.l10n.t('sign in to sync'))];
+            }
             const headers = {
                 'Content-Type': 'application/json',
                 'Authorization': userStateExist ? userStateExist.token: ''
@@ -273,6 +276,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         return node;
     }
 
+    // 激活数据库，激活主要用于辨别执行SQL脚本时默认查询哪个数据库。
     public async activeDb() {
 
         const node = ConnectionManager.getByActiveFile()

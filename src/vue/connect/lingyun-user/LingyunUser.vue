@@ -46,7 +46,7 @@
                     <el-input size="large" autocomplete="off" type="text" prefix-icon="Lock"
                         v-model="regData.verify" :placeholder="$t('Please enter') + ' ' + $t('verify code')">
                         <template #append>
-                            <xy-send-verify @verifysuccess="getVerifyTokenReg" :url="baseUrl + '/apiv1/email/verify/send'"
+                            <xy-send-verify @verifysuccess="getVerifyTokenReg" :url="baseUrl + '/api/v1/email/verify/send'"
                                 :type="$t('email')" :account="regData.email" :title="$t('Sign up')"></xy-send-verify>
                         </template>
                     </el-input>

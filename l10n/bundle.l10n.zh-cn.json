@@ -1,4 +1,5 @@
 {  
+  "sign in to sync": "登陆后同步",
   "Connection is dead!": "连接已断开！",  
   "create ssh tunnel fail!": "创建SSH隧道失败！",  
   "no dbType": "数据库类型不存在",  

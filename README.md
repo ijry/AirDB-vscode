@@ -1,6 +1,6 @@
 # Database Client for Visual Studio Code(现代化数据库管理工具vscode版)
 
-[![IMGE](https://qn.jiangruyi.com/vue/xyview-vue/dist/static/png/airdb-CNTwBmRW.png)](https://qn.jiangruyi.com/vue/xyview-vue/dist/static/png/airdb-CNTwBmRW.png)
+[![IMGE](https://cdn.jiangruyi.com/sbase/image/airdb/main.png)](https://cdn.jiangruyi.com/sbase/image/airdb/main.png)
 
 
 The website（官网网站）  [https://airdb.lingyun.net/](https://airdb.lingyun.net/).
@@ -32,7 +32,7 @@ This project is a database client for VSCode, supports manager **MySQL/MariaDB, 
 
 > Project site: [AirDB](https://github.com/ijry/airdb), [中文文档](README_CN.md)
 
-[![Logo](./public/logo_dark.png)](https://airdb.lingyun.net)
+[![Logo](https://cdn.jiangruyi.com/sbase/image/airdb/logo_dark.png)](https://airdb.lingyun.net)
 
 ## Features功能
 
@@ -60,7 +60,7 @@ Install from vscode marketplace（在 Visual Studio Code 扩展中心安装） [
 2. Select your database type, input connection config then click the connect button.(在连接页面配置相应的数据库信息。)
    
 
-![connection](images/connection.png)
+![connection]([images](https://cdn.jiangruyi.com/sbase/image/airdb/)/connection.png)
 
 Two panels are created because in some cases you need to view both SQL and NoSQL data at the same time, you can drag the panel to the other by long-pressing.
 （创建两个面板是因为部分情况下你需要同时查看SQL和NoSQL的数据, 可通过长按拖动面板到另一个里面。）
@@ -71,13 +71,13 @@ Two panels are created because in some cases you need to view both SQL and NoSQL
 2. Click button beside table to open new table view.（点击表旁边的按钮则是打开新的数据页）
 3. Then you can do data modification on the table view.（之后就可在页面进行CRUD、数据导出(**Excel、JSON**)等操作。）
 
-![query](images/QueryTable.png)
+![query]([images](https://cdn.jiangruyi.com/sbase/image/airdb/)/QueryTable.png)
 
 ## Execute SQL Query执行SQL查询
 
 In the Database Explorer panel, click the `Open Query` button.（点击数据库节点的 `Open Query` 按钮.）
 
-![newquery](images/newquery.png)
+![newquery]([images](https://cdn.jiangruyi.com/sbase/image/airdb/)/newquery.png)
 
 That will open a SQL editor bind of database, it provider:（将会打开新的SQL编辑器, 可编辑和执行SQL, 提供了以下功能：）
 
@@ -96,7 +96,7 @@ This extension supports codelen, but does not support stored procedures and func
 
 【该扩展支持了codelen, 但不支持存储过程和函数, 如果你经常使用他们, 则建议禁用codelen。】
 
-![image](images/settings.png)
+![image]([images](https://cdn.jiangruyi.com/sbase/image/airdb/)/settings.png)
 
 ## Cache缓存机制
 
