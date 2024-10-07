@@ -284,6 +284,10 @@ export function activate(context: vscode.ExtensionContext) {
                     // 在新TAB打开
                     tableNode.openInNew();
                 },
+                // 表筛选
+                "airdb.table.filter": (tableGroup: TableGroup) => {
+                    tableGroup.filterTable();
+                },
                 "airdb.codeLens.run": (sql: string) => {
                     QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
                 },

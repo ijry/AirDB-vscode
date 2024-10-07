@@ -1,4 +1,8 @@
-{  
+{
+  "filter success!": "筛选成功",
+  "Filtered": "筛选关键字",
+  "Filter: click to filter": "点击搜索表",
+  "Enter keyword to filter tables": "输入关键字搜索表",
   "sign in to sync": "登陆后同步",
   "Connection is dead!": "连接已断开！",  
   "create ssh tunnel fail!": "创建SSH隧道失败！",  

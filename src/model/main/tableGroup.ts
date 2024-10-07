@@ -10,6 +10,7 @@ import { Console } from "@/common/Console";
 import axios, { AxiosRequestConfig } from "axios";
 import { GlobalState } from "@/common/state";
 import { NodeUtil } from "../nodeUtil";
+import { FilterNode } from "../other/FilterNode";
 
 export class TableGroup extends Node {
 
@@ -116,55 +117,96 @@ export class TableGroup extends Node {
         this.provider.reload(this);
     }
 
+    // 表筛选
+    public filterTable() {
+        let tableFilterKeyword = GlobalState.get<any>(this.key + '-default-' + 'TableFilterKeyword') || '';
+        vscode.window.showInputBox({
+            prompt: `Enter keyword to filter tables`,
+            value: tableFilterKeyword,
+            placeHolder: 'table name keyword' }).then(async (inputContent) => {
+            if (inputContent) {
+                GlobalState.update(this.key + '-default-' + 'TableFilterKeyword', inputContent.trim());
+                vscode.window.showInformationMessage(`filter success!`)
+            } else {
+                GlobalState.update(this.key + '-default-' + 'TableFilterKeyword', inputContent.trim());
+                vscode.window.showErrorMessage(`Cancel`)
+            }
+            this.reload();
+        })
+    }
+
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {
+        // 获取表搜索
+        let tableFilterLabel = '';
+        let tableFilterKeyword = GlobalState.get<any>(this.key + '-default-' + 'TableFilterKeyword') || '';
+        if (!tableFilterKeyword) {
+            tableFilterLabel = vscode.l10n.t("Filter: click to filter");
+        } else {
+            tableFilterLabel = vscode.l10n.t('Filtered') + ': ' + tableFilterKeyword;
+        }
+        
+        // 获取表列表
         let tableNodes = this.getChildCache();
         if (tableNodes && !isRresh) {
             let tableNodesPined = [];
-            let tableNodesNew = []
+            let tableNodesFilter = [];
+            let tableNodesNew = [];
             tableNodes.forEach((table: TableNode) => {
                 // 过滤置顶的表
                 if (!this.pinedTables.includes(table.table)) {
                     table.pined = false;
-                    table.iconPath=new vscode.ThemeIcon("split-horizontal");
-                    tableNodesNew.push(table);
+                    if (tableFilterKeyword && table.table.indexOf(tableFilterKeyword) > -1) {
+                        // 筛选
+                        table.iconPath = new vscode.ThemeIcon("search");
+                        tableNodesFilter.push(table);
+                    } else {
+                        table.iconPath = new vscode.ThemeIcon("split-horizontal");
+                        tableNodesNew.push(table);
+                    }
                 } else {
                     table.pined = true;
-                    table.iconPath=new vscode.ThemeIcon("pinned");
+                    table.iconPath = new vscode.ThemeIcon("pinned");
                     tableNodesPined.push(table);
                 }
             });
-            if (tableNodesPined.length > 0) {
-                tableNodesNew = tableNodesPined.concat(tableNodesNew);
+            if (tableNodesPined.length > 0 || tableNodesFilter.length > 0) {
+                // tableNodesNew = tableNodesPined.concat(tableNodesFilter, tableNodesNew);
             }
-            return tableNodesNew;
+            return [new FilterNode(tableFilterLabel, this), ...tableNodesPined, ...tableNodesFilter, ...tableNodesNew];
         }
-        if (tableNodes == null) {
-            tableNodes = [];
-        }
+        tableNodes = [];
         return this.execute<any[]>(this.dialect.showTables(this.schema))
             .then((tables) => {
                 let tableNodesPined = [];
+                let tableNodesFilter = [];
+                let tableNodesNew = [];
                 // Console.log(this.pinedTables)
                 tables.forEach(table => {
                     // 过滤置顶的表
                     if (!this.pinedTables.includes(table.name)) {
-                        tableNodes.push(new TableNode({...table, pined: false}, this));
+                        if (tableFilterKeyword && table.name.indexOf(tableFilterKeyword) > -1) {
+                            // 筛选
+                            table.iconPath = new vscode.ThemeIcon("search");
+                            tableNodesFilter.push(new TableNode({...table, pined: false}, this));
+                        } else {
+                            table.iconPath = new vscode.ThemeIcon("split-horizontal");
+                            tableNodes.push(new TableNode({...table, pined: false}, this));
+                        }
                     } else {
                         tableNodesPined.push(new TableNode({...table, pined: true}, this))
                     }
                 })
-                if (tableNodesPined.length > 0) {
-                    tableNodes = tableNodesPined.concat(tableNodes);
+                if (tableNodesPined.length > 0 || tableNodesFilter.length > 0) {
+                    tableNodes = tableNodesPined.concat(tableNodesFilter, tableNodes);
                 }
                 if (tableNodes == null || tableNodes.length == 0) {
                     tableNodes = [new InfoNode(vscode.l10n.t("This schema has no table"))];
                 }
                 this.setChildCache(tableNodes);
-                return tableNodes;
+                return [new FilterNode(tableFilterLabel, this), ...tableNodes];
             })
             .catch((err) => {
                 Console.log(err)
-                err.message = 'asdasd'
                 return [new InfoNode(err)];
             });
     }
