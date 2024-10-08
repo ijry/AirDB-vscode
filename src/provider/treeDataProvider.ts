@@ -153,6 +153,9 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
     // 替换喂*号
     private  replaceFromFourthChar(str, len = 5) {
+        if (!str) {
+            return str;
+        }
         // 如果字符串长度小于4，则直接返回原字符串或根据需要调整
         if (str.length < len) {
           return str; // 或者你可以选择返回前几个字符加*  

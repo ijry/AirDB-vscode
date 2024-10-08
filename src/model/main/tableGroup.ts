@@ -22,14 +22,22 @@ export class TableGroup extends Node {
         this.init(parent);
 
         if (parent.dbType == DatabaseType.MYSQL) {
+            this.uid = this.key + '-default-' + this.parent.label + '-TableFilterKeyword'
             // @ts-ignore
-            if (parent.pinedTablesMap != null && parent.pinedTablesMap.default != null) {
+            if (parent.pinedTablesMap != null && parent.pinedTablesMap['default-' + this.parent.label] != null) {
                 // schemeNode
                 // @ts-ignore
-                this.pinedTables = parent.pinedTablesMap.default;
+                this.pinedTables = parent.pinedTablesMap['default-' + this.parent.label];
             }
-        } else {
-
+        } else if(parent.dbType == DatabaseType.MSSQL || parent.dbType == DatabaseType.PG) {
+            // this.parent.parent is catalog
+            // this.parent is schema
+            this.uid = this.key + '-' + this.parent.parent.label + '-' + this.parent.label + '-TableFilterKeyword'
+            
+            // @ts-ignore
+            if (parent.pinedTablesMap != null && parent.pinedTablesMap[this.parent.parent.label + '-' + this.parent.label] != null) {
+                this.pinedTables = parent.pinedTablesMap[this.parent.parent.label + '-' + this.parent.label];
+            }
         }
 
         // Console.log(this.pinedTables)
@@ -54,9 +62,11 @@ export class TableGroup extends Node {
             let pinedTablesMap = {}
             if (this.dbType == DatabaseType.MYSQL) {
                 // @ts-ignore
-                pinedTablesMap.default = this.pinedTables
+                pinedTablesMap['default-' + this.parent.label] = this.pinedTables
+            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG) {
+                // @ts-ignore
+                pinedTablesMap[this.parent.parent.label + '-' + this.parent.label] = this.pinedTables
             } else {
-                // todo
                 return;
             }
             const response = await axios.post(url, {
@@ -85,14 +95,26 @@ export class TableGroup extends Node {
                 if (this.pinedTables != null) {
                     // schemeNode
                     // @ts-ignore
-                    this.parent.parent.pinedTablesMap = {
-                        default: this.pinedTables
+                    if (this.parent.parent.pinedTablesMap == null) {
+                        this.parent.parent.pinedTablesMap = {};
                     }
+                    this.parent.parent.pinedTablesMap['default-' + this.parent.label] = this.pinedTables;
                 }
+                connections[key] = NodeUtil.removeParent(this.parent.parent);
+            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG) {
+                // @ts-ignore
+                if (this.pinedTables != null) {
+                    // schemeNode
+                    // @ts-ignore
+                    if (this.parent.parent.parent.pinedTablesMap == null) {
+                        this.parent.parent.parent.pinedTablesMap = {};
+                    }
+                    this.parent.parent.parent.pinedTablesMap['default-' + this.parent.label] = this.pinedTables;
+                }
+                connections[key] = NodeUtil.removeParent(this.parent.parent.parent);
             } else {
-    
+                return;
             }
-            connections[key] = NodeUtil.removeParent(this.parent.parent);
             await this.context.update(connectionKey, connections);
         }
     }
@@ -119,16 +141,16 @@ export class TableGroup extends Node {
 
     // 表筛选
     public filterTable() {
-        let tableFilterKeyword = GlobalState.get<any>(this.key + '-default-' + 'TableFilterKeyword') || '';
+        let tableFilterKeyword = GlobalState.get<any>(this.uid) || '';
         vscode.window.showInputBox({
             prompt: `Enter keyword to filter tables`,
             value: tableFilterKeyword,
             placeHolder: 'table name keyword' }).then(async (inputContent) => {
             if (inputContent) {
-                GlobalState.update(this.key + '-default-' + 'TableFilterKeyword', inputContent.trim());
+                GlobalState.update(this.uid, inputContent.trim());
                 vscode.window.showInformationMessage(`filter success!`)
             } else {
-                GlobalState.update(this.key + '-default-' + 'TableFilterKeyword', inputContent.trim());
+                GlobalState.update(this.uid, inputContent.trim());
                 vscode.window.showErrorMessage(`Cancel`)
             }
             this.reload();
@@ -138,7 +160,7 @@ export class TableGroup extends Node {
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {
         // 获取表搜索
         let tableFilterLabel = '';
-        let tableFilterKeyword = GlobalState.get<any>(this.key + '-default-' + 'TableFilterKeyword') || '';
+        let tableFilterKeyword = GlobalState.get<any>(this.uid) || '';
         if (!tableFilterKeyword) {
             tableFilterLabel = vscode.l10n.t("Filter: click to filter");
         } else {
