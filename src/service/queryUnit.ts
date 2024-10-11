@@ -82,8 +82,8 @@ export class QueryUnit {
                     }
                 }
             });
-            Console.log('sqlList')
-            Console.log(sqlList2)
+            // Console.log('sqlList')
+            // Console.log(sqlList2)
         } else {
             sqlList2 = [sql];
         }
@@ -100,7 +100,7 @@ export class QueryUnit {
                         queryOptionCrt.viewId = viewId + sqlIndex;
                     }
                 }
-                Console.log('###################'+ queryOptionCrt.viewId)
+                // Console.log('###################'+ queryOptionCrt.viewId)
                 QueryPage.send({connection: connectionNode, type: MessageType.RUN, queryOption: queryOptionCrt, res: { sql } as RunResponse });
 
                 let executeTime = new Date().getTime();

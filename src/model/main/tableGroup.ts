@@ -150,7 +150,7 @@ export class TableGroup extends Node {
                 GlobalState.update(this.uid, inputContent.trim());
                 vscode.window.showInformationMessage(`filter success!`)
             } else {
-                GlobalState.update(this.uid, inputContent.trim());
+                GlobalState.update(this.uid, '');
                 vscode.window.showErrorMessage(`Cancel`)
             }
             this.reload();

@@ -54,8 +54,5 @@ export default {
     'Open Edit Dialog': '打开修改弹窗',
     'Copy Cell': '拷贝单元格',
     'Filter by': '筛选',
-    'Open': '',
-    'Open': '',
-    'Open': '',
-    'Open': '',
+    'Struct': '表结构',
 }

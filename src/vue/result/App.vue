@@ -31,7 +31,7 @@
           </div>
       </div>
       <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" style="margin-bottom: 8px;"
-        :costTime="result.costTime" @changePage="changePage"
+        :costTime="result.costTime" :showOpenDesignBtn="result.showOpenDesignBtn" @changePage="changePage"
         @sendToVscode="sendToVscode" @export="exportOption.visible = true"
         @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm"
         @run="info.message = false;execute(toolbar.sql);" />

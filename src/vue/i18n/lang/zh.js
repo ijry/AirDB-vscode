@@ -1,6 +1,7 @@
 export default {
     'Vip': '会员',
     'Subscribe': '订阅',
+    'Db Type': '数据库类型',
     'Connect to Database Server': '连接数据库',
     'Connection error!': '注意看，这个连接出错啦！',
     'Success!': '还得是你，连接成功了！',

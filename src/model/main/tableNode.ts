@@ -158,9 +158,10 @@ export class TableNode extends Node implements CopyAble {
                 handler.emit("error", error.message)
             }
         }
-
+        let type = this.key + this.schema + '-design-' + this.table;
+        // Console.log(type)
         ViewManager.createWebviewPanel({
-            path: "app", title: vscode.l10n.t("Design Table"),
+            path: "app", title: vscode.l10n.t("Design Table") + this.table, type,
             splitView: false, iconPath: Global.getExtPath("resources", "icon", "dropper.svg"),
             eventHandler: (handler => {
                 handler.on("init", () => {

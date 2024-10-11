@@ -6,21 +6,26 @@
         </el-button>
         <el-input class="left-search-input" v-model="searchInput" size="small" style="width:200px;" 
           :placeholder="$t('Input To Search Data')" :clearable="true" />
-        <el-button @click="$emit('insert')" :title="$t('Insert')" size="small">
+        <el-button @click="$emit('insert')" size="small">
           <i class="el-icon-circle-plus-outline"></i>
           <span style="line-height: 14px;font-size: 14px;">{{$t('Insert')}}</span>
         </el-button>
         <el-button class="delete-button" size="small"
-          @click="$emit('deleteConfirm');" :title="$t('delete')">
+          @click="$emit('deleteConfirm');">
           <i class="el-icon-delete"></i>
           <span style="line-height: 14px;font-size: 14px;">{{$t('delete')}}</span>
         </el-button>
         <el-button @click="$emit('export');" size="small"
-          style="margin-left: 15px;" :title="$t('Export')">
+          style="margin-left: 15px;">
           <div>
             <svg t="1726449136707" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="7832" width="12" height="12"><path d="M634.88 244.5312V102.4l389.12 276.48-389.12 276.48v-142.1824q-14.5408-0.5632-29.184-0.3072A512.6656 512.6656 0 0 0 204.8 716.8c13.6192-238.6944 194.56-434.7392 430.08-472.2688z" fill="var(--input-color)" p-id="7833"></path><path d="M961.8432 1015.7056A101.5808 101.5808 0 0 1 921.6 1024H102.4a102.7072 102.7072 0 0 1-102.4-102.4V102.4a101.5808 101.5808 0 0 1 8.2944-40.2432A102.8096 102.8096 0 0 1 102.4 0h243.2a38.4 38.4 0 0 1 0 76.8H128a51.2 51.2 0 0 0-51.2 51.2v768a51.2 51.2 0 0 0 51.2 51.2h768a51.2 51.2 0 0 0 51.2-51.2v-217.6a38.4 38.4 0 0 1 76.8 0V921.6a102.8096 102.8096 0 0 1-62.1568 94.1056z" fill="var(--input-color)" p-id="7834"></path></svg>
             <span style="font-size: 13px;">{{$t('Export')}}</span>
           </div>
+        </el-button>
+        <el-button v-if="showOpenDesignBtn" @click='()=>$emit("sendToVscode", "designTable")' size="small"
+          style="margin-left: 15px;">
+            <i class="el-icon-edit"></i>
+            <span style="line-height: 14px;font-size: 14px;">{{$t('Struct')}}</span>
         </el-button>
         <!-- <el-button icon="el-icon-caret-right" :title="$t('Execute Sql')"
           style="color: #54ea54;" @click="$emit('run');"></el-button>
@@ -46,7 +51,7 @@
 
 <script>
 export default {
-  props: ["costTime", "search", "showFullBtn", "page"],
+  props: ["costTime", "search", "showFullBtn", "page", "showOpenDesignBtn"],
   data() {
     return {
       searchInput: null,

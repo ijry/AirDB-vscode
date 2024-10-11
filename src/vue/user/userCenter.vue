@@ -32,7 +32,7 @@
                 {{ $t('Vip') }}
               </div>
               <div clas="flex-1 flex justify-end">
-                <el-button size="mini" v-if="vipInfo?.title">{{ $t(vipInfo?.title) }}</el-button>
+                <el-button size="mini" v-if="vipInfo.typeInfo && vipInfo.typeInfo.title">{{ $t(vipInfo.typeInfo.title) }}</el-button>
                 <el-button size="mini" v-else @click="openBuyVip">{{ $t('Subscribe') }}</el-button>
               </div>
             </div>
@@ -79,7 +79,9 @@ export default {
       },
       // 会员信息
       vipInfo: {
-        title: ''
+        typeInfo: {
+          title: ''
+        }
       }
     };
   },
@@ -182,7 +184,7 @@ export default {
         }).catch(() => {     
         });
     },
-    loadVipInfo() {
+    async loadVipInfo() {
       let url = this.baseUrl + '/api/v1/user_vip/order/my?productName=airdb';
         const headers = {
             'Content-Type': 'application/json',

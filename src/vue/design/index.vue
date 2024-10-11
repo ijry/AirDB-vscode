@@ -4,7 +4,7 @@
     {{table}} -->
     <div class="flex justify-between">
       <div class="text-lg">
-        {{$t('Db Type:')}} {{ dbType }}
+        {{$t('Db Type')}}: {{ dbType }}
       </div>
       <div>
         <el-button @click="init" type="default" title="Refresh" size="small">{{ $t('Refresh') }} </el-button>

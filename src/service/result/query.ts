@@ -5,7 +5,7 @@ import { ServiceManager } from "@/service/serviceManager";
 import { basename, extname } from "path";
 import { env, Uri, ViewColumn, window } from "vscode";
 import { Trans } from "@/common/trans";
-import { ConfigKey, DatabaseType, MessageType } from "../../common/constants";
+import { ConfigKey, DatabaseType, MessageType, ModelType } from "../../common/constants";
 import { Global } from "../../common/global";
 import { ViewManager } from "../../common/viewManager";
 import { Node } from "../../model/interface/node";
@@ -15,6 +15,7 @@ import { QueryOption, QueryUnit } from "../queryUnit";
 import { DataResponse } from "./queryResponse";
 import * as vscode from 'vscode';
 import { Console } from "@/common/Console";
+import { TableNode } from "@/model/main/tableNode";
 
 export class QueryParam<T> {
     public connection: Node;
@@ -33,7 +34,7 @@ export class QueryPage {
         const dbOption: Node = queryParam.connection;
         await QueryPage.adaptData(queryParam);
         const type = this.keepSingle(queryParam);
-        Console.log('&&&&'+ type)
+        // Console.log('&&&&'+ type)
 
         ViewManager.createWebviewPanel({
             singlePage: true,
@@ -47,7 +48,10 @@ export class QueryPage {
                     }
                     queryParam.res.transId = Trans.transId;
                     queryParam.res.viewId = queryParam.queryOption?.viewId;
-                    handler.emit(queryParam.type, { ...queryParam.res, dbType: dbOption.dbType })
+                    handler.emit(queryParam.type, {
+                        ...queryParam.res, dbType: dbOption.dbType,
+                        showOpenDesignBtn: dbOption.contextValue == ModelType.TABLE // 是否显示表结构按钮
+                    })
                 }).on('execute', (params) => {
                     QueryUnit.runQuery(params.sql, dbOption, queryParam.queryOption);
                 }).on('next', async (params) => {
@@ -101,6 +105,10 @@ export class QueryPage {
                     }).catch(err => {
                         handler.emit("updateFail", err)
                     })
+                }).on('designTable', () => {
+                    // 跳转表结构设计
+                    // @ts-ignore
+                    dbOption.designTable()
                 })
             }
         });

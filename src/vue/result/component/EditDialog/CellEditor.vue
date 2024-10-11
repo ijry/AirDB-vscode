@@ -31,7 +31,7 @@ export default {
       // 判断内容长度超过一定字数则显示textarea
       if (value.length > 100) rows = 2
       if (value.length > 200) rows = 5
-      if (type=='text' || type=='mediumtext' || type=='longtext') {
+      if (type == 'text' || type == 'mediumtext' || type == 'longtext') {
         rows = 5
       }
       return rows
