@@ -121,6 +121,10 @@ export class SchemaNode extends Node implements CopyAble {
     }
 
     public copyName() {
+        // QueryUnit.runQuery('select * from prod_xycloud.xy_core_user;', ConnectionManager.tryGetConnection(), { viewId: new Date().getTime() });
+        // setTimeout(() => {
+        //     QueryUnit.runQuery('select * from prod_xycloud.xy_cloud_index;', ConnectionManager.tryGetConnection(), { viewId: new Date().getTime() });
+        // }, 200)
         Util.copyToBoard(this.schema)
     }
 

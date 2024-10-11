@@ -17,6 +17,7 @@ import { ConnectionManager } from "../service/connectionManager";
 import axios, { AxiosRequestConfig } from "axios";
 import { Util } from "../common/util";
 import * as vscode from "vscode";
+import { QueryUnit } from "@/service/queryUnit";
 
 export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 

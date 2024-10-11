@@ -28,6 +28,15 @@
               </div>
             </div>
             <div class="mb-2 w-full text-gray-600 flex justify-between">
+              <div class="w-120px">
+                {{ $t('Vip') }}
+              </div>
+              <div clas="flex-1 flex justify-end">
+                <el-button size="mini" v-if="vipInfo?.title">{{ $t(vipInfo?.title) }}</el-button>
+                <el-button size="mini" v-else @click="openBuyVip">{{ $t('Subscribe') }}</el-button>
+              </div>
+            </div>
+            <div class="mb-2 w-full text-gray-600 flex justify-between">
               <div class="w-120px">{{ $t('Logout') }}</div>
               <div clas="flex-1 flex justify-end">
                 <el-button size="mini" @click="logout">{{ $t('Logout') }}</el-button>
@@ -68,6 +77,10 @@ export default {
           emial: '',
         }
       },
+      // 会员信息
+      vipInfo: {
+        title: ''
+      }
     };
   },
   components: { LingyunUser },
@@ -77,6 +90,7 @@ export default {
         // if (localStorage.getItem('userState')) {
           if (state.userState.token) {
             this.userState = state.userState;
+            this.loadVipInfo();
           } else {
             this.dialogVisible = true;
           }
@@ -167,6 +181,27 @@ export default {
           this.$message(this.$t('Success'));
         }).catch(() => {     
         });
+    },
+    loadVipInfo() {
+      let url = this.baseUrl + '/api/v1/user_vip/order/my?productName=airdb';
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': this.userState.token
+        };
+        const response = await axios.get(url, {
+          headers: headers
+        });
+        let res = response.data;
+        if (res.code == 200) {
+          if (res.data.dataList.length > 0) {
+            this.vipInfo = res.data.dataList[0]
+          }
+        } else {
+          this.$message(res.msg);
+        }
+    },
+    openBuyVip() {
+      vscodeEvent.emit("openBuyVip");
     },
     refresh() {
       vscodeEvent.emit("route-" + this.$route.name);

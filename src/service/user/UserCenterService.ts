@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import { ConnectionManager } from "@/service/connectionManager";
 import { resolve } from "path";
 import { platform } from "os";
-import { commands, Disposable, window, workspace } from "vscode";
+import { env, Uri, commands, Disposable, window, workspace } from "vscode";
 import { Global } from "../../common/global";
 import { Util } from "../../common/util";
 import { ViewManager } from "../../common/viewManager";
@@ -58,6 +58,8 @@ export class UserCenterService {
                     } catch (error) {
                         handler.emit("error", error.message) // 失败提示
                     }
+                }).on("openBuyVip", () => {
+                    env.openExternal(Uri.parse('https://airdb.lingyun.net/airdb/price'));
                 })
             })
         })

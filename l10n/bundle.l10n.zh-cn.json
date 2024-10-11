@@ -1,4 +1,8 @@
 {
+  "No SQL file selected!": "未选择SQL文件",
+  "change delimiter success": "改变分隔符成功",
+  "Not sql found!": "不存在SQL",
+  "Not active database connection found!": "未找到激活的数据库连接",
   "filter success!": "筛选成功",
   "Filtered": "筛选关键字",
   "Filter: click to filter": "点击搜索表",

@@ -14,6 +14,7 @@ import { ExportService } from "../export/exportService";
 import { QueryOption, QueryUnit } from "../queryUnit";
 import { DataResponse } from "./queryResponse";
 import * as vscode from 'vscode';
+import { Console } from "@/common/Console";
 
 export class QueryParam<T> {
     public connection: Node;
@@ -32,6 +33,7 @@ export class QueryPage {
         const dbOption: Node = queryParam.connection;
         await QueryPage.adaptData(queryParam);
         const type = this.keepSingle(queryParam);
+        Console.log('&&&&'+ type)
 
         ViewManager.createWebviewPanel({
             singlePage: true,
