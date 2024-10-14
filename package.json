@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "MySQL Redis Client AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "1.1.16",
+	"version": "1.1.17",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
@@ -1009,7 +1009,7 @@
 				"airdb-config.highlightSQLBlock": {
 					"type": "boolean",
 					"default": false,
-					"description": "Highlight SQL Code block."
+					"description": "%config.highlightSQLBlock%"
 				},
 				"airdb-config.preferConnectionName": {
 					"type": "boolean",
@@ -1019,37 +1019,42 @@
 				"airdb-config.disableSqlCodeLen": {
 					"type": "boolean",
 					"default": false,
-					"description": "Disable Sql Code lens."
+					"description": "%config.disableSqlCodeLen%"
 				},
 				"airdb-config.showUser": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show user on tree view."
+					"description": "%config.showUser%"
 				},
 				"airdb-config.showView": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show view on tree view."
+					"description": "%config.showView%"
 				},
 				"airdb-config.showQuery": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show query on tree view."
+					"description": "%config.showQuery%"
 				},
 				"airdb-config.showProcedure": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show procedure on tree view."
+					"description": "%config.showProcedure%"
 				},
 				"airdb-config.showFunction": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show function on tree view."
+					"description": "%config.showFunction%"
 				},
 				"airdb-config.showTrigger": {
 					"type": "boolean",
 					"default": true,
-					"description": "Show trigger on tree view."
+					"description": "%config.showTrigger%"
+				},
+				"airdb-config.showLeftTables": {
+					"type": "boolean",
+					"default": false,
+					"description": "%config.showLeftTables%"
 				}
 			}
 		}

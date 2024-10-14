@@ -82,5 +82,14 @@
 	"command.redis.key.detail": "View Key Detail",
 	"config.title":"AirDb Client",
 	"config.preferConnectionName":"Using connection name as connection node name",
-	"config.defaultSelectLimit":"Default limit of query sql."
+	"config.defaultSelectLimit":"Default limit of query sql.",
+	"config.highlightSQLBlock": "Highlight SQL Code block.",
+	"config.disableSqlCodeLen": "Disable Sql Code lens.",
+	"config.showUser": "Show user on tree view.",
+	"config.showView": "Show view on tree view.",
+	"config.showQuery": "Show query on tree view.",
+	"config.showProcedure": "Show procedure on tree view.",
+	"config.showFunction": "Show function on tree view.",
+	"config.showTrigger": "Show trigger on tree view.",
+	"config.showLeftTables": "Show left tables when filter."
 }

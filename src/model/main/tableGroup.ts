@@ -11,6 +11,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { GlobalState } from "@/common/state";
 import { NodeUtil } from "../nodeUtil";
 import { FilterNode } from "../other/FilterNode";
+import { Global } from "@/common/global";
 
 export class TableGroup extends Node {
 
@@ -143,12 +144,12 @@ export class TableGroup extends Node {
     public filterTable() {
         let tableFilterKeyword = GlobalState.get<any>(this.uid) || '';
         vscode.window.showInputBox({
-            prompt: `Enter keyword to filter tables`,
+            prompt: vscode.l10n.t(`Enter keyword to filter tables`),
             value: tableFilterKeyword,
-            placeHolder: 'table name keyword' }).then(async (inputContent) => {
+            placeHolder: vscode.l10n.t('table name keyword') }).then(async (inputContent) => {
             if (inputContent) {
                 GlobalState.update(this.uid, inputContent.trim());
-                vscode.window.showInformationMessage(`filter success!`)
+                vscode.window.showInformationMessage(vscode.l10n.t(`filter success!`))
             } else {
                 GlobalState.update(this.uid, '');
                 vscode.window.showErrorMessage(`Cancel`)
@@ -177,10 +178,29 @@ export class TableGroup extends Node {
                 // 过滤置顶的表
                 if (!this.pinedTables.includes(table.table)) {
                     table.pined = false;
-                    if (tableFilterKeyword && table.table.indexOf(tableFilterKeyword) > -1) {
-                        // 筛选
-                        table.iconPath = new vscode.ThemeIcon("search");
-                        tableNodesFilter.push(table);
+                    // 支持多个字符搜索
+                    let tableFilterKeywordList = [];
+                    if (tableFilterKeyword) {
+                        tableFilterKeywordList = tableFilterKeyword.split(',');
+                    } else {
+                        tableFilterKeywordList = [];
+                    }
+                    // Console.log(tableFilterKeywordList);
+                    if (tableFilterKeywordList.length > 0) {
+                        let hit = false;
+                        tableFilterKeywordList.forEach((eleKeyword) => {
+                            if (table.table.indexOf(eleKeyword) > -1) {
+                                // 筛选
+                                table.iconPath = new vscode.ThemeIcon("search");
+                                tableNodesFilter.push(table);
+                                hit = true;
+                            }
+                        })
+                        // 获取配置决定是否显示除筛选外的表
+                        if (!hit && Global.getConfig('showLeftTables')) {
+                            table.iconPath = new vscode.ThemeIcon("split-horizontal");
+                            tableNodesNew.push(table);
+                        }
                     } else {
                         table.iconPath = new vscode.ThemeIcon("split-horizontal");
                         tableNodesNew.push(table);
@@ -206,10 +226,27 @@ export class TableGroup extends Node {
                 tables.forEach(table => {
                     // 过滤置顶的表
                     if (!this.pinedTables.includes(table.name)) {
-                        if (tableFilterKeyword && table.name.indexOf(tableFilterKeyword) > -1) {
-                            // 筛选
-                            table.iconPath = new vscode.ThemeIcon("search");
-                            tableNodesFilter.push(new TableNode({...table, pined: false}, this));
+                        // 支持多个字符搜索
+                        let tableFilterKeywordList = [];
+                        if (tableFilterKeyword) {
+                            tableFilterKeywordList = tableFilterKeyword.split(',');
+                        } else {
+                            tableFilterKeywordList = [];
+                        }
+                        if (tableFilterKeywordList.length > 0) {
+                            let hit = false;
+                            tableFilterKeywordList.forEach((eleKeyword) => {
+                                if (table.name.indexOf(eleKeyword) > -1) {
+                                    // 筛选
+                                    table.iconPath = new vscode.ThemeIcon("search");
+                                    tableNodesFilter.push(new TableNode({...table, pined: false}, this));
+                                    hit = true;
+                                }
+                            })
+                            if (!hit && Global.getConfig('showLeftTables')) {
+                                table.iconPath = new vscode.ThemeIcon("split-horizontal");
+                                tableNodesNew.push(table);
+                            }
                         } else {
                             table.iconPath = new vscode.ThemeIcon("split-horizontal");
                             tableNodes.push(new TableNode({...table, pined: false}, this));

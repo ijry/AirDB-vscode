@@ -81,6 +81,15 @@
     "command.redis.key.del": "删除键",
 	"command.redis.key.detail": "查看键详情",
 	"config.title": "AirDB配置",
-	"config.preferConnectionName":"使用连接名称作为连接的显示名",
-	"config.defaultSelectLimit":"默认的分页大小."
+	"config.preferConnectionName": "使用连接名称作为连接的显示名",
+	"config.defaultSelectLimit": "默认的分页大小.",
+	"config.highlightSQLBlock": "高亮SQL代码",
+	"config.disableSqlCodeLen": "禁用SQL代码信息指示器",
+	"config.showUser": "显示数据库用户",
+	"config.showView": "显示数据库视图",
+	"config.showQuery": "显示数据库查询SQL",
+	"config.showProcedure": "显示数据库事务",
+	"config.showFunction": "显示数据库函数",
+	"config.showTrigger": "显示数据库触发器",
+	"config.showLeftTables": "显示数据库筛选条件外的其它表"
 }
