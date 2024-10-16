@@ -1,21 +1,32 @@
 <template>
   <div class="ml-4">
     <div class="mb-3">
-      <div class="inline-block mr-10">
+      <div class="mr-10 mb-3">
         <label class="inline-block mr-5 font-bold w-14">
           {{$t('Design.Table')}}
           <span class="mr-1 text-red-600">*</span>
         </label>
-        <input class="w-64 field__input" required v-model="table.name" />
+        <el-input size="small"  class="w-64" required v-model="table.name" />
       </div>
-      <div class="inline-block mr-10">
-        <label class="inline-block w-32 mr-5 font-bold">
-          {{$t('Design.Comment')}}
-          <span class="mr-1 text-red-600">*</span>
-        </label>
-        <input class="w-64 field__input" v-model="table.comment" />
+      <div class="flex justify-start items-end">
+        <div class="inline-block flex flex-1 mr-10">
+          <label class="inline-block w-14 mr-5 font-bold">
+            {{$t('Design.Comment')}}
+            <span class="mr-1 text-red-600">*</span>
+          </label>
+          <el-input size="small" rows="2" type="textarea" class="w-2/3" v-model="table.comment" />
+        </div>
+        <div class="px-4">
+          <el-button @click="rename" size="small" type="default">{{ $t('Design.Update') }}</el-button>
+        </div>
       </div>
-      <el-button @click="rename" size="small" type="default">{{ $t('Design.Update') }}</el-button>
+      <div>
+          <!-- 自增值 -->
+          <!-- 存储引擎 -->
+          <!-- 字符集 -->
+          <!-- 字符排序规则 -->
+          <!-- 行格式 -->
+      </div>
     </div>
   </div>
 </template>

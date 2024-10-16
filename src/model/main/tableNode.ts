@@ -184,12 +184,12 @@ export class TableNode extends Node implements CopyAble {
                     this.table = newTableName;
                     this.meta.comment = newComment;
                     this.provider.reload(this.parent)
-                }).on("addColumn", async (addColumnParam) => {
+                }).on("addColumnSql", async (addColumnParam) => {
                     const sql = this.dialect.addColumnSql(addColumnParam);
                     await executeAndRefresh(sql, handler)
                     this.setChildCache(null)
                     this.provider.reload(this.parent)
-                }).on("updateColumn", async (updateColumnParam) => {
+                }).on("updateColumnSql", async (updateColumnParam) => {
                     const sql = this.dialect.updateColumnSql(updateColumnParam);
                     await executeAndRefresh(sql, handler)
                     this.setChildCache(null)

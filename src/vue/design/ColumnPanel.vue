@@ -49,23 +49,46 @@
       </ux-table-column>
     </ux-grid>
     <el-dialog :title="$t('Update Column')" :visible.sync="column.editVisible" top="5vh" size="default">
-      <el-form :inline='true' label-width="100px" label-suffix=":">
-        <el-form-item :label="$t('Design.Column.Name')"required>
+      <el-form :inline='false' label-width="100px" label-suffix=":" size="small">
+        <!-- 字段名称 -->
+        <el-form-item :label="$t('Design.Column.Name')" required>
           <el-input v-model="editColumn.name" :placeholder="$t('Design.Column.Name')"></el-input>
         </el-form-item>
+        <!-- 字段类型 -->
         <el-form-item :label="$t('Design.Column.Type')" required>
-          <!-- <el-input v-model="editColumn.type" :placeholder="$t('Design.Column.Type')"></el-input> -->
-          <el-select v-model="editColumn.type" :placeholder="$t('Design.Column.Type')" clearable filterable>
-            <template v-for="item in typeList">
-              <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
-                :label="item.label" :value="item.label"></el-option>
+          <el-input :placeholder="$t('Design.Column.Type')" v-model="editColumn.type">
+            <template #suffix>
+              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {editColumn.type = e}" filterable>
+                <template v-for="item in typeList">
+                  <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
+                    :label="item.label" :value="item.label"></el-option>
+                </template>
+              </el-select>
             </template>
-          </el-select>
+          </el-input>
         </el-form-item>
+        <!-- 默认值 -->
+        <el-form-item :label="$t('Design.Column.Default')">
+          <el-input :placeholder="$t('Design.Column.Default')"
+            v-model="editColumn.defaultValue">
+            <template #suffix>
+              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {editColumn.defaultValue = e}">
+                <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
+                <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
+                <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
+                <el-option label="CURRENT_TIMESTAMP" value="CURRENT_TIMESTAMP"></el-option>
+              </el-select>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- 字符集 -->
+        <!-- 字符排序规则 -->
+        <!-- 备注 -->
         <el-form-item :label="$t('Design.Column.Comment')">
-          <el-input type="textarea"  :placeholder="$t('Design.Column.Comment')"
+          <el-input type="textarea" :placeholder="$t('Design.Column.Comment')"
             v-model="editColumn.comment"></el-input>
         </el-form-item>
+        <!-- 允许Null -->
         <el-form-item label="Not Null">
           <el-checkbox v-model="editColumn.isNotNull"></el-checkbox>
         </el-form-item>
@@ -80,22 +103,38 @@
       </span>
     </el-dialog>
     <el-dialog :title="$t('Add Column')" :visible.sync="column.visible" top="5vh" size="default">
-      <el-form :inline='true' label-width="100px" label-suffix=":">
+      <el-form :inline='false' label-width="100px" label-suffix=":" size="small">
         <el-form-item :label="$t('Design.Column.Name')" :placeholder="$t('Design.Column.Name')" required>
           <el-input v-model="column.name" :placeholder="$t('Design.Column.Name')"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Type')" required>
-          <!-- <el-input v-model="column.type" :placeholder="$t('Design.Column.Type')"></el-input> -->
-          <el-select v-model="column.type" :placeholder="$t('Design.Column.Type')" clearable filterable>
-            <template v-for="item in typeList">
-              <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
-                :label="item.label" :value="item.label"></el-option>
+          <el-input :placeholder="$t('Design.Column.Type')" v-model="column.type">
+            <template #suffix>
+              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {column.type = e}" filterable>
+                <template v-for="item in typeList">
+                  <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
+                    :label="item.label" :value="item.label"></el-option>
+                </template>
+              </el-select>
             </template>
-          </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item :label="$t('Design.Column.Default')">
+          <el-input :placeholder="$t('Design.Column.Default')"
+            v-model="column.defaultValue">
+            <template #suffix>
+              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {column.defaultValue = e}">
+                <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
+                <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
+                <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
+                <el-option label="CURRENT_TIMESTAMP" value="CURRENT_TIMESTAMP"></el-option>
+              </el-select>
+            </template>
+          </el-input>
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Comment')">
-          <el-input type="textarea" :placeholder="$t('Design.Column.Comment')"
-            v-model="column.comment"></el-input>
+          <el-input type="textarea"  :placeholder="$t('Design.Column.Comment')"
+            v-model="editColumn.comment"></el-input>
         </el-form-item>
         <el-form-item label="Not Null">
           <el-checkbox v-model="column.isNotNull"></el-checkbox>
@@ -146,6 +185,7 @@ export default {
         editLoading: false,
         name: '',
         type: null,
+        defaultValue: '',
         isNotNull: false,
         nullable: false,
       },
@@ -173,21 +213,23 @@ export default {
       return window.outerHeight - 280;
     },
     updateColumn() {
-      this.emit("updateColumn", {
+      this.emit("updateColumnSql", {
         newColumnName: this.editColumn.name,
         columnType: this.editColumn.type,
         comment: this.editColumn.comment,
         nullable: !this.editColumn.isNotNull,
+        defaultValue: this.editColumn.defaultValue,
         table: this.designData.table,
         columnName: this.column.name,
       });
     },
     createcolumn() {
       this.column.loading = true;
-      this.emit("addColumn", {
+      this.emit("addColumnSql", {
         columnType: this.column.type,
         comment: this.column.comment,
         nullable: !this.column.isNotNull,
+        defaultValue: this.column.defaultValue,
         table: this.designData.table,
         columnName: this.column.name,
       });

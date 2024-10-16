@@ -39,15 +39,47 @@ export class MysqlDialect extends SqlDialect {
     }
     addColumnSql(addColumnParam: AddColumnParam): string {
         let {columnName, columnType, comment, nullable, table, defaultValue} = addColumnParam
-        const defaultDefinition = nullable ? "" : " NOT NULL";
+        let defaultDefinition = nullable ? "" : " NOT NULL";
+        let defaultValueDefinition = '';
+        switch (defaultValue) {
+            case 'null':
+                defaultValueDefinition = " default null ";
+                break;
+            case '':
+                defaultValueDefinition = "";
+                break;
+            case "''":
+            case "CURRENT_TIMESTAMP":
+                defaultValueDefinition = " default " + defaultValue + " ";
+                break;
+            default:
+                defaultValueDefinition = " default '" + defaultValue + "' ";
+                break;
+        }
         comment = comment ? ` comment '${comment}'` : "";
-        return `ALTER TABLE\n\t${table} ADD COLUMN ${columnName} ${columnType}${defaultDefinition}${comment};`;
+        return `ALTER TABLE\n\t${table} ADD COLUMN ${columnName} ${columnType} ${defaultDefinition} ${defaultValueDefinition} ${comment};`;
     }
     updateColumnSql(updateColumnParam: UpdateColumnParam): string {
         let {columnName, columnType, newColumnName, comment, nullable, table, defaultValue}=updateColumnParam
-        const defaultDefinition = nullable ? "" : " NOT NULL";
+        let defaultDefinition = nullable ? "" : " NOT NULL";
+        let defaultValueDefinition = '';
+        switch (defaultValue) {
+            case 'null':
+                defaultValueDefinition = " default null ";
+                break;
+            case '':
+                defaultValueDefinition = "";
+                break;
+            case "''":
+            case "CURRENT_TIMESTAMP":
+                defaultValueDefinition = " default " + defaultValue + " ";
+                break;
+            default:
+                defaultValueDefinition = " default '" + defaultValue + "' ";
+                break;
+        }
         comment = comment ? ` comment '${comment}'` : "";
-        return `ALTER TABLE\n\t${table} CHANGE ${columnName} ${newColumnName} ${columnType}${defaultDefinition}${comment};`;
+        return `ALTER TABLE\n\t${table} CHANGE ${columnName} ${newColumnName} ${columnType} ${defaultDefinition} ${defaultValueDefinition} ${comment};`;
     }
     showUsers(): string {
         return `SELECT concat(user,'@',host) user FROM mysql.user;`;
