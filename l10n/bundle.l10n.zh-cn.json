@@ -1,4 +1,5 @@
 {
+  "Run SQL": "执行SQL",
   "No SQL file selected!": "未选择SQL文件",
   "change delimiter success": "改变分隔符成功",
   "Not sql found!": "不存在SQL",

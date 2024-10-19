@@ -18,12 +18,15 @@ export class TableGroup extends Node {
     public iconPath=new ThemeIcon("list-flat")
     public contextValue: string = ModelType.TABLE_GROUP;
     public pinedTables: string[] = []; // 获取当前数据库置顶表的列表
+    // 存储不同数据库不同表置顶/查询SQl用的key
+    // 不能使用uid会造成执行SQL文件时无法自动获取激活的数据库
+    public stateKey:string = '';
     constructor(readonly parent: Node) {
         super(vscode.l10n.t("Table"));
         this.init(parent);
 
         if (parent.dbType == DatabaseType.MYSQL) {
-            this.uid = this.key + '-default-' + this.parent.label + '-TableFilterKeyword'
+            this.stateKey = this.key + '-default-' + this.parent.label + '-TableFilterKeyword'
             // @ts-ignore
             if (parent.pinedTablesMap != null && parent.pinedTablesMap['default-' + this.parent.label] != null) {
                 // schemeNode
@@ -33,7 +36,7 @@ export class TableGroup extends Node {
         } else if(parent.dbType == DatabaseType.MSSQL || parent.dbType == DatabaseType.PG) {
             // this.parent.parent is catalog
             // this.parent is schema
-            this.uid = this.key + '-' + this.parent.parent.label + '-' + this.parent.label + '-TableFilterKeyword'
+            this.stateKey = this.key + '-' + this.parent.parent.label + '-' + this.parent.label + '-TableFilterKeyword'
             
             // @ts-ignore
             if (parent.pinedTablesMap != null && parent.pinedTablesMap[this.parent.parent.label + '-' + this.parent.label] != null) {
@@ -142,16 +145,16 @@ export class TableGroup extends Node {
 
     // 表筛选
     public filterTable() {
-        let tableFilterKeyword = GlobalState.get<any>(this.uid) || '';
+        let tableFilterKeyword = GlobalState.get<any>(this.stateKey) || '';
         vscode.window.showInputBox({
             prompt: vscode.l10n.t(`Enter keyword to filter tables`),
             value: tableFilterKeyword,
             placeHolder: vscode.l10n.t('table name keyword') }).then(async (inputContent) => {
             if (inputContent) {
-                GlobalState.update(this.uid, inputContent.trim());
+                GlobalState.update(this.stateKey, inputContent.trim());
                 vscode.window.showInformationMessage(vscode.l10n.t(`filter success!`))
             } else {
-                GlobalState.update(this.uid, '');
+                GlobalState.update(this.stateKey, '');
                 vscode.window.showErrorMessage(`Cancel`)
             }
             this.reload();
@@ -161,7 +164,7 @@ export class TableGroup extends Node {
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {
         // 获取表搜索
         let tableFilterLabel = '';
-        let tableFilterKeyword = GlobalState.get<any>(this.uid) || '';
+        let tableFilterKeyword = GlobalState.get<any>(this.stateKey) || '';
         if (!tableFilterKeyword) {
             tableFilterLabel = vscode.l10n.t("Filter: click to filter");
         } else {

@@ -288,7 +288,9 @@ export function activate(context: vscode.ExtensionContext) {
                 "airdb.table.filter": (tableGroup: TableGroup) => {
                     tableGroup.filterTable();
                 },
+                // sql文件执行
                 "airdb.codeLens.run": (sql: string) => {
+                    // Console.log("sql文件执行");
                     QueryUnit.runQuery(sql, ConnectionManager.tryGetConnection(), { split: true, recordHistory: true })
                 },
                 "airdb.table.design": (tableNode: TableNode) => {

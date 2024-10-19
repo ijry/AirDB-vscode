@@ -20,7 +20,7 @@ export class SqlCodeLensProvider implements vscode.CodeLensProvider {
         }
 
         return SQLParser.parseBlocks(document).map(block =>
-            new vscode.CodeLens(block.range, { command: "airdb.codeLens.run", title: "▶ Run SQL", arguments: [block.sql], })
+            new vscode.CodeLens(block.range, { command: "airdb.codeLens.run", title: "▶ " + vscode.l10n.t("Run SQL"), arguments: [block.sql], })
         )
     }
 
