@@ -19,7 +19,7 @@ https://www.umyui.com/
 }
 
 .plx-cell .el-input input {
-  padding: 10px;
+  padding: 1px 2px;
 }
 
 .plx-edit-icon {
@@ -50,13 +50,37 @@ https://www.umyui.com/
 
 
 .plx-cell {
-  padding: 0px !important;
-  text-align: center !important;
+  padding: 0px 2px !important;
+  /* text-align: center !important; */
 }
 
 .plx-table--body .el-input__inner {
   line-height: 35px !important;
   height: 35px !important;
+}
+
+.plx-table--body .el-input__inner {
+  line-height: 35px !important;
+  height: 35px !important;
+}
+.plx-table--body .el-input--small {
+  font-size: 13px
+}
+
+.plx-table--body .el-input--small .el-input__inner {
+  height: 25px !important;
+  line-height: 25px !important;
+  text-align: left;
+}
+
+.plx-table--body .el-input--mini {
+  font-size: 12px !important;
+}
+
+.plx-table--body .el-input--mini .el-input__inner {
+  height: 22px !important;
+  line-height: 22px !important;
+  text-align: left;
 }
 
 .plx-cell span {

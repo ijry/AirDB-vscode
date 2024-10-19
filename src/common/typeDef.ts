@@ -54,10 +54,17 @@ export interface FieldInfo  {
  * column meta info
  */
 export interface ColumnMeta {
+
+    /**
+     * edit state.
+     */
+    editState: number;
+
     /**
      * column name.
      */
     name: string;
+    newColumnName: string;
     /**
      * column type without length example: varcahr.
      */

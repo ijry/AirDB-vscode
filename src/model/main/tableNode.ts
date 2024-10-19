@@ -173,6 +173,8 @@ export class TableNode extends Node implements CopyAble {
                         if (columnNode.isPrimaryKey) {
                             primaryKey = columnNode.column.name;
                         }
+                        columnNode.column.newColumnName = columnNode.column.name;
+                        columnNode.column.editState = 0; // 0是默认状态
                         return columnNode.column;
                     });
                     handler.emit('design-data', { indexs: result, table: this.table, comment: this.meta.comment, columnList, primaryKey, dbType: this.dbType })
@@ -205,6 +207,25 @@ export class TableNode extends Node implements CopyAble {
                 }).on("createIndex", async ({ column, type, indexType }) => {
                     const sql = this.dialect.createIndex({ column, type, indexType, table: this.wrap(this.table) });
                     await executeAndRefresh(sql, handler)
+                }).on("saveDesign", async (changeList) => {
+                    changeList.forEach(async element => {
+                        switch (element.actionType) {
+                            case 'addColumnSql':
+                                await executeAndRefresh(this.dialect.addColumnSql(element), handler)
+                                break;
+                            case 'addColumnSql':
+                                await executeAndRefresh(this.dialect.updateColumnSql(element), handler)
+                                break;
+                            case 'execute':
+                                await executeAndRefresh(element.sql, handler)
+                                break;
+                            default:
+                                break;
+                        }
+                        this.setChildCache(null)
+                        // 不能立刻更新防止批量执行里面有报错的
+                        this.provider.reload(this.parent)
+                    });
                 })
             })
         })

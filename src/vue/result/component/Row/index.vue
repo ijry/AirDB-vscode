@@ -2,7 +2,7 @@
   <div>
     <template v-if="scope.row.isFilter">
       <el-input class='edit-filter' v-model="filterObj[scope.column.title]"
-        :clearable='true' placeholder="Filter" @clear="filter(null,scope.column.title)"
+        :clearable='true' :placeholder="$t('Filter')" @clear="filter(null,scope.column.title)"
         @keyup.enter.native="filter($event,scope.column.title)">
       </el-input>
     </template>

@@ -1,24 +1,63 @@
+<style lang="css">
+</style>
 <template>
   <div>
     <InfoPanel/>
     <div class="design-toolbar mb-3">
-      <el-button @click="column.visible=true" type="default" :title="$t('Design.Insert')"
+      <el-button @click="saveDesign" type="default"
+        icon="el-icon-check" size="small">
+        {{ $t('Design.Update') }}
+      </el-button>
+      <el-button cclick="column.visible=true"  @click="addColumnInline" type="default"
         icon="el-icon-circle-plus-outline" size="small">
         {{ $t('Add Column') }}
       </el-button>
     </div>
-    <ux-grid :data="designData.editColumnList" stripe style="width: 100%"
-      :cell-style="{height: '25px'}" :height="remainHeight()">
-      <ux-table-column align="center" field="name" minWidth="130" :title="$t('Design.Column.Name')"
-        show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="type" width="110" :title="$t('Design.Column.Type')"
-        show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="comment" minWidth="150"  :title="$t('Design.Column.Comment')"
-        show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="maxLength" width="60" :title="$t('Design.Column.Length')"
-        show-overflow-tooltip="true"></ux-table-column>
-      <ux-table-column align="center" field="defaultValue" width="120" :title="$t('Design.Column.Default')"
-        show-overflow-tooltip="true"></ux-table-column>
+    <ux-grid :data="designData.editColumnList" stripe keep-source style="width: 100%" :edit-config="{trigger: 'click', mode: 'cell'}"
+      :cell-style="{height: '25px'}" :row-style="rowStyle" :height="remainHeight()">
+      <!-- <ux-table-column align="left" field="editState" minWidth="70" :title="$t('Design.Column.editState')"
+        show-overflow-tooltip="true">
+      </ux-table-column> -->
+      <ux-table-column align="left" field="newColumnName" minWidth="110" :title="$t('Design.Column.Name')" edit-render
+        show-overflow-tooltip="true">
+        <template v-slot:edit="scope">
+          <el-input v-model="scope.row.newColumnName" size="small" @change="changeColumn(scope)"></el-input>
+        </template>
+      </ux-table-column>
+      <ux-table-column align="left" field="type" minWidth="110" :title="$t('Design.Column.Type')" edit-render
+        show-overflow-tooltip="true">
+        <template v-slot:edit="scope">
+          <el-input v-model="scope.row.type" size="small" @change="changeColumn(scope)"></el-input>
+        </template>
+      </ux-table-column>
+      <ux-table-column align="left" field="comment" minWidth="150" :title="$t('Design.Column.Comment')" edit-render
+        show-overflow-tooltip="true">
+        <template v-slot:edit="scope">
+          <el-input v-model="scope.row.comment" size="small" @change="changeColumn(scope)"></el-input>
+        </template>
+      </ux-table-column>
+      <!-- <ux-table-column align="center" field="maxLength" width="60" :title="$t('Design.Column.Length')"
+        show-overflow-tooltip="true"></ux-table-column> -->
+      <ux-table-column align="left" field="defaultValue" width="120" :title="$t('Design.Column.Default')" edit-render
+        show-overflow-tooltip="true">
+        <template v-slot:edit="scope">
+          <el-input v-model="scope.row.defaultValue" size="small" @change="changeColumn(scope)">
+            <template #suffix>
+              <el-select class="w-30" style="width: 60px;" :value="$t('Design.Column.Select')" @change="(e) => {scope.row.defaultValue = e}">
+                <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
+                <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
+                <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
+                <el-option label="CURRENT_TIMESTAMP" value="CURRENT_TIMESTAMP"></el-option>
+              </el-select>
+            </template>
+          </el-input>
+        </template>
+      </ux-table-column>
+      <ux-table-column align="center" :title="$t('Not Null')" width="80" show-overflow-tooltip="true">
+        <template v-slot="scope">
+          <el-checkbox disabled1 @change="(e) => {scope.row.isNotNull = e ;changeColumn(scope);}" :checked="scope.row.nullable=='NO'"></el-checkbox>
+        </template>
+      </ux-table-column>
       <ux-table-column align="center" width="60" :title="$t('Primary Key')"
         show-overflow-tooltip="true">
         <template v-slot="{ row }">
@@ -30,21 +69,18 @@
           <el-checkbox disabled :checked="row.isUnique"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" :title="$t('Not Null')" width="60" show-overflow-tooltip="true">
-        <template v-slot="{ row }">
-          <el-checkbox disabled :checked="row.nullable=='NO'"></el-checkbox>
-        </template>
-      </ux-table-column>
       <ux-table-column align="center" :title="$t('Auto Incrment')" width="60" show-overflow-tooltip="true">
         <template v-slot="{ row }">
           <el-checkbox disabled :checked="row.isAutoIncrement"></el-checkbox>
         </template>
       </ux-table-column>
-      <ux-table-column :title="$t('Operation')" width="120">
-        <template v-slot="{ row }">
-          <el-button @click="openEdit(row)" title="edit" size="mini" icon="el-icon-edit" circle> </el-button>
-          <el-button @click="deleteConfirm(row)" :title="$t('delete')" type="danger"
-            size="mini" icon="el-icon-delete" circle> </el-button>
+      <ux-table-column :title="$t('Operation')" minWidth="120">
+        <template v-slot="scope">
+          <div style="padding: 2px 0px;">
+            <el-button @click="openEdit(scope.row)" title="edit" size="mini" icon="el-icon-edit" circle> </el-button>
+            <el-button cclick="deleteConfirm(row)" @click="scope.row.editState = -1" :title="$t('delete')" type="danger"
+              size="mini" icon="el-icon-delete" circle> </el-button>
+          </div>
         </template>
       </ux-table-column>
     </ux-grid>
@@ -52,7 +88,7 @@
       <el-form :inline='false' label-width="100px" label-suffix=":" size="small">
         <!-- 字段名称 -->
         <el-form-item :label="$t('Design.Column.Name')" required>
-          <el-input v-model="editColumn.name" :placeholder="$t('Design.Column.Name')"></el-input>
+          <el-input v-model="editColumn.newColumnName" :placeholder="$t('Design.Column.Name')"></el-input>
         </el-form-item>
         <!-- 字段类型 -->
         <el-form-item :label="$t('Design.Column.Type')" required>
@@ -153,6 +189,7 @@
 </template>
 
 <script>
+import { Loading } from 'element-ui';
 import { inject } from "../mixin/vscodeInject";
 import { wrapByDb } from "@/common/wrapper";
 import InfoPanel from "./InfoPanel";
@@ -161,6 +198,7 @@ export default {
   components:{InfoPanel},
   data() {
     return {
+      editLoading: false,
       typeList: [
         {label: 'tinyint(1)', label: 'smallint(3)', onlyType: ['MySQL']},{label: 'int(11)'},{label: 'bigint(20)'},
         {label: 'char(20)'},{label: 'varchar(64)'},{label: 'varchar(256)'},
@@ -179,11 +217,13 @@ export default {
       },
       editColumn: {},
       column: {
+        editState: 0, // 0不变1新增-1删除2修改
         visible: false,
         editVisible: false,
         loading: false,
         editLoading: false,
         name: '',
+        newColumnName: '',
         type: null,
         defaultValue: '',
         isNotNull: false,
@@ -209,8 +249,101 @@ export default {
       .init();
   },
   methods: {
+    saveDesign() {
+      let loadingInstance = Loading.service({
+        text: 'saveing...'
+      });
+      // 保存表结构设计
+      let changeList = [];
+      this.designData.editColumnList.forEach(ele => {
+        switch (ele.editState) {
+          case 1:
+            changeList.push({
+              actionType: 'addColumnSql',
+              columnType: ele.type,
+              comment: ele.comment,
+              nullable: !ele.isNotNull,
+              defaultValue: ele.defaultValue,
+              table: this.designData.table,
+              columnName: ele.newColumnName,
+            });
+            break;
+          case 2:
+            changeList.push({
+              actionType: 'updateColumnSql',
+              newColumnName: ele.newColumnName,
+              columnType: ele.type,
+              comment: ele.comment,
+              nullable: !ele.isNotNull,
+              defaultValue: ele.defaultValue,
+              table: this.designData.table,
+              columnName: ele.name,
+            });
+          case -1:
+            changeList.push({
+              actionType: 'execute',
+              sql: `ALTER TABLE ${wrapByDb(
+                this.designData.table,
+                this.designData.dbType
+              )} DROP COLUMN ${ele.name}`
+            })
+          default:
+            break;
+        }
+      })
+      if (changeList.length == 0) {
+        loadingInstance.close();
+        return;
+      }
+      this.emit("saveDesign", changeList);
+      loadingInstance.close();
+    },
+    changeColumn(scope) {
+      console.log(scope)
+      if (scope.row.editState == 1) {
+      } else {
+        scope.items[scope.rowIndex].editState = 2;
+      }
+    },
+    rowStyle({row}) {
+      let style = {};
+      switch (row.editState) {
+        case -1:
+          style['background-color'] = '#e74c3c !important';
+          break;
+        case 1:
+          style['background-color'] = '#27ae60 !important';
+          break;
+        case 2:
+          style['background-color'] = '#e67e22 !important';
+          break;
+      
+        default:
+          break;
+      }
+      return style;
+    },
     remainHeight() {
       return window.outerHeight - 280;
+    },
+    addColumnInline() {
+      // this.$set(this.designData.editColumnList, this.designData.editColumnList.length, {
+      //   ...this.column,
+      //   editState: 1
+      // });
+      this.designData.editColumnList = [...this.designData.editColumnList, {
+          "name": "field" + (this.designData.editColumnList.length + 1),
+          "newColumnName": "field" + (this.designData.editColumnList.length + 1),
+          "simpleType": "varchar",
+          "type": "varchar(255)",
+          "comment": "",
+          "key": "",
+          "nullable": "YES",
+          "extra": "",
+          "isNotNull": false,
+          "editState": 1
+      }]
+      console.log(this.designData.editColumnList)
     },
     updateColumn() {
       this.emit("updateColumnSql", {

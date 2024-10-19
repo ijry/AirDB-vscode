@@ -1,4 +1,5 @@
 export default {
+    'Filter': '筛选',
     'Vip': '会员',
     'Subscribe': '订阅',
     'Db Type': '数据库类型',
@@ -55,7 +56,7 @@ export default {
     'Update Column': '修改字段',
     'Operation': '操作',
     'Unique': '唯一',
-    'Not Null': '允许空值',
+    'Not Null': '允许NULL',
     'Auto Incrment': '自增',
     'Index Name': '索引名称',
     'Column Name': '字段名称',
