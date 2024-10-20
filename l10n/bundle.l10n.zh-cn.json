@@ -1,4 +1,5 @@
 {
+  "Invalid use of NULL value": "数据已存在NULL值无法将字段设置不为Null",
   "Run SQL": "执行SQL",
   "No SQL file selected!": "未选择SQL文件",
   "change delimiter success": "改变分隔符成功",

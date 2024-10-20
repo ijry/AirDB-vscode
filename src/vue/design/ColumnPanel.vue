@@ -53,9 +53,9 @@
           </el-input>
         </template>
       </ux-table-column>
-      <ux-table-column align="center" :title="$t('Not Null')" width="80" show-overflow-tooltip="true">
+      <ux-table-column align="center" :title="$t('Allow Null')" width="80" show-overflow-tooltip="true">
         <template v-slot="scope">
-          <el-checkbox disabled1 @change="(e) => {scope.row.isNotNull = e ;changeColumn(scope);}" :checked="scope.row.nullable=='NO'"></el-checkbox>
+          <el-checkbox disabled1 @change="(e) => {scope.row.allowNull = e ;changeColumn(scope);}" :checked="scope.row.nullable == 'YES'"></el-checkbox>
         </template>
       </ux-table-column>
       <ux-table-column align="center" width="60" :title="$t('Primary Key')"
@@ -125,8 +125,8 @@
             v-model="editColumn.comment"></el-input>
         </el-form-item>
         <!-- 允许Null -->
-        <el-form-item label="Not Null">
-          <el-checkbox v-model="editColumn.isNotNull"></el-checkbox>
+        <el-form-item :label="$t('Allow Null')">
+          <el-checkbox v-model="editColumn.allowNull"></el-checkbox>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -172,8 +172,8 @@
           <el-input type="textarea"  :placeholder="$t('Design.Column.Comment')"
             v-model="editColumn.comment"></el-input>
         </el-form-item>
-        <el-form-item label="Not Null">
-          <el-checkbox v-model="column.isNotNull"></el-checkbox>
+        <el-form-item :label="$t('Allow Null')">
+          <el-checkbox v-model="column.allowNull"></el-checkbox>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -227,7 +227,7 @@ export default {
         newColumnName: '',
         type: null,
         defaultValue: '',
-        isNotNull: false,
+        allowNull: true,
         nullable: false,
       },
     };
@@ -266,7 +266,7 @@ export default {
               actionType: 'addColumnSql',
               columnType: ele.type,
               comment: ele.comment,
-              nullable: !ele.isNotNull,
+              nullable: ele.allowNull,
               defaultValue: ele.defaultValue,
               table: this.designData.table,
               columnName: ele.newColumnName,
@@ -278,7 +278,7 @@ export default {
               newColumnName: ele.newColumnName,
               columnType: ele.type,
               comment: ele.comment,
-              nullable: !ele.isNotNull,
+              nullable: ele.allowNull,
               defaultValue: ele.defaultValue,
               table: this.designData.table,
               columnName: ele.name,
@@ -298,6 +298,7 @@ export default {
       })
       if (changeList.length == 0) {
         loadingInstance.close();
+        this.$message.error(this.$t("No Change")+ "!");
         return;
       }
       this.emit("saveDesign", changeList);
@@ -342,7 +343,7 @@ export default {
           "key": "",
           "nullable": "YES",
           "extra": "",
-          "isNotNull": false,
+          "allowNull": true,
           "editState": 1
       }];
       this.$forceUpdate();
@@ -353,7 +354,7 @@ export default {
         this.designData.editColumnList[this.editColumn.index].newColumnName = this.editColumn.name;
         this.designData.editColumnList[this.editColumn.index].type = this.editColumn.type;
         this.designData.editColumnList[this.editColumn.index].comment = this.editColumn.comment;
-        this.designData.editColumnList[this.editColumn.index].isNotNull = this.editColumn.isNotNull;
+        this.designData.editColumnList[this.editColumn.index].allowNull = this.editColumn.allowNull;
         this.designData.editColumnList[this.editColumn.index].defaultValue = this.editColumn.defaultValue;
         this.designData.editColumnList[this.editColumn.index].newColumnName = this.editColumn.name;
         this.designData.editColumnList[this.editColumn.index].editState = 2;
@@ -363,7 +364,7 @@ export default {
           newColumnName: this.editColumn.name,
           columnType: this.editColumn.type,
           comment: this.editColumn.comment,
-          nullable: !this.editColumn.isNotNull,
+          nullable: this.editColumn.allowNull,
           defaultValue: this.editColumn.defaultValue,
           table: this.designData.table,
           columnName: this.column.name,
@@ -375,7 +376,7 @@ export default {
       this.emit("addColumnSql", {
         columnType: this.column.type,
         comment: this.column.comment,
-        nullable: !this.column.isNotNull,
+        nullable: this.column.allowNull,
         defaultValue: this.column.defaultValue,
         table: this.designData.table,
         columnName: this.column.name,

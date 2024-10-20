@@ -48,7 +48,7 @@ export class ColumnNode extends Node implements CopyAble {
         if (this.column.extra == 'auto_increment') {
             this.column.isAutoIncrement = true;
         }
-        this.column.isNotNull = this.column.nullable != 'YES'
+        this.column.allowNull = this.column.nullable == 'YES'
         this.type = `${this.column.type}`
         this.description = `${this.column.type} ${this.column.comment||''}`
         this.tooltip = `${this.label} ${this.column.comment}

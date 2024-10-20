@@ -1,5 +1,7 @@
 export default {
     'delete': '删除',
+    'Update Success': '更新成功',
+    'No Change': '无字段变动',
     'Filter': '筛选',
     'Vip': '会员',
     'Subscribe': '订阅',
@@ -57,7 +59,8 @@ export default {
     'Update Column': '修改字段',
     'Operation': '操作',
     'Unique': '唯一',
-    'Not Null': '允许NULL',
+    'Not Null': '不为NULL',
+    'Allow Null': '允许NULL',
     'Auto Incrment': '自增',
     'Index Name': '索引名称',
     'Column Name': '字段名称',

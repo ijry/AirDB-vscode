@@ -97,7 +97,7 @@ export interface ColumnMeta {
      * extra info, auto_increment
      */
     extra:any;
-    isNotNull:boolean;
+    allowNull:boolean;
     isAutoIncrement:boolean;
     isUnique:boolean;
     isPrimary:boolean;

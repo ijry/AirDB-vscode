@@ -155,7 +155,7 @@ export class TableNode extends Node implements CopyAble {
                 await this.execute(sql)
                 handler.emit("success")
             } catch (error) {
-                handler.emit("error", error.message)
+                handler.emit("error", vscode.l10n.t(error.message))
             }
         }
         let type = this.key + this.schema + '-design-' + this.table;

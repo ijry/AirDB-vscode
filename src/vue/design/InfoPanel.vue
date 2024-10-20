@@ -56,7 +56,7 @@ export default {
       this.designData.editIndex = [...this.designData.indexs];
     })
       .on("success", () => {
-        this.$message.success("Update success!");
+        this.$message.success(this.$t("Update Success")+ "!");
         this.init();
       })
       .on("error", (msg) => {
