@@ -4,7 +4,7 @@
   <div>
     <InfoPanel/>
     <div class="design-toolbar mb-3">
-      <el-button @click="saveDesign" type="default"
+      <el-button @click="saveDesign" type="primary"
         icon="el-icon-check" size="small">
         {{ $t('Design.Update') }}
       </el-button>
@@ -13,7 +13,7 @@
         {{ $t('Add Column') }}
       </el-button>
     </div>
-    <ux-grid :data="designData.editColumnList" stripe keep-source style="width: 100%" :edit-config="{trigger: 'click', mode: 'cell'}"
+    <ux-grid ref="uxGrid" :data="designData.editColumnList" stripe keep-source style="width: 100%" :edit-config="{trigger: 'click', mode: 'cell'}"
       :cell-style="{height: '25px'}" :row-style="rowStyle" :height="remainHeight()">
       <!-- <ux-table-column align="left" field="editState" minWidth="70" :title="$t('Design.Column.editState')"
         show-overflow-tooltip="true">
@@ -76,9 +76,9 @@
       </ux-table-column>
       <ux-table-column :title="$t('Operation')" minWidth="120">
         <template v-slot="scope">
-          <div style="padding: 2px 0px;">
-            <el-button @click="openEdit(scope.row)" title="edit" size="mini" icon="el-icon-edit" circle> </el-button>
-            <el-button cclick="deleteConfirm(row)" @click="scope.row.editState = -1" :title="$t('delete')" type="danger"
+          <div style="padding: 0px 0px;">
+            <el-button @click="openEdit(scope)" title="edit" size="mini" icon="el-icon-edit" circle> </el-button>
+            <el-button @click="deleteConfirm(scope)" :title="$t('delete')" type="danger"
               size="mini" icon="el-icon-delete" circle> </el-button>
           </div>
         </template>
@@ -88,7 +88,7 @@
       <el-form :inline='false' label-width="100px" label-suffix=":" size="small">
         <!-- 字段名称 -->
         <el-form-item :label="$t('Design.Column.Name')" required>
-          <el-input v-model="editColumn.newColumnName" :placeholder="$t('Design.Column.Name')"></el-input>
+          <el-input v-model="editColumn.name" :placeholder="$t('Design.Column.Name')"></el-input>
         </el-form-item>
         <!-- 字段类型 -->
         <el-form-item :label="$t('Design.Column.Type')" required>
@@ -198,6 +198,7 @@ export default {
   components:{InfoPanel},
   data() {
     return {
+      batchMode: true,
       editLoading: false,
       typeList: [
         {label: 'tinyint(1)', label: 'smallint(3)', onlyType: ['MySQL']},{label: 'int(11)'},{label: 'bigint(20)'},
@@ -256,6 +257,9 @@ export default {
       // 保存表结构设计
       let changeList = [];
       this.designData.editColumnList.forEach(ele => {
+        if (ele.defaultValue == undefined) {
+          ele.defaultValue = '';
+        }
         switch (ele.editState) {
           case 1:
             changeList.push({
@@ -279,13 +283,14 @@ export default {
               table: this.designData.table,
               columnName: ele.name,
             });
+            break;
           case -1:
             changeList.push({
               actionType: 'execute',
               sql: `ALTER TABLE ${wrapByDb(
                 this.designData.table,
                 this.designData.dbType
-              )} DROP COLUMN ${ele.name}`
+              )} DROP COLUMN ${ele.name};`
             })
           default:
             break;
@@ -327,13 +332,10 @@ export default {
       return window.outerHeight - 280;
     },
     addColumnInline() {
-      // this.$set(this.designData.editColumnList, this.designData.editColumnList.length, {
-      //   ...this.column,
-      //   editState: 1
-      // });
+      let len = this.designData.editColumnList.length;
       this.designData.editColumnList = [...this.designData.editColumnList, {
-          "name": "field" + (this.designData.editColumnList.length + 1),
-          "newColumnName": "field" + (this.designData.editColumnList.length + 1),
+          "name": "field" + (len + 1),
+          "newColumnName": "field" + (len + 1),
           "simpleType": "varchar",
           "type": "varchar(255)",
           "comment": "",
@@ -342,19 +344,31 @@ export default {
           "extra": "",
           "isNotNull": false,
           "editState": 1
-      }]
+      }];
+      this.$forceUpdate();
       console.log(this.designData.editColumnList)
     },
     updateColumn() {
-      this.emit("updateColumnSql", {
-        newColumnName: this.editColumn.name,
-        columnType: this.editColumn.type,
-        comment: this.editColumn.comment,
-        nullable: !this.editColumn.isNotNull,
-        defaultValue: this.editColumn.defaultValue,
-        table: this.designData.table,
-        columnName: this.column.name,
-      });
+      if (this.batchMode) {
+        this.designData.editColumnList[this.editColumn.index].newColumnName = this.editColumn.name;
+        this.designData.editColumnList[this.editColumn.index].type = this.editColumn.type;
+        this.designData.editColumnList[this.editColumn.index].comment = this.editColumn.comment;
+        this.designData.editColumnList[this.editColumn.index].isNotNull = this.editColumn.isNotNull;
+        this.designData.editColumnList[this.editColumn.index].defaultValue = this.editColumn.defaultValue;
+        this.designData.editColumnList[this.editColumn.index].newColumnName = this.editColumn.name;
+        this.designData.editColumnList[this.editColumn.index].editState = 2;
+        this.column.editVisible = false;
+      } else {
+        this.emit("updateColumnSql", {
+          newColumnName: this.editColumn.name,
+          columnType: this.editColumn.type,
+          comment: this.editColumn.comment,
+          nullable: !this.editColumn.isNotNull,
+          defaultValue: this.editColumn.defaultValue,
+          table: this.designData.table,
+          columnName: this.column.name,
+        });
+      }
     },
     createcolumn() {
       this.column.loading = true;
@@ -375,25 +389,32 @@ export default {
       //   }`
       // );
     },
-    openEdit(row) {
-      this.column.name = row.name;
-      this.editColumn = {...row};
+    openEdit(scope) {
+      this.column.name = scope.row.name;
+      this.editColumn = {
+        ...scope.row,
+        index: scope.rowIndex
+      };
       this.column.editVisible = true;
       this.column.editLoading = false;
     },
-    deleteConfirm(row) {
-      this.$confirm(this.$t("Are you sure you want to delete this column?"), this.$t("Warning"), {
-        confirmButtonText: this.$t("OK"),
-        cancelButtonText: this.$t("Cancel"),
-        type: "warning",
-      }).then(() => {
-        this.execute(
-          `ALTER TABLE ${wrapByDb(
-            this.designData.table,
-            this.designData.dbType
-          )} DROP COLUMN ${row.name}`
-        );
-      });
+    deleteConfirm(scope) {
+      if (this.batchMode) {
+        scope.row.editState = -1
+      } else {
+        this.$confirm(this.$t("Are you sure you want to delete this column?"), this.$t("Warning"), {
+          confirmButtonText: this.$t("OK"),
+          cancelButtonText: this.$t("Cancel"),
+          type: "warning",
+        }).then(() => {
+          this.execute(
+            `ALTER TABLE ${wrapByDb(
+              this.designData.table,
+              this.designData.dbType
+            )} DROP COLUMN ${scope.row.name}`
+          );
+        });
+      }
     },
     execute(sql) {
       if (!sql) return;

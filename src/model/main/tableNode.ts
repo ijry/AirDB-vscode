@@ -208,24 +208,29 @@ export class TableNode extends Node implements CopyAble {
                     const sql = this.dialect.createIndex({ column, type, indexType, table: this.wrap(this.table) });
                     await executeAndRefresh(sql, handler)
                 }).on("saveDesign", async (changeList) => {
-                    changeList.forEach(async element => {
+                    // 批量执行设计表时的字段变动SQL
+                    let sql = '';
+                    // @ts-ignore
+                    changeList.forEach(element => {
                         switch (element.actionType) {
                             case 'addColumnSql':
-                                await executeAndRefresh(this.dialect.addColumnSql(element), handler)
+                                // @ts-ignore
+                                sql = sql + this.dialect.addColumnSql(element);
                                 break;
-                            case 'addColumnSql':
-                                await executeAndRefresh(this.dialect.updateColumnSql(element), handler)
+                            case 'updateColumnSql':
+                                // @ts-ignore
+                                sql = sql + this.dialect.updateColumnSql(element);
                                 break;
                             case 'execute':
-                                await executeAndRefresh(element.sql, handler)
+                                sql = sql + element.sql;
                                 break;
                             default:
                                 break;
                         }
-                        this.setChildCache(null)
-                        // 不能立刻更新防止批量执行里面有报错的
-                        this.provider.reload(this.parent)
                     });
+                    await executeAndRefresh(sql, handler)
+                    this.setChildCache(null)
+                    this.provider.reload(this.parent)
                 })
             })
         })

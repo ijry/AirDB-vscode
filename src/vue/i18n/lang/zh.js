@@ -1,4 +1,5 @@
 export default {
+    'delete': '删除',
     'Filter': '筛选',
     'Vip': '会员',
     'Subscribe': '订阅',

@@ -16,9 +16,9 @@
 }
 </style>
 <template>
-  <div id="app">
-    <div ref="hint" class="hint" style="margin-bottom: 5px;">
-      <div class="relative" style="width:100%;margin-top: 10px;margin-bottom: 15px;position: relative;">
+  <div id="app" style="padding: 0px 10px;">
+    <div ref="hint" class="hint px-0" style="margin-bottom: 3px;padding-left: 0;padding-right: 0;">
+      <div class="relative" style="width:100%;margin-top: 0px;margin-bottom: 13px;position: relative;">
         <el-input class="sql-pannel" type="textarea" :autosize="{ minRows:2, maxRows:8}"
           v-model="toolbar.sql" @keypress.native="panelInput" />
           <div style="position: absolute;bottom: 5px;right: 10px;">
@@ -44,8 +44,8 @@
     <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading'
       size='small' :cell-style="{height: '24px', 'overflow': 'hidden'}" @sort-change="sort" :height="remainHeight"
       width="100vw" stripe :checkboxConfig="{ checkMethod: selectable}">
-      <ux-table-column type="checkbox" width="40" fixed="left"></ux-table-column>
-      <ux-table-column type="index" width="40" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
+      <ux-table-column type="checkbox" width="40" fixed="left" align="center"></ux-table-column>
+      <ux-table-column type="index" width="40"  align="center" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
         <Controller slot="header" :result="result" :toolbar="toolbar" />
       </ux-table-column>
       <ux-table-column v-for="(field,index) in (result.fields||[]).filter(field=>toolbar.showColumns.includes(field.name.toLowerCase()))"
@@ -275,7 +275,7 @@ export default {
       const observer = new ResizeObserver(entries => {
         entries.forEach(entry => {
           console.log('Height changed:', entry.contentRect.height);
-          this.hinHeight = entry.contentRect.height + 15;
+          this.hinHeight = entry.contentRect.height + 13;
           this.remainHeight = window.innerHeight - this.hinHeight;
           this.showFullBtn = window.outerWidth / window.innerWidth >= 2;
         });

@@ -2,7 +2,7 @@
   <div id="app">
     <el-container direction="vertical" class="key-tab-container">
       <!-- key info -->
-      <el-form :inline="true">
+      <el-form :inline="true" size="small">
         <!-- key name -->
         <el-form-item>
           <el-input ref="keyNameInput" v-model="edit.name" @keyup.enter.native="rename" placeholder="set to rename key">

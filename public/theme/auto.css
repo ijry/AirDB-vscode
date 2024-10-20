@@ -13820,7 +13820,7 @@ body {
 .el-button--medium {
     padding: 5px 10px;
     font-size: 14px;
-    border-radius: 4px
+    border-radius: 4px;
 }
 
 .el-button--mini, .el-button--small {
@@ -13829,11 +13829,11 @@ body {
 }
 
 .el-button--medium.is-round {
-    padding: 5px 10px
+    padding: 5px 10px;
 }
 
 .el-button--medium.is-circle {
-    padding: 5px 10px
+    padding: 5px 10px;
 }
 
 .el-button--small, .el-button--small.is-round {
@@ -13841,15 +13841,15 @@ body {
 }
 
 .el-button--small.is-circle {
-    padding: 9px
+    padding: 4px;
 }
 
 .el-button--mini, .el-button--mini.is-round {
-    padding: 3px 5px
+    padding: 3px 5px;
 }
 
 .el-button--mini.is-circle {
-    padding: 5px
+    padding: 3px;
 }
 
 .el-button--text {
