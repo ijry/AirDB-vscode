@@ -24,7 +24,7 @@
           <el-input v-model="scope.row.newColumnName" size="small" @change="changeColumn(scope)"></el-input>
         </template>
       </ux-table-column>
-      <ux-table-column align="left" field="type" minWidth="110" :title="$t('Design.Column.Type')" edit-render
+      <ux-table-column align="left" field="type" minWidth="90" :title="$t('Design.Column.Type')" edit-render
         show-overflow-tooltip="true">
         <template v-slot:edit="scope">
           <el-input v-model="scope.row.type" size="small" @change="changeColumn(scope)"></el-input>
@@ -38,12 +38,12 @@
       </ux-table-column>
       <!-- <ux-table-column align="center" field="maxLength" width="60" :title="$t('Design.Column.Length')"
         show-overflow-tooltip="true"></ux-table-column> -->
-      <ux-table-column align="left" field="defaultValue" width="120" :title="$t('Design.Column.Default')" edit-render
+      <ux-table-column align="left" field="defaultValue" minWidth="150" :title="$t('Design.Column.Default')" edit-render
         show-overflow-tooltip="true">
         <template v-slot:edit="scope">
-          <el-input v-model="scope.row.defaultValue" size="small" @change="changeColumn(scope)">
+          <el-input v-model="scope.row.defaultValue" size="small">
             <template #suffix>
-              <el-select class="w-30" style="width: 60px;" :value="$t('Design.Column.Select')" @change="(e) => {scope.row.defaultValue = e}">
+              <el-select class="w-30" style="width: 60px;" :value="$t('Design.Column.Select')" @change="changeColumn(scope, 'defaultValue', $event)">
                 <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
                 <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
                 <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
@@ -108,7 +108,7 @@
           <el-input :placeholder="$t('Design.Column.Default')"
             v-model="editColumn.defaultValue">
             <template #suffix>
-              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {editColumn.defaultValue = e}">
+              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="editColumnDefault">
                 <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
                 <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
                 <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
@@ -304,11 +304,22 @@ export default {
       this.emit("saveDesign", changeList);
       loadingInstance.close();
     },
-    changeColumn(scope) {
+    changeColumn(scope, field = '', newValue = '') {
       console.log(scope)
+      if (field) {
+        scope.row[field] = newValue;
+        // this.$set(scope.items, scope.rowIndex, scope.row)
+      }
+      this.$forceUpdate();
       if (scope.row.editState == 1) {
       } else {
-        scope.items[scope.rowIndex].editState = 2;
+        // if (this.$refs.uxGrid.isUpdateByRow(scope.row)) {
+          scope.items[scope.rowIndex].editState = 2;
+        // } else {
+        //   if (scope.row.editState == 2) {
+        //     scope.items[scope.rowIndex].editState = 0;
+        //   }
+        // }
       }
     },
     rowStyle({row}) {
@@ -356,8 +367,13 @@ export default {
         this.designData.editColumnList[this.editColumn.index].comment = this.editColumn.comment;
         this.designData.editColumnList[this.editColumn.index].allowNull = this.editColumn.allowNull;
         this.designData.editColumnList[this.editColumn.index].defaultValue = this.editColumn.defaultValue;
-        this.designData.editColumnList[this.editColumn.index].newColumnName = this.editColumn.name;
-        this.designData.editColumnList[this.editColumn.index].editState = 2;
+        if (this.designData.editColumnList[this.editColumn.index] == 1) {
+        } else {
+          // 不是新增字段才将状态设置为2
+          if (this.$refs.uxGrid.isUpdateByRow(this.designData.editColumnList[this.editColumn.index])) {
+            this.designData.editColumnList[this.editColumn.index].editState = 2;
+          }
+        }
         this.column.editVisible = false;
       } else {
         this.emit("updateColumnSql", {
@@ -399,9 +415,19 @@ export default {
       this.column.editVisible = true;
       this.column.editLoading = false;
     },
+    editColumnDefault(e) {
+      this.editColumn.defaultValue = e;
+      this.$forceUpdate();
+    },
     deleteConfirm(scope) {
       if (this.batchMode) {
-        scope.row.editState = -1
+        if (scope.row.editState == 1) {
+          // 新增的字段如果点击删除直接从数组删除就行
+          this.$refs.uxGrid.remove(scope.row);
+        } else {
+          // 其它状态置为删除状态等待保存变更
+          scope.row.editState = -1
+        }
       } else {
         this.$confirm(this.$t("Are you sure you want to delete this column?"), this.$t("Warning"), {
           confirmButtonText: this.$t("OK"),
