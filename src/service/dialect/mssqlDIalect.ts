@@ -57,14 +57,46 @@ ALTER TABLE ${table} ALTER COLUMN ${column} ${type} ${defaultDefinition};
     addColumnSql(addColumnParam: AddColumnParam): string {
         let {columnName, columnType, comment, nullable, table, defaultValue} = addColumnParam
         const defaultDefinition = nullable ? "" : " NOT NULL";
+        let defaultValueDefinition = '';
+        switch (defaultValue) {
+            case 'null':
+                defaultValueDefinition = " DEFAULT null ";
+                break;
+            case '':
+                defaultValueDefinition = "";
+                break;
+            case "''":
+            case "CURRENT_TIMESTAMP":
+                defaultValueDefinition = " DEFAULT " + defaultValue + " ";
+                break;
+            default:
+                defaultValueDefinition = " DEFAULT '" + defaultValue + "' ";
+                break;
+        }
         comment = comment ? ` comment '${comment}'` : "";
-        return `ALTER TABLE\n\t${table} ADD COLUMN ${columnName} ${columnType}${defaultDefinition}${comment};`;
+        return `ALTER TABLE\n\t${table} ADD COLUMN ${columnName} ${columnType} ${defaultDefinition} ${defaultValueDefinition} ${comment};`;
     }
     updateColumnSql(updateColumnParam: UpdateColumnParam): string {
         let {columnName, columnType, newColumnName, comment, nullable, table, defaultValue} = updateColumnParam
         const defaultDefinition = nullable ? "" : " NOT NULL";
+        let defaultValueDefinition = '';
+        switch (defaultValue) {
+            case 'null':
+                defaultValueDefinition = " DEFAULT null ";
+                break;
+            case '':
+                defaultValueDefinition = "";
+                break;
+            case "''":
+            case "CURRENT_TIMESTAMP":
+                defaultValueDefinition = " DEFAULT " + defaultValue + " ";
+                break;
+            default:
+                defaultValueDefinition = " DEFAULT '" + defaultValue + "' ";
+                break;
+        }
         comment = comment ? ` comment '${comment}'` : "";
-        return `ALTER TABLE\n\t${table} CHANGE ${columnName} ${newColumnName} ${columnType}${defaultDefinition}${comment};`;
+        return `ALTER TABLE\n\t${table} CHANGE ${columnName} ${newColumnName} ${columnType}${defaultDefinition} ${defaultValueDefinition} ${comment};`;
     }
     showUsers(): string {
         return `SELECT name [user] from sys.database_principals where type='S'`
