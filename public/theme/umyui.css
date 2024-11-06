@@ -110,9 +110,15 @@ https://www.umyui.com/
 .plx-table .plx-table--fixed-left-wrapper,
 .plx-body--column, .plx-header--column {
   background: none !important;
+
   border: 1px solid var(--vscode-textBlockQuote-background) !important;
 }
-
+.plx-table .plx-table--fixed-left-wrapper .plx-body--row {
+  height: 27px;
+}
+.plx-table .plx-table--body-wrapper.fixed-left--wrapper {
+  top: 39px !important;
+}
 
 /* result outline */
 .plx-table .plx-table--border-line,
