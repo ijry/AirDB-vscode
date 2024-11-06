@@ -1,6 +1,7 @@
 <style>
 .el-textarea__inner {
   line-height: 1.1;
+  padding-bottom: 18px;
 }
 .edit-column {
   padding: 0px 3px !important;
@@ -18,27 +19,46 @@
 <template>
   <div id="app" style="padding: 0px 10px;">
     <div ref="hint" class="hint px-0" style="margin-bottom: 3px;padding-left: 0;padding-right: 0;">
-      <div class="relative" style="width:100%;margin-top: 0px;margin-bottom: 13px;position: relative;">
+      <div class="relative" style="width:100%;margin-top: 0px;margin-bottom: 6px;position: relative;">
         <el-input class="sql-pannel" type="textarea" :autosize="{ minRows:2, maxRows:8}"
           v-model="toolbar.sql" @keypress.native="panelInput" />
           <div style="position: absolute;bottom: 5px;right: 10px;">
-            <el-button size="small" :title="$t('Execute Sql')" @click="info.message = false;execute(toolbar.sql);">
-              {{ $t('Execute Sql') }}
-            </el-button>
-            <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
-              {{ $t('Cost') }}: {{result.costTime}}ms
-            </div>
           </div>
       </div>
-      <Toolbar :page="page" :showFullBtn="showFullBtn" :search.sync="table.search" style="margin-bottom: 8px;"
-        :costTime="result.costTime" :showOpenDesignBtn="result.showOpenDesignBtn" @changePage="changePage"
-        @sendToVscode="sendToVscode" @export="exportOption.visible = true"
-        @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm"
-        @run="info.message = false;execute(toolbar.sql);" />
-      <div v-if="info.message ">
-        <div v-if="info.error" class="info-panel" style="color:red !important" v-html="info.message"></div>
-        <div v-if="!info.error" class="info-panel" style="color: green !important;" v-html="info.message"></div>
+      <div class="toolbar-session" style="display: flex;align-items: center;"">
+        <div class="excute-box" style="display:flex;align-items: center;padding-right: 15px;">
+          <div style="display:inline-flex;align-items: center;font-size:14px;padding-left: 0px;" class="el-pagination__total">
+            <span class="cursor-pointer" style="padding: 0px 5px 0px 0px; cursor: pointer;" v-if="info.message" @click="openResult">
+              <span v-if="!info.error" style="display:inline-flex;align-items: center;">
+                <svg t="1730897237521" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4311" width="17" height="17"><path d="M512 97.52381c228.912762 0 414.47619 185.563429 414.47619 414.47619s-185.563429 414.47619-414.47619 414.47619S97.52381 740.912762 97.52381 512 283.087238 97.52381 512 97.52381z m193.194667 218.331428L447.21981 581.315048l-103.936-107.812572-52.662858 50.761143 156.379429 162.230857 310.662095-319.683047-52.467809-50.956191z" p-id="4312" fill="#15d422"></path></svg>
+                Success
+              </span>
+              <span v-if="info.error" style="display:inline-flex;align-items: center;">
+                <svg t="1730897350201" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="8866" width="17" height="17"><path d="M509.994667 85.333333C275.84 85.333333 85.333333 276.736 85.333333 512s191.402667 426.666667 426.666667 426.666667 426.666667-191.402667 426.666667-426.666667S746.368 85.333333 509.994667 85.333333zM554.666667 725.333333h-85.333334v-85.333333h85.333334v85.333333z m0-170.666666h-85.333334V298.666667h85.333334v256z" p-id="8867" fill="#d81e06"></path></svg>
+                Error
+              </span>
+            </span>
+            <span>{{ $t('Cost') }}: {{result.costTime}}ms</span>
+          </div>
+          <el-button size="small" :title="$t('Execute Sql')" @click="info.message = false;execute(toolbar.sql);">
+            {{ $t('Execute Sql') }}
+          </el-button>
+        </div>
+        <Toolbar style="flex: 1;" :showFullBtn="showFullBtn" :search.sync="table.search"
+          :costTime="result.costTime" :showOpenDesignBtn="result.showOpenDesignBtn"
+          @sendToVscode="sendToVscode" @export="exportOption.visible = true"
+          @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm"
+          @run="info.message = false;execute(toolbar.sql);" />
       </div>
+      <el-dialog :title="$t('Result')" :visible.sync="resultDialog" top="5vh" size="default" @close="closeResult">
+        <div v-if="info.message ">
+          <div class="info-panel" style="color:red !important;line-height: 1.4;"
+            :style="{color: info.error ? 'red !important' : 'green !important'}">
+            <div v-html="info.message"></div>
+            <div style="margin-top: 10px;">SQL: {{ info.sql }}</div>
+          </div>
+        </div>
+      </el-dialog>
     </div>
     <!-- trigger when click -->
     <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading'
@@ -54,6 +74,9 @@
         <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" />
       </ux-table-column>
     </ux-grid>
+    <div style="margin-top: 2px;display: flex;background: var(--vscode-editor-background);border-top: 1px solid var(--vscode-textBlockQuote-background);padding: 0px;">
+      <Pagination :page="page"  @changePage="changePage"></Pagination>
+    </div>
     <EditDialog ref="editor" :dbType="result.dbType" :result="result"
       :database="result.database" :table="result.table" :primaryKey="result.primaryKey"
       :primaryKeyList="result.primaryKeyList" :columnList="result.columnList" @execute="execute" />
@@ -68,6 +91,7 @@ import Controller from "./component/Row/Controller.vue";
 import Header from "./component/Row/Header.vue";
 import ExportDialog from "./component/ExportDialog.vue";
 import Toolbar from "./component/Toolbar";
+import Pagination from "./component/Pagination";
 import EditDialog from "./component/EditDialog";
 import { util } from "./mixin/util";
 import { wrapByDb } from "@/common/wrapper";
@@ -79,6 +103,7 @@ export default {
     ExportDialog,
     EditDialog,
     Toolbar,
+    Pagination,
     Controller,
     Row,
     Header,
@@ -89,6 +114,7 @@ export default {
       showFullBtn: false,
       remainHeight: 0,
       connection: {},
+      resultDialog: false,
       result: {
         data: [],
         dbType: "",
@@ -168,6 +194,7 @@ export default {
         this.$refs.editor.close();
       }
       this.info.message = res.message;
+      this.info.sql = res.sql;
     };
     vscodeEvent = getVscodeEvent();
 
@@ -270,12 +297,25 @@ export default {
     });
   },
   methods: {
+    closeResult() {
+      this.resultDialog = false;
+      this.$forceUpdate();
+    },
+    openResult() {
+      this.resultDialog = true;
+      this.$forceUpdate();
+    },
+    changePageSize(size) {
+      this.page.pageSize = size;
+      vscodeEvent.emit("changePageSize", size);
+      this.changePage(0);
+    },
     observeWithResizeObserver() {
       const element = this.$refs.hint;
       const observer = new ResizeObserver(entries => {
         entries.forEach(entry => {
           console.log('Height changed:', entry.contentRect.height);
-          this.hinHeight = entry.contentRect.height + 13;
+          this.hinHeight = entry.contentRect.height + 43;
           this.remainHeight = window.innerHeight - this.hinHeight;
           this.showFullBtn = window.outerWidth / window.innerWidth >= 2;
         });

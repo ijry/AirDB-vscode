@@ -116,6 +116,7 @@ export class QueryPage {
     }
 
     private static async adaptData(queryParam: QueryParam<any>) {
+        queryParam.res.sql = queryParam.res.sql;
         switch (queryParam.type) {
             case MessageType.DATA:
                 if (queryParam.connection.dbType == DatabaseType.ES) {
@@ -130,14 +131,14 @@ export class QueryPage {
                     ? queryParam.res.data.length : pageSize;
                 break;
             case MessageType.MESSAGE_BLOCK:
-                queryParam.res.message = `EXECUTE SUCCESS:<br><br>&nbsp;&nbsp;${queryParam.res.sql}`;
+                queryParam.res.message = `EXECUTE SUCCESS !`;
                 break;
             case MessageType.DML:
             case MessageType.DDL:
-                queryParam.res.message = `EXECUTE SUCCESS:<br><br>&nbsp;&nbsp;${queryParam.res.sql}<br><br>AffectedRows : ${queryParam.res.affectedRows}`;
+                queryParam.res.message = `EXECUTE SUCCESS: Affected ${queryParam.res.affectedRows} Rows.`;
                 break;
             case MessageType.ERROR:
-                queryParam.res.message = `EXECUTE FAIL:<br><br>&nbsp;&nbsp;${queryParam.res.sql}<br><br>Message :<br><br>&nbsp;&nbsp;${queryParam.res.message}`;
+                queryParam.res.message = `EXECUTE FAIL: &nbsp;&nbsp;${queryParam.res.message}.`;
                 break;
         }
     }
