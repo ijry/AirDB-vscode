@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="cell-content">
     <template v-if="type=='date'">
       <el-date-picker value-format="yyyy-MM-dd" :value="value" @input="sync"></el-date-picker>
     </template>
@@ -27,7 +27,7 @@ export default {
     },
     isText(type, value){
       if (!type) return 0;
-      let rows = 2
+      let rows = 1
       // 判断内容长度超过一定字数则显示textarea
       if (value && value.length) {
         if (value.length > 100) rows = 2
@@ -56,5 +56,12 @@ export default {
 }
 .el-date-editor input {
   text-align: center;
+}
+::v-deep .el-textarea__inner {
+  min-height: 24px !important;
+  line-height: 1.1;
+}
+.cell-content {
+  padding-top: 5px;
 }
 </style>

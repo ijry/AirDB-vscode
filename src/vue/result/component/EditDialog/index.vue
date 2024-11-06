@@ -1,6 +1,6 @@
 <template>
   <el-dialog ref="editDialog" :title="editorTilte" :visible.sync="visible"
-    width="60%" top="3vh" size="mini" :closeOnClickModal="false">
+    width="70%" top="50px" size="mini" :closeOnClickModal="false">
     <el-form ref="infoForm" :model="editModel" :inline="false">
       <el-form-item :prop="column.name" :key="column.name" v-for="column in columnList" size="small">
         <template>
@@ -236,5 +236,16 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+::v-deep .el-dialog__body {
+  padding: 10px 20px;
+  max-height: calc(100vh - 230px);
+  overflow-y: scroll;
+}
+::v-deep .el-form-item {
+  margin-bottom: 10px;
+}
+::v-deep .el-form-item__content {
+  line-height: normal !important;
+}
 </style>
