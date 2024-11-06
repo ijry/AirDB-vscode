@@ -2,6 +2,10 @@ export const util = {
     methods: {
         wrapQuote(type, value) {
             if (value === "") {
+                return "''"
+                // return "null"
+            }
+            if (value === null) {
                 return "null"
             }
             // method call 
