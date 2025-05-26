@@ -93,7 +93,7 @@
           <input
             class="w-64 field__input"
             placeholder="Passphrase"
-            type="passphrase"
+            type="password"
             v-model="connectionOption.ssh.passphrase"
           />
         </div>
