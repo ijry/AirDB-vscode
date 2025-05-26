@@ -1,5 +1,6 @@
 export default {
     'delete': '删除',
+    'Save': '保存',
     'Update Success': '更新成功',
     'No Change': '无字段变动',
     'Filter': '筛选',

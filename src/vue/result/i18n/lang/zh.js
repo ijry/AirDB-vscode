@@ -55,4 +55,6 @@ export default {
     'Copy Cell': '拷贝单元格',
     'Filter by': '筛选',
     'Struct': '表结构',
+    'Save': '保存',
+    'Changes': '变动',
 }

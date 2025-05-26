@@ -42,6 +42,7 @@ export default {
       }
       return origin;
     },
+    // 单元格变动事件
     editListen(event, scope) {
       const { row, column, rowIndex } = scope;
       const editList = this.editList.concat([]);

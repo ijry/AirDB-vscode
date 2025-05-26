@@ -40,7 +40,10 @@
             </span>
             <span>{{ $t('Cost') }}: {{result.costTime}}ms</span>
           </div>
-          <el-button size="small" :title="$t('Execute Sql')" @click="info.message = false;execute(toolbar.sql);">
+          <el-button v-if="hasChanged" size="small" :title="$t('Save')" @click="save" type="warning">
+            {{ $t('Save') }}{{ $t('Changes') }}
+          </el-button>
+          <el-button size="small" :title="$t('Execute Sql')" @click="result.data=[];info.message = false;execute(toolbar.sql);">
             {{ $t('Execute Sql') }}
           </el-button>
         </div>
@@ -71,7 +74,8 @@
       <ux-table-column v-for="(field,index) in (result.fields||[]).filter(field=>toolbar.showColumns.includes(field.name.toLowerCase()))"
         :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :minWidth="computeWidth(field,0)" edit-render>
         <Header slot="header" slot-scope="scope" :result="result" :scope="scope" :index="index" />
-        <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" :editList.sync="update.editList" @execute="execute" @sendToVscode="sendToVscode" @openEditor="openEditor" />
+        <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" @execute="execute"
+          :editList.sync="update.editList" @sendToVscode="sendToVscode" @openEditor="openEditor" />
       </ux-table-column>
     </ux-grid>
     <div style="margin-top: 2px;display: flex;background: var(--vscode-editor-background);border-top: 1px solid var(--vscode-textBlockQuote-background);padding: 0px;">
@@ -156,6 +160,13 @@ export default {
         editList: {},
         lock: false,
       },
+      // hasChanged: false,
+      // 代替叫变更
+      // { rowIndex: 12, type: 'add', row: {...}} // 新增行
+      // { rowIndex: 1, type: 'delete', row: {...}} // 删除行
+      // { rowIndex: 2, type: 'edit', row: {...}} // 修改
+      waitCommitChange: [
+      ]
     };
   },
   mounted() {
@@ -214,7 +225,7 @@ export default {
         const element = this.update.editList[index];
         this.result.data[index] = element;
       }
-      this.update.editList = [];
+      this.update.editList = {};
       this.update.lock = false;
       this.$message({
         showClose: true,
@@ -223,16 +234,16 @@ export default {
         type: "success",
       });
     });
-    window.onkeypress = (e) => {
-      if (
-        (e.code == "Enter" && e.target.classList.contains("edit-column")) ||
-        (e.ctrlKey && e.code == "KeyS")
-      ) {
-        this.save();
-        e.stopPropagation();
-        e.preventDefault();
-      }
-    };
+    // window.onkeypress = (e) => {
+    //   if (
+    //     (e.code == "Enter" && e.target.classList.contains("edit-column")) ||
+    //     (e.ctrlKey && e.code == "KeyS")
+    //   ) {
+    //     this.save();
+    //     e.stopPropagation();
+    //     e.preventDefault();
+    //   }
+    // };
     window.addEventListener("message", ({ data }) => {
       if (!data) return;
       const response = data.content;
@@ -305,10 +316,33 @@ export default {
       this.resultDialog = true;
       this.$forceUpdate();
     },
+    resetChange() {
+      this.update = {
+        editList: {},
+        lock: false,
+      }
+      // this.hasChanged = false;
+    },
     changePageSize(size) {
-      this.page.pageSize = size;
-      vscodeEvent.emit("changePageSize", size);
-      this.changePage(0);
+      if (Object.keys(this.update.editList).length > 0) {
+        this.$confirm(this.$t('This action will lost changed data!'), this.$t("Warning"), {
+        confirmButtonText: this.$t('OK'),
+        cancelButtonText: this.$t('Cancel'),
+        type: "warning",
+      })
+        .then(() => {
+          this.resetChange();
+          this.page.pageSize = size;
+          vscodeEvent.emit("changePageSize", size);
+          this.changePage(0);
+        })
+        .catch((e) => {
+        });
+      } else {
+        this.page.pageSize = size;
+        vscodeEvent.emit("changePageSize", size);
+        this.changePage(0);
+      }
     },
     observeWithResizeObserver() {
       const element = this.$refs.hint;
@@ -355,13 +389,37 @@ export default {
       }
     },
     sendToVscode(event, param) {
+      if (event == 'dataModify') {
+        // 有数据变动标记
+        if (Object.keys(this.update.editList).length > 0) {
+          // this.hasChanged = true;
+        }
+      }
       vscodeEvent.emit(event, param);
     },
     openEditor(row, isCopy) {
-      if (isCopy) {
-        this.$refs.editor.openCopy(row);
+      if (Object.keys(this.update.editList).length > 0) {
+        this.$confirm(this.$t('This action will lost changed data!'), this.$t("Warning"), {
+          confirmButtonText: this.$t('OK'),
+          cancelButtonText: this.$t('Cancel'),
+          type: "warning",
+        })
+          .then(() => {
+            this.resetChange();
+            if (isCopy) {
+              this.$refs.editor.openCopy(row);
+            } else {
+              this.$refs.editor.openEdit(row);
+            }
+          })
+          .catch((e) => {
+          });
       } else {
-        this.$refs.editor.openEdit(row);
+        if (isCopy) {
+            this.$refs.editor.openCopy(row);
+          } else {
+            this.$refs.editor.openEdit(row);
+          }
       }
     },
     confirmExport(exportOption) {
@@ -492,14 +550,32 @@ export default {
       this.table.loading = true;
     },
     changePage(pageNum, jump) {
-      vscodeEvent.emit("next", {
-        sql: this.result.sql,
-        pageNum: jump ? pageNum : this.page.pageNum + pageNum,
-        pageSize: this.page.pageSize,
-      });
-      this.table.loading = true;
+      if (Object.keys(this.update.editList).length > 0) {
+        this.$confirm(this.$t('This action will lost changed data!'), this.$t("Warning"), {
+        confirmButtonText: this.$t('OK'),
+        cancelButtonText: this.$t('Cancel'),
+        type: "warning",
+      })
+        .then(() => {
+          this.resetChange();
+          vscodeEvent.emit("next", {
+            sql: this.result.sql,
+            pageNum: jump ? pageNum : this.page.pageNum + pageNum,
+            pageSize: this.page.pageSize,
+          });
+          this.table.loading = true;
+        })
+        .catch((e) => {
+        });
+      } else {
+        vscodeEvent.emit("next", {
+            sql: this.result.sql,
+            pageNum: jump ? pageNum : this.page.pageNum + pageNum,
+            pageSize: this.page.pageSize,
+          });
+          this.table.loading = true;
+      }
     },
-
     initShowColumn() {
       const fields = this.result.fields;
       if (!fields) return;
@@ -542,6 +618,9 @@ export default {
     },
   },
   computed: {
+    hasChanged() {
+      return Object.keys(this.update.editList).length > 0;
+    },
     filterData() {
       return this.result.data.filter(
         (data) =>
