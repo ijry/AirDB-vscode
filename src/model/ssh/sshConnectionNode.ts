@@ -22,19 +22,18 @@ export class SSHConnectionNode extends Node {
 
     fullPath: string;
     private terminalService: TerminalService = new XtermTerminal();
+    public contextValue: string = ModelType.CONNECTION;
 
     constructor(readonly key: string, parent: Node, readonly sshConfig: SSHConfig, readonly name: string, readonly file?: FileEntry, readonly parentName?: string, iconPath?: string) {
         super(name);
+        this.contextValue = file ? ModelType.FOLDER : ModelType.SSH_CONNECTION;
         super.init(parent)
-        this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed
         this.fullPath = this.parentName + this.name;
         if (!file) {
-            this.contextValue = ModelType.SSH_CONNECTION;
             this.iconPath = new vscode.ThemeIcon("terminal");
             // this.iconPath = path.join(Constants.RES_PATH, "icon/ssh.svg");
             this.label = `${sshConfig.username}@${sshConfig.host}`
         } else {
-            this.contextValue = ModelType.FOLDER;
             this.iconPath = new vscode.ThemeIcon("folder")
         }
         if (this.contextValue == ModelType.SSH_CONNECTION && parent.name) {
@@ -47,6 +46,16 @@ export class SSHConnectionNode extends Node {
         } else if (iconPath) {
             this.iconPath = iconPath;
         }
+
+        // 关闭状态不显示最左侧展开图标
+        if (this.disable || this.disable == undefined) {
+            this.collapsibleState = vscode.TreeItemCollapsibleState.None;
+            this.description = (this.description || '') + " closed"
+            return;
+        }
+
+        // SSH 节点只在用户手动展开时再去加载，避免初始化时递归请求远端目录。
+        this.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
     }
 
     public async deleteConnection(context: vscode.ExtensionContext) {

@@ -74,6 +74,7 @@ export class ConnectionManager {
         if (!connectionNode) {
             throw new Error(vscode.l10n.t("Connection is dead!"))
         }
+        Console.log(`get connection ${connectionNode.getConnectId()}`)
         return new Promise(async (resolve, reject) => {
 
             NodeUtil.of(connectionNode)

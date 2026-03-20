@@ -159,12 +159,14 @@ export class ConnectService {
 
     public async connect(connectionNode: Node): Promise<void> {
         if (connectionNode.dbType == DatabaseType.SSH) {
-            connectionNode.ssh.key=connectionNode.key;
-            await ClientManager.getSSH(connectionNode.ssh, {withSftp:false})
+            connectionNode.ssh.key = connectionNode.key;
+            await ClientManager.getSSH(connectionNode.ssh)
+            connectionNode.disable = false;
             return;
         }
         ConnectionManager.removeConnection(connectionNode.getConnectId())
         await ConnectionManager.getConnection(connectionNode)
+        connectionNode.disable = false;
     }
 
     static listenConfig(): Disposable {

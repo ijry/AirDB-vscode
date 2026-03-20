@@ -18,6 +18,7 @@ import axios, { AxiosRequestConfig } from "axios";
 import { Util } from "../common/util";
 import * as vscode from "vscode";
 import { QueryUnit } from "@/service/queryUnit";
+import { ClientManager } from "@/service/ssh/clientManager";
 
 export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
@@ -71,12 +72,27 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
     }
 
     public async openConnection(connectionNode: ConnectionNode) {
-        Console.log('开启数据库')
+        Console.log('开启连接')
+        // 如果是 SSH 连接，需要实际建立连接
+        if (connectionNode.dbType == DatabaseType.SSH) {
+            try {
+                connectionNode.ssh.key = connectionNode.key;
+                await ClientManager.getSSH(connectionNode.ssh);
+            } catch (error) {
+                // 如果连接失败，恢复 disable 状态
+                connectionNode.disable = true;
+                throw error;
+            }
+        }
         connectionNode.disable = false;
         connectionNode.indent({ command: CommandKey.update })
     }
 
     public async disableConnection(connectionNode: ConnectionNode) {
+        Console.log('关闭连接')
+        if (connectionNode.dbType == DatabaseType.SSH) {
+            ClientManager.closeSSH(connectionNode.ssh);
+        }
         connectionNode.disable = true;
         connectionNode.indent({ command: CommandKey.update })
     }
@@ -277,6 +293,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         if (!node.global && !node.isCloud) {
             node.description = `${node.description || ''} workspace`
         }
+        // Console.log(node.name + '&&&&&&'+ node.context)
         return node;
     }
 

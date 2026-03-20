@@ -67,7 +67,7 @@ export class ConnectionNode extends Node implements CopyAble {
 
     // 获取连接节点下层
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {
-
+Console.log('asdasd')
 
         if (this.dbType == DatabaseType.SQLITE) {
             return [new TableGroup(this), new ViewGroup(this)];

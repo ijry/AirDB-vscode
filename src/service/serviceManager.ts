@@ -39,6 +39,7 @@ import { HighlightCreator } from "@/provider/codelen/highlightCreator";
 import { SQLSymbolProvide } from "@/provider/sqlSymbolProvide";
 import { MysqlDumpService } from "./dump/mysqlDumpService";
 import { UserCenterService } from "./user/UserCenterService"
+import { Console } from "@/common/Console";
 
 export class ServiceManager {
 
@@ -87,6 +88,7 @@ export class ServiceManager {
 
 
     private initTreeView() {
+        Console.log('*******' + CacheKey.DATBASE_CONECTIONS)
         this.provider = new DbTreeDataProvider(this.context, CacheKey.DATBASE_CONECTIONS);
         const treeview = vscode.window.createTreeView("activitybar.airdb.sql", {
             treeDataProvider: this.provider,

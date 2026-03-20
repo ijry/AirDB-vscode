@@ -16,9 +16,13 @@ export class ClientManager {
 
     private static activeClient: { [key: string]: SSH } = {};
 
+    private static getClientKey(sshConfig: SSHConfig) {
+        return `${sshConfig.key}_${sshConfig.host}_${sshConfig.port}_${sshConfig.username}`;
+    }
+
     public static getSSH(sshConfig: SSHConfig, option: SSHOption = { withSftp: true }): Promise<SSH> {
 
-        const key = `${sshConfig.key}_${sshConfig.host}_${sshConfig.port}_${sshConfig.username}`;
+        const key = this.getClientKey(sshConfig);
         if (this.activeClient[key]) {
             return Promise.resolve(this.activeClient[key]);
         }
@@ -49,6 +53,18 @@ export class ClientManager {
             // https://blog.csdn.net/a351945755/article/details/22661411
         })
 
+    }
+
+    public static closeSSH(sshConfig?: SSHConfig) {
+        if (!sshConfig) {
+            return;
+        }
+        const key = this.getClientKey(sshConfig);
+        const activeClient = this.activeClient[key];
+        if (activeClient?.client) {
+            activeClient.client.end();
+        }
+        this.activeClient[key] = null;
     }
 
 }

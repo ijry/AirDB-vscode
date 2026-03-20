@@ -607,12 +607,12 @@
 				},
 				{
 					"command": "airdb.connection.open",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@3"
 				},
 				{
 					"command": "airdb.connection.disable",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@4"
 				},
 				{
