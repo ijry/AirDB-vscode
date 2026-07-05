@@ -55,6 +55,48 @@ export type HostMessage<TPayload = unknown> =
   | HostResponse<TPayload>
   | HostNotification<TPayload>;
 
+export interface HostTreeCommandDto {
+  command: string;
+  title: string;
+  arguments?: unknown[];
+}
+
+export interface HostTreeNodeDto {
+  id: string;
+  label: string;
+  description?: string;
+  tooltip?: string;
+  collapsibleState: 0 | 1 | 2;
+  contextValue?: string;
+  command?: HostTreeCommandDto;
+  iconPath?: string;
+  resourceUri?: string;
+  children?: HostTreeNodeDto[];
+  loading?: boolean;
+  loaded?: boolean;
+}
+
+export interface ResolveTreeChildrenPayload {
+  viewId: string;
+  nodeId?: string;
+}
+
+export interface ResolveTreeChildrenResponse {
+  viewId: string;
+  parentNodeId?: string;
+  nodes: HostTreeNodeDto[];
+}
+
+export interface InvokeTreeItemCommandPayload {
+  viewId: string;
+  nodeId: string;
+}
+
+export interface ExecuteCommandPayload {
+  command: string;
+  arguments?: unknown[];
+}
+
 let nextRequestId = 1;
 
 export function createRequest<TPayload>(
