@@ -1,0 +1,27 @@
+{
+  "name": "@airdb-standalone/app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "tauri": "tauri",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@airdb-standalone/protocol": "0.1.0",
+    "@tauri-apps/api": "^2.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.2",
+    "vitest": "^2.1.1"
+  }
+}

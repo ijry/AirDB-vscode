@@ -1,0 +1,28 @@
+:root {
+  color: #dbe7ef;
+  background: #101820;
+  font-family: "Aptos", "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  min-height: 100vh;
+}
+
+.activity-bar {
+  display: grid;
+  place-items: center;
+  background: #172530;
+  border-right: 1px solid #29404f;
+  writing-mode: vertical-rl;
+  letter-spacing: 0.08em;
+}
+
+.workbench {
+  padding: 32px;
+}
