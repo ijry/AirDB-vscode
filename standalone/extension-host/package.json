@@ -1,0 +1,25 @@
+{
+  "name": "@airdb-standalone/extension-host",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "bin": {
+    "airdb-extension-host": "dist/main.js"
+  },
+  "scripts": {
+    "prebuild": "npm --prefix .. run build --workspace @airdb-standalone/protocol && npm --prefix .. run build --workspace @airdb-standalone/vscode-shim",
+    "build": "tsc -p tsconfig.json",
+    "pretypecheck": "npm --prefix .. run build --workspace @airdb-standalone/protocol && npm --prefix .. run build --workspace @airdb-standalone/vscode-shim",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "pretest": "npm --prefix .. run build --workspace @airdb-standalone/protocol && npm --prefix .. run build --workspace @airdb-standalone/vscode-shim",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@airdb-standalone/protocol": "0.1.0",
+    "@airdb-standalone/vscode-shim": "0.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.1"
+  }
+}
