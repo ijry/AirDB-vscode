@@ -64,8 +64,8 @@ export class ExtensionLoader {
 
     const restore = patchVscodeModule(vscodeApi);
     try {
-      const mainFile = manifest.main ?? "./out/extension.js";
-      const moduleUrl = pathToFileURL(path.resolve(extensionPath, mainFile)).href;
+      const mainFile = await resolveMainFile(extensionPath, manifest.main ?? "./out/extension.js");
+      const moduleUrl = pathToFileURL(mainFile).href;
       const extensionModule = await import(moduleUrl);
       const context = createExtensionContext({
         extensionPath,
@@ -76,5 +76,17 @@ export class ExtensionLoader {
     } finally {
       restore();
     }
+  }
+}
+
+async function resolveMainFile(extensionPath: string, mainFile: string): Promise<string> {
+  const resolved = path.resolve(extensionPath, mainFile);
+  try {
+    await fs.access(resolved);
+    return resolved;
+  } catch {
+    const jsResolved = `${resolved}.js`;
+    await fs.access(jsResolved);
+    return jsResolved;
   }
 }

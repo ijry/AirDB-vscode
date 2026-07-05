@@ -1,5 +1,5 @@
 import { createRequest } from "@airdb-standalone/protocol";
-import type { HostBridge } from "./window";
+import type { HostBridge } from "./window.js";
 
 export function createEnvApi(extensionId: string, bridge: HostBridge) {
   return {

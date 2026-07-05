@@ -1,4 +1,4 @@
-import { Disposable } from "./types";
+import { Disposable } from "./types.js";
 
 export function createLanguagesApi() {
   const providers: Array<{ kind: string; selector: unknown; provider: unknown }> = [];
@@ -26,6 +26,9 @@ export function createLanguagesApi() {
     },
     registerDocumentRangeFormattingEditProvider(selector: unknown, provider: unknown) {
       return register("formatting", selector, provider);
+    },
+    registerDocumentSymbolProvider(selector: unknown, provider: unknown) {
+      return register("documentSymbol", selector, provider);
     },
     __providers: providers
   };

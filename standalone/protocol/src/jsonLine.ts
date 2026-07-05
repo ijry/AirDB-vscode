@@ -1,4 +1,4 @@
-import type { HostMessage } from "./messages";
+import type { HostMessage } from "./messages.js";
 
 export function encodeJsonLine(message: HostMessage): string {
   return `${JSON.stringify(message)}\n`;

@@ -1,4 +1,4 @@
-import type { HostResponse } from "./messages";
+import type { HostResponse } from "./messages.js";
 
 interface PendingRequest<TPayload> {
   resolve: (value: TPayload) => void;

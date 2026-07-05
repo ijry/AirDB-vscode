@@ -1,10 +1,17 @@
 import { createRequest } from "@airdb-standalone/protocol";
-import type { HostBridge } from "./window";
+import { Disposable } from "./types.js";
+import type { HostBridge } from "./window.js";
 
 export function createWorkspaceApi(extensionId: string, bridge: HostBridge) {
   return {
     openTextDocument(input: unknown) {
       return bridge.request(createRequest("editor.openDocument", { input }, extensionId));
+    },
+    onDidChangeTextDocument() {
+      return new Disposable();
+    },
+    onDidSaveTextDocument() {
+      return new Disposable();
     },
     getConfiguration(section?: string) {
       return {

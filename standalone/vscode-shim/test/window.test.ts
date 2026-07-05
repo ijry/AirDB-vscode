@@ -44,4 +44,36 @@ describe("window IPC API", () => {
       payload: { viewId: "fixture.view" }
     });
   });
+
+  it("creates disposable text editor decoration types", () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined
+      }
+    });
+
+    const decoration = api.window.createTextEditorDecorationType({ color: "red" });
+
+    expect(decoration).toMatchObject({
+      key: "fixture.one.decoration.1",
+      decorationOptions: { color: "red" }
+    });
+    expect(decoration).toHaveProperty("dispose");
+  });
+
+  it("accepts text editor selection subscriptions", () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined
+      }
+    });
+
+    expect(api.window.onDidChangeTextEditorSelection(() => undefined)).toHaveProperty("dispose");
+  });
 });

@@ -1,12 +1,12 @@
-import { CommandRegistry } from "./commands";
-import { createEnvApi } from "./env";
-import { createExtensionsApi, type ExtensionRecord } from "./extensions";
-import { createLanguagesApi } from "./languages";
-import { createL10nApi } from "./l10n";
-import { MemoryMemento } from "./state";
-import * as types from "./types";
-import { createWindowApi, type HostBridge } from "./window";
-import { createWorkspaceApi } from "./workspace";
+import { CommandRegistry } from "./commands.js";
+import { createEnvApi } from "./env.js";
+import { createExtensionsApi, type ExtensionRecord } from "./extensions.js";
+import { createLanguagesApi } from "./languages.js";
+import { createL10nApi } from "./l10n.js";
+import { MemoryMemento } from "./state.js";
+import * as types from "./types.js";
+import { createWindowApi, type HostBridge } from "./window.js";
+import { createWorkspaceApi } from "./workspace.js";
 
 export interface VscodeApiOptions {
   extensionId: string;

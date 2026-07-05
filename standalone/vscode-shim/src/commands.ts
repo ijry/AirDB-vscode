@@ -1,4 +1,4 @@
-import { Disposable } from "./types";
+import { Disposable } from "./types.js";
 
 export type CommandHandler = (...args: unknown[]) => unknown | Promise<unknown>;
 
