@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm --prefix .. run build --workspace @airdb-standalone/protocol",
     "build": "tsc -p tsconfig.json && vite build",
+    "pretypecheck": "npm --prefix .. run build --workspace @airdb-standalone/protocol",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "tauri": "tauri",
+    "pretest": "npm --prefix .. run build --workspace @airdb-standalone/protocol",
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
