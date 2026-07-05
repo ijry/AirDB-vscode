@@ -1737,6 +1737,10 @@ const timeout = setTimeout(() => {
 
 child.stderr.on("data", (chunk) => {
   stderr += chunk.toString();
+  if (stderr.includes("Loaded 1 extension(s).") && !sent) {
+    child.stdin.write(`${JSON.stringify(request)}\n`);
+    sent = true;
+  }
 });
 
 child.stdout.on("data", (chunk) => {
