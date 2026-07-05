@@ -16,6 +16,7 @@
     "build": "npm run build --workspaces --if-present",
     "build:airdb": "node scripts/build-airdb.mjs",
     "prepare:extensions": "node scripts/prepare-extensions.mjs",
+    "smoke:tree-ipc": "node scripts/smoke-tree-ipc.mjs",
     "package": "node scripts/build-standalone.mjs"
   },
   "devDependencies": {

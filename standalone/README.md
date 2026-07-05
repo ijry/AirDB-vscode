@@ -25,6 +25,18 @@ npm run tauri --workspace @airdb-standalone/app -- dev
 
 The development runner expects `node` to be available on `PATH`. Installer packaging can replace this with a Tauri sidecar binary wrapper once the extension-host runtime is stable.
 
+## Tree IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run build:airdb
+npm run prepare:extensions
+npm run smoke:tree-ipc
+```
+
+The smoke test starts the Node extension host, waits for AirDB activation, sends a `tree.resolveChildren` request for `activitybar.airdb.sql`, and verifies a successful response.
+
 ## Packages
 
 - `protocol`: shared IPC message types and JSON-line utilities.
