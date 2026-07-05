@@ -1,0 +1,9 @@
+node_modules/
+dist/
+app/dist/
+app/src-tauri/target/
+extensions/airdb/
+extension-host/dist/
+protocol/dist/
+vscode-shim/dist/
+*.log
