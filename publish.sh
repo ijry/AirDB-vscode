@@ -57,7 +57,9 @@ ps_escape() {
 
 run_powershell() {
   local script="$1"
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "$script"
+  local path_refresh
+  path_refresh="\$machinePath = [System.Environment]::GetEnvironmentVariable('Path','Machine'); \$userPath = [System.Environment]::GetEnvironmentVariable('Path','User'); \$env:Path = ((@(\$machinePath, \$userPath) | Where-Object { \$_ }) -join ';')"
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "${path_refresh}; ${script}"
 }
 
 run_node_command() {
