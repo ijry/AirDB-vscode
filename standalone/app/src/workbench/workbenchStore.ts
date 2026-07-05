@@ -13,6 +13,8 @@ export type WorkbenchAction =
   | { type: "container/select"; id: string }
   | { type: "tree/register"; tree: TreeViewState }
   | { type: "tree/update"; id: string; nodes: TreeViewState["nodes"] }
+  | { type: "tree/updateChildren"; id: string; parentNodeId?: string; nodes: TreeViewState["nodes"] }
+  | { type: "tree/loading"; id: string; nodeId?: string; loading: boolean }
   | { type: "editor/open"; editor: EditorTab }
   | { type: "webview/open"; webview: WebviewState }
   | { type: "webview/html"; id: string; html: string }
@@ -49,6 +51,22 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
           [action.id]: { ...(state.treeViews[action.id] ?? { id: action.id, name: action.id }), nodes: action.nodes }
         }
       };
+    case "tree/updateChildren":
+      return {
+        ...state,
+        treeViews: {
+          ...state.treeViews,
+          [action.id]: updateTreeChildren(state.treeViews[action.id], action.parentNodeId, action.nodes)
+        }
+      };
+    case "tree/loading":
+      return {
+        ...state,
+        treeViews: {
+          ...state.treeViews,
+          [action.id]: updateTreeLoading(state.treeViews[action.id], action.nodeId, action.loading)
+        }
+      };
     case "editor/open":
       return {
         ...state,
@@ -76,4 +94,57 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
     default:
       return state;
   }
+}
+
+function updateTreeChildren(
+  tree: TreeViewState | undefined,
+  parentNodeId: string | undefined,
+  nodes: TreeViewState["nodes"]
+): TreeViewState {
+  const base = tree ?? { id: "", name: "", nodes: [] };
+  if (!parentNodeId) {
+    return { ...base, nodes, loading: false, loaded: true };
+  }
+
+  return {
+    ...base,
+    nodes: updateNode(base.nodes, parentNodeId, (node) => ({
+      ...node,
+      children: nodes,
+      loading: false,
+      loaded: true
+    }))
+  };
+}
+
+function updateTreeLoading(
+  tree: TreeViewState | undefined,
+  nodeId: string | undefined,
+  loading: boolean
+): TreeViewState {
+  const base = tree ?? { id: "", name: "", nodes: [] };
+  if (!nodeId) {
+    return { ...base, loading };
+  }
+
+  return {
+    ...base,
+    nodes: updateNode(base.nodes, nodeId, (node) => ({ ...node, loading }))
+  };
+}
+
+function updateNode(
+  nodes: TreeViewState["nodes"],
+  nodeId: string,
+  update: (node: TreeViewState["nodes"][number]) => TreeViewState["nodes"][number]
+): TreeViewState["nodes"] {
+  return nodes.map((node) => {
+    if (node.id === nodeId) {
+      return update(node);
+    }
+    if (node.children) {
+      return { ...node, children: updateNode(node.children, nodeId, update) };
+    }
+    return node;
+  });
 }

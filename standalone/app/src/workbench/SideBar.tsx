@@ -6,10 +6,11 @@ import type { WorkbenchAction } from "./workbenchStore";
 interface SideBarProps {
   state: WorkbenchState;
   dispatch: Dispatch<WorkbenchAction>;
-  onCommand: (command: string, args?: unknown[]) => void;
+  onResolveChildren: (viewId: string, nodeId?: string) => void;
+  onInvokeNode: (viewId: string, nodeId: string) => void;
 }
 
-export function SideBar({ state, onCommand }: SideBarProps) {
+export function SideBar({ state, onResolveChildren, onInvokeNode }: SideBarProps) {
   const treeViews = Object.values(state.treeViews);
 
   return (
@@ -22,7 +23,12 @@ export function SideBar({ state, onCommand }: SideBarProps) {
           <div className="empty-state">Waiting for extension views...</div>
         ) : (
           treeViews.map((tree) => (
-            <TreeView key={tree.id} tree={tree} onCommand={onCommand} />
+            <TreeView
+              key={tree.id}
+              tree={tree}
+              onResolveChildren={onResolveChildren}
+              onInvokeNode={onInvokeNode}
+            />
           ))
         )}
       </div>

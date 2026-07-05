@@ -8,16 +8,21 @@ export interface TreeNode {
   id: string;
   label: string;
   description?: string;
+  tooltip?: string;
   contextValue?: string;
   collapsibleState: 0 | 1 | 2;
   command?: { command: string; title: string; arguments?: unknown[] };
   children?: TreeNode[];
+  loading?: boolean;
+  loaded?: boolean;
 }
 
 export interface TreeViewState {
   id: string;
   name: string;
   nodes: TreeNode[];
+  loading?: boolean;
+  loaded?: boolean;
 }
 
 export interface EditorTab {
