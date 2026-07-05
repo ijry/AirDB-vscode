@@ -4,6 +4,7 @@ import { Disposable, EventEmitter, Uri } from "./types.js";
 export interface HostBridge {
   request<TResponse>(request: HostRequest): Promise<TResponse>;
   notify(group: HostMessageGroup, payload: unknown, extensionId?: string): void;
+  registerTreeView?(viewId: string, treeOptions: unknown, extensionId?: string): void;
 }
 
 export interface WindowApiOptions {
@@ -36,11 +37,17 @@ export function createWindowApi(options: WindowApiOptions) {
     },
 
     createTreeView(viewId: string, treeOptions: unknown) {
-      options.bridge.notify("tree.create", { viewId, treeOptions }, options.extensionId);
+      if (options.bridge.registerTreeView) {
+        options.bridge.registerTreeView(viewId, treeOptions, options.extensionId);
+      } else {
+        options.bridge.notify("tree.create", { viewId }, options.extensionId);
+      }
+
       return {
         onDidCollapseElement: treeCollapseEmitter.event,
         onDidExpandElement: treeExpandEmitter.event,
-        reveal: (element: unknown) => options.bridge.notify("tree.invokeItemCommand", { viewId, element, reveal: true }, options.extensionId),
+        reveal: (element: unknown) =>
+          options.bridge.notify("tree.invokeItemCommand", { viewId, element, reveal: true }, options.extensionId),
         dispose: () => options.bridge.notify("tree.refresh", { viewId, disposed: true }, options.extensionId)
       };
     },

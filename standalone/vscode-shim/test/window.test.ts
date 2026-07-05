@@ -26,7 +26,29 @@ describe("window IPC API", () => {
     });
   });
 
-  it("sends tree creation notifications through the bridge", () => {
+  it("registers tree views locally when the bridge supports provider registration", () => {
+    const registered: Array<{ viewId: string; treeOptions: unknown; extensionId?: string }> = [];
+    const notifications: Array<{ group: HostMessageGroup; payload: unknown }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: (group, payload) => notifications.push({ group, payload }),
+        registerTreeView: (viewId, treeOptions, extensionId) => registered.push({ viewId, treeOptions, extensionId })
+      }
+    });
+
+    const provider = { getChildren: () => [] };
+    api.window.createTreeView("fixture.view", { treeDataProvider: provider });
+
+    expect(registered).toEqual([
+      { viewId: "fixture.view", treeOptions: { treeDataProvider: provider }, extensionId: "fixture.one" }
+    ]);
+    expect(notifications).toEqual([]);
+  });
+
+  it("falls back to a JSON-safe tree creation notification", () => {
     const notifications: Array<{ group: HostMessageGroup; payload: unknown }> = [];
     const api = createVscodeApi({
       extensionId: "fixture.one",
@@ -37,12 +59,11 @@ describe("window IPC API", () => {
       }
     });
 
-    api.window.createTreeView("fixture.view", { treeDataProvider: {} });
+    api.window.createTreeView("fixture.view", { treeDataProvider: { getChildren: () => [] } });
 
-    expect(notifications[0]).toMatchObject({
-      group: "tree.create",
-      payload: { viewId: "fixture.view" }
-    });
+    expect(notifications).toEqual([
+      { group: "tree.create", payload: { viewId: "fixture.view" } }
+    ]);
   });
 
   it("creates disposable text editor decoration types", () => {
