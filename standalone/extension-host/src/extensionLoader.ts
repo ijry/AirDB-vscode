@@ -25,8 +25,8 @@ export interface ExtensionLoaderOptions {
 }
 
 export class ExtensionLoader {
-  private readonly commandRegistry: CommandRegistry;
-  private readonly contributionRegistry: ContributionRegistry;
+  readonly commandRegistry: CommandRegistry;
+  readonly contributionRegistry: ContributionRegistry;
 
   constructor(private readonly options: ExtensionLoaderOptions) {
     this.commandRegistry = options.commandRegistry ?? new CommandRegistry();
