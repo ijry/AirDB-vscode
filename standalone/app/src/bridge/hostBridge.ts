@@ -1,8 +1,77 @@
+import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import type { HostMessage } from "@airdb-standalone/protocol";
+import {
+  RequestStore,
+  createRequest,
+  type HostMessage,
+  type HostMessageGroup,
+  type HostResponse
+} from "@airdb-standalone/protocol";
+
+type Unlisten = () => void;
+
+export interface HostBridgeTransport {
+  listen(onMessage: (message: HostMessage) => void): Promise<Unlisten>;
+  send(message: string): Promise<void>;
+}
+
+export function createHostBridge(transport: HostBridgeTransport = createTauriTransport()) {
+  const requests = new RequestStore();
+  let unlisten: Unlisten | undefined;
+
+  return {
+    async start(onMessage: (message: HostMessage) => void): Promise<Unlisten> {
+      unlisten = await transport.listen((message) => {
+        if (message.kind === "response" && requests.resolve(message as HostResponse)) {
+          return;
+        }
+        onMessage(message);
+      });
+
+      return () => {
+        unlisten?.();
+        unlisten = undefined;
+      };
+    },
+
+    async sendHostRequest<TResponse>(
+      group: HostMessageGroup,
+      payload: unknown,
+      extensionId?: string,
+      timeoutMs = 5000
+    ): Promise<TResponse> {
+      const request = createRequest(group, payload, extensionId);
+      const response = requests.register<TResponse>(request.id, timeoutMs);
+      await transport.send(JSON.stringify(request));
+      return response;
+    }
+  };
+}
+
+export const defaultHostBridge = createHostBridge();
 
 export async function listenToHostMessages(onMessage: (message: HostMessage) => void) {
-  return listen<string>("extension-host-message", (event) => {
-    onMessage(JSON.parse(event.payload) as HostMessage);
-  });
+  return defaultHostBridge.start(onMessage);
+}
+
+export function sendHostRequest<TResponse>(
+  group: HostMessageGroup,
+  payload: unknown,
+  extensionId?: string,
+  timeoutMs?: number
+) {
+  return defaultHostBridge.sendHostRequest<TResponse>(group, payload, extensionId, timeoutMs);
+}
+
+function createTauriTransport(): HostBridgeTransport {
+  return {
+    async listen(onMessage) {
+      return listen<string>("extension-host-message", (event) => {
+        onMessage(JSON.parse(event.payload) as HostMessage);
+      });
+    },
+    async send(message) {
+      await invoke("send_extension_host_message", { message });
+    }
+  };
 }

@@ -1,0 +1,50 @@
+import { describe, expect, it } from "vitest";
+import { createResponse, type HostMessage } from "@airdb-standalone/protocol";
+import { createHostBridge } from "./hostBridge";
+
+describe("createHostBridge", () => {
+  it("sends requests and resolves matching host responses", async () => {
+    let listener: ((message: HostMessage) => void) | undefined;
+    const sent: string[] = [];
+    const bridge = createHostBridge({
+      listen: async (onMessage) => {
+        listener = onMessage;
+        return () => undefined;
+      },
+      send: async (message) => {
+        sent.push(message);
+      }
+    });
+
+    await bridge.start(() => undefined);
+    const promise = bridge.sendHostRequest<{ value: string }>(
+      "command.execute",
+      { command: "fixture.run" },
+      undefined,
+      500
+    );
+    const request = JSON.parse(sent[0]);
+    listener?.(createResponse(request, { value: "ok" }));
+
+    await expect(promise).resolves.toEqual({ value: "ok" });
+  });
+
+  it("passes notifications to the active listener", async () => {
+    let listener: ((message: HostMessage) => void) | undefined;
+    const received: HostMessage[] = [];
+    const bridge = createHostBridge({
+      listen: async (onMessage) => {
+        listener = onMessage;
+        return () => undefined;
+      },
+      send: async () => undefined
+    });
+
+    await bridge.start((message) => received.push(message));
+    listener?.({ kind: "notification", group: "tree.create", payload: { viewId: "fixture.view" } });
+
+    expect(received).toEqual([
+      { kind: "notification", group: "tree.create", payload: { viewId: "fixture.view" } }
+    ]);
+  });
+});
