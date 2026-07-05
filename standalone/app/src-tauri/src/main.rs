@@ -1,7 +1,13 @@
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
-use std::process::{Command, Stdio};
+use std::process::{ChildStdin, Command, Stdio};
+use std::sync::{Arc, Mutex};
 use tauri::{Emitter, Manager};
+
+#[derive(Clone, Default)]
+struct ExtensionHostState {
+    stdin: Arc<Mutex<Option<ChildStdin>>>,
+}
 
 #[tauri::command]
 fn host_health() -> &'static str {
@@ -12,6 +18,28 @@ fn host_health() -> &'static str {
 fn emit_extension_host_message(app: tauri::AppHandle, message: String) -> Result<(), String> {
     app.emit("extension-host-message", message)
         .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn send_extension_host_message(
+    state: tauri::State<'_, ExtensionHostState>,
+    message: String,
+) -> Result<(), String> {
+    serde_json::from_str::<serde_json::Value>(&message)
+        .map_err(|error| format!("Extension host message is not valid JSON: {error}"))?;
+
+    let mut guard = state
+        .stdin
+        .lock()
+        .map_err(|_| "Extension host stdin lock is poisoned".to_string())?;
+    let stdin = guard
+        .as_mut()
+        .ok_or_else(|| "Extension host stdin is not available".to_string())?;
+    stdin
+        .write_all(message.trim_end().as_bytes())
+        .map_err(|error| error.to_string())?;
+    stdin.write_all(b"\n").map_err(|error| error.to_string())?;
+    stdin.flush().map_err(|error| error.to_string())
 }
 
 fn resolve_standalone_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -60,7 +88,7 @@ fn resolve_standalone_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
     )
 }
 
-fn spawn_extension_host(app: tauri::AppHandle) -> Result<(), String> {
+fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Result<(), String> {
     let standalone_root = resolve_standalone_root(&app)?;
     let host_entry = standalone_root
         .join("extension-host")
@@ -75,6 +103,7 @@ fn spawn_extension_host(app: tauri::AppHandle) -> Result<(), String> {
         .arg(&host_entry)
         .env("AIRDB_STANDALONE_EXTENSIONS", &extensions_dir)
         .env("AIRDB_STANDALONE_STORAGE", &storage_root)
+        .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
@@ -84,6 +113,15 @@ fn spawn_extension_host(app: tauri::AppHandle) -> Result<(), String> {
                 host_entry.display()
             )
         })?;
+
+    let child_stdin = child
+        .stdin
+        .take()
+        .ok_or_else(|| "Extension host stdin was not captured".to_string())?;
+    *state
+        .stdin
+        .lock()
+        .map_err(|_| "Extension host stdin lock is poisoned".to_string())? = Some(child_stdin);
 
     if let Some(stdout) = child.stdout.take() {
         let app_for_stdout = app.clone();
@@ -123,15 +161,18 @@ fn spawn_extension_host(app: tauri::AppHandle) -> Result<(), String> {
 
 fn main() {
     tauri::Builder::default()
+        .manage(ExtensionHostState::default())
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             host_health,
-            emit_extension_host_message
+            emit_extension_host_message,
+            send_extension_host_message
         ])
         .setup(|app| {
             let window = app.get_webview_window("main").expect("main window exists");
             window.emit("host-log", "Tauri backend started")?;
-            spawn_extension_host(app.handle().clone())
+            let state = app.state::<ExtensionHostState>().inner().clone();
+            spawn_extension_host(app.handle().clone(), state)
                 .map_err(|error| std::io::Error::new(std::io::ErrorKind::Other, error))?;
             Ok(())
         })
