@@ -12,6 +12,19 @@ npm install
 npm run check:workspace
 ```
 
+## Running The Standalone Host
+
+```bash
+cd standalone
+npm install
+npm run build
+npm run build:airdb
+npm run prepare:extensions
+npm run tauri --workspace @airdb-standalone/app -- dev
+```
+
+The development runner expects `node` to be available on `PATH`. Installer packaging can replace this with a Tauri sidecar binary wrapper once the extension-host runtime is stable.
+
 ## Packages
 
 - `protocol`: shared IPC message types and JSON-line utilities.

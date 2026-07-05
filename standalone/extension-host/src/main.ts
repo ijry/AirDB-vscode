@@ -2,6 +2,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { IpcBridge } from "./ipcBridge.js";
+import { ContributionRegistry } from "./contributionRegistry.js";
 import { ExtensionLoader } from "./extensionLoader.js";
 import { Logger } from "./logger.js";
 
@@ -15,8 +16,10 @@ const bridge = new IpcBridge((line) => {
 });
 
 try {
-  const loader = new ExtensionLoader({ extensionsDir, storageRoot, bridge });
+  const contributionRegistry = new ContributionRegistry();
+  const loader = new ExtensionLoader({ extensionsDir, storageRoot, bridge, contributionRegistry });
   const loaded = await loader.loadAll();
+  bridge.notify("extension.registerContributions", { extensions: contributionRegistry.all() });
   bridge.notify("extension.activated", { loaded: loaded.map((extension) => extension.id) });
   logger.info(`Loaded ${loaded.length} extension(s).`);
 } catch (error) {
