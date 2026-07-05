@@ -1,11 +1,19 @@
 import { CommandRegistry } from "./commands";
+import { createEnvApi } from "./env";
+import { createExtensionsApi, type ExtensionRecord } from "./extensions";
+import { createLanguagesApi } from "./languages";
+import { createL10nApi } from "./l10n";
 import { MemoryMemento } from "./state";
 import * as types from "./types";
+import { createWindowApi, type HostBridge } from "./window";
+import { createWorkspaceApi } from "./workspace";
 
 export interface VscodeApiOptions {
   extensionId: string;
   extensionPath: string;
+  bridge: HostBridge;
   commandRegistry?: CommandRegistry;
+  extensions?: ExtensionRecord[];
 }
 
 export function createVscodeApi(options: VscodeApiOptions) {
@@ -14,17 +22,12 @@ export function createVscodeApi(options: VscodeApiOptions) {
   return {
     ...types,
     commands,
-    window: {},
-    workspace: {},
-    languages: {},
-    env: {},
-    extensions: {},
-    l10n: {
-      t(value: string): string {
-        return value;
-      }
-    },
-    ExtensionContext: undefined,
+    window: createWindowApi({ extensionId: options.extensionId, bridge: options.bridge }),
+    workspace: createWorkspaceApi(options.extensionId, options.bridge),
+    languages: createLanguagesApi(),
+    env: createEnvApi(options.extensionId, options.bridge),
+    extensions: createExtensionsApi(options.extensions ?? []),
+    l10n: createL10nApi(),
     createContext() {
       return {
         subscriptions: [],

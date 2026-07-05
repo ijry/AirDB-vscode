@@ -5,8 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "prebuild": "npm --prefix .. run build --workspace @airdb-standalone/protocol",
     "build": "tsc -p tsconfig.json",
+    "pretypecheck": "npm --prefix .. run build --workspace @airdb-standalone/protocol",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "pretest": "npm --prefix .. run build --workspace @airdb-standalone/protocol",
     "test": "vitest run"
   },
   "dependencies": {

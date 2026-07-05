@@ -1,0 +1,14 @@
+import { createRequest } from "@airdb-standalone/protocol";
+import type { HostBridge } from "./window";
+
+export function createEnvApi(extensionId: string, bridge: HostBridge) {
+  return {
+    remoteName: undefined,
+    openExternal(uri: unknown) {
+      return bridge.request<boolean>(createRequest("command.execute", {
+        command: "standalone.openExternal",
+        args: [uri]
+      }, extensionId));
+    }
+  };
+}
