@@ -7,3 +7,7 @@ package-lock.json
 .prettierrc
 yarn.lock
 pnpm-lock.yaml
+.worktrees
+.worktrees/
+worktrees
+worktrees/
