@@ -157,4 +157,83 @@ describe("window IPC API", () => {
 
     expect(api.window.onDidChangeTextEditorSelection(() => undefined)).toHaveProperty("dispose");
   });
+
+  it("materializes showOpenDialog file URI DTO responses", async () => {
+    const requests: HostRequest[] = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async (request) => {
+          requests.push(request);
+          return [{ scheme: "file", fsPath: "C:/fixture/import.sql" }] as never;
+        },
+        notify: () => undefined
+      }
+    });
+
+    const uris = await api.window.showOpenDialog({ canSelectFiles: true, canSelectMany: false });
+
+    expect(requests[0]).toMatchObject({
+      kind: "request",
+      group: "dialog.showOpenDialog",
+      extensionId: "fixture.one",
+      payload: { canSelectFiles: true, canSelectMany: false }
+    });
+    expect(uris).toHaveLength(1);
+    expect(uris?.[0].fsPath).toBe("C:/fixture/import.sql");
+    expect(uris?.[0].toString()).toBe("file:///C:/fixture/import.sql");
+  });
+
+  it("maps cancelled showOpenDialog responses to undefined", async () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => null as never,
+        notify: () => undefined
+      }
+    });
+
+    await expect(api.window.showOpenDialog({ canSelectFiles: true })).resolves.toBeUndefined();
+  });
+
+  it("materializes showSaveDialog file URI DTO responses", async () => {
+    const requests: HostRequest[] = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async (request) => {
+          requests.push(request);
+          return { scheme: "file", fsPath: "C:/fixture/export.sql" } as never;
+        },
+        notify: () => undefined
+      }
+    });
+
+    const uri = await api.window.showSaveDialog({ saveLabel: "Export" });
+
+    expect(requests[0]).toMatchObject({
+      kind: "request",
+      group: "dialog.showOpenDialog",
+      extensionId: "fixture.one",
+      payload: { saveLabel: "Export", save: true }
+    });
+    expect(uri?.fsPath).toBe("C:/fixture/export.sql");
+    expect(uri?.toString()).toBe("file:///C:/fixture/export.sql");
+  });
+
+  it("maps cancelled showSaveDialog responses to undefined", async () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => null as never,
+        notify: () => undefined
+      }
+    });
+
+    await expect(api.window.showSaveDialog({ saveLabel: "Export" })).resolves.toBeUndefined();
+  });
 });

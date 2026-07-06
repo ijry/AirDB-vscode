@@ -1,4 +1,9 @@
-import { createRequest, type HostMessageGroup, type HostRequest } from "@airdb-standalone/protocol";
+import {
+  createRequest,
+  type HostFileUriDto,
+  type HostMessageGroup,
+  type HostRequest
+} from "@airdb-standalone/protocol";
 import { Buffer } from "node:buffer";
 import { Disposable, EventEmitter, Uri } from "./types.js";
 
@@ -25,6 +30,36 @@ export interface WindowApiOptions {
   extensionId: string;
   extensionPath: string;
   bridge: HostBridge;
+}
+
+function fileDtoToUri(value: HostFileUriDto): Uri {
+  return Uri.file(value.fsPath);
+}
+
+function isHostFileUriDto(value: unknown): value is HostFileUriDto {
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    (value as HostFileUriDto).scheme === "file" &&
+    typeof (value as HostFileUriDto).fsPath === "string"
+  );
+}
+
+function materializeOpenDialogResponse(value: HostFileUriDto[] | null | undefined): Uri[] | undefined {
+  if (value == null) {
+    return undefined;
+  }
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  return value.filter(isHostFileUriDto).map(fileDtoToUri);
+}
+
+function materializeSaveDialogResponse(value: HostFileUriDto | null | undefined): Uri | undefined {
+  if (!isHostFileUriDto(value)) {
+    return undefined;
+  }
+  return fileDtoToUri(value);
 }
 
 export function createWindowApi(options: WindowApiOptions) {
@@ -161,16 +196,18 @@ export function createWindowApi(options: WindowApiOptions) {
       );
     },
 
-    showOpenDialog(openDialogOptions: unknown) {
-      return options.bridge.request<Uri[] | undefined>(
+    async showOpenDialog(openDialogOptions: unknown) {
+      const response = await options.bridge.request<HostFileUriDto[] | null>(
         createRequest("dialog.showOpenDialog", openDialogOptions, options.extensionId)
       );
+      return materializeOpenDialogResponse(response);
     },
 
-    showSaveDialog(saveDialogOptions: unknown) {
-      return options.bridge.request<Uri | undefined>(
+    async showSaveDialog(saveDialogOptions: unknown) {
+      const response = await options.bridge.request<HostFileUriDto | null>(
         createRequest("dialog.showOpenDialog", { ...(saveDialogOptions as object), save: true }, options.extensionId)
       );
+      return materializeSaveDialogResponse(response);
     },
 
     showTextDocument(document: unknown) {

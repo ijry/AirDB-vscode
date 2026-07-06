@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createRequest,
   createResponse,
+  type HostFileUriDto,
   type HostTreeNodeDto,
   type HostWebviewPanelDto,
   type ResolveTreeChildrenPayload,
@@ -70,5 +71,21 @@ describe("tree protocol DTOs", () => {
     expect(htmlPayload.html).toContain("standalone-resource://");
     expect(postPayload.message).toMatchObject({ type: "syncState" });
     expect(response).toMatchObject({ kind: "response", ok: true, payload: { delivered: true } });
+  });
+
+  it("supports typed file dialog URI DTOs", () => {
+    const request = createRequest("dialog.showOpenDialog", { canSelectFiles: true });
+    const dto: HostFileUriDto = {
+      scheme: "file",
+      fsPath: "C:/fixture/import.sql"
+    };
+    const response = createResponse<HostFileUriDto[] | null>(request, [dto]);
+
+    expect(response.payload).toEqual([
+      {
+        scheme: "file",
+        fsPath: "C:/fixture/import.sql"
+      }
+    ]);
   });
 });

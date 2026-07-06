@@ -50,6 +50,11 @@ export interface HostNotification<TPayload = unknown> extends HostMessageBase {
   payload: TPayload;
 }
 
+export interface HostFileUriDto {
+  scheme: "file";
+  fsPath: string;
+}
+
 export type HostMessage<TPayload = unknown> =
   | HostRequest<TPayload>
   | HostResponse<TPayload>
