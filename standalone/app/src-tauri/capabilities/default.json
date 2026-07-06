@@ -7,6 +7,10 @@
     "core:default",
     "shell:default",
     "dialog:allow-open",
-    "dialog:allow-save"
+    "dialog:allow-save",
+    "opener:allow-default-urls",
+    "opener:allow-open-path",
+    "clipboard-manager:allow-read-text",
+    "clipboard-manager:allow-write-text"
   ]
 }

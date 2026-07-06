@@ -5,6 +5,7 @@ import {
   type HostResponse,
   type ResolveTreeChildrenResponse
 } from "@airdb-standalone/protocol";
+import { respondToExternalActionRequest } from "./bridge/externalActions";
 import { handleFileDialogRequest } from "./bridge/fileDialogs";
 import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
@@ -146,6 +147,26 @@ export function App() {
               id: `text-editor-error-${Date.now()}`,
               level: "error",
               message: error instanceof Error ? error.message : "Failed to handle text editor request"
+            }
+          });
+        });
+        return;
+      }
+      if (
+        message.kind === "request" &&
+        (
+          message.group === "external.openUri" ||
+          message.group === "external.writeClipboard" ||
+          message.group === "external.readClipboard"
+        )
+      ) {
+        void respondToExternalActionRequest(message, sendHostResponse).catch((error: unknown) => {
+          dispatch({
+            type: "notification/show",
+            notification: {
+              id: `external-action-error-${Date.now()}`,
+              level: "error",
+              message: error instanceof Error ? error.message : "Failed to handle external action request"
             }
           });
         });
