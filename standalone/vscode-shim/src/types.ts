@@ -82,6 +82,18 @@ export class Uri {
 
 export class Position {
   constructor(public readonly line: number, public readonly character: number) {}
+
+  isEqual(other: Position): boolean {
+    return this.line === other.line && this.character === other.character;
+  }
+
+  isBefore(other: Position): boolean {
+    return this.line < other.line || (this.line === other.line && this.character < other.character);
+  }
+
+  isBeforeOrEqual(other: Position): boolean {
+    return this.isBefore(other) || this.isEqual(other);
+  }
 }
 
 export class Range {
@@ -89,9 +101,28 @@ export class Range {
     public readonly start: Position,
     public readonly end: Position
   ) {}
+
+  get isEmpty(): boolean {
+    return this.start.isEqual(this.end);
+  }
+
+  isEqual(other: Range): boolean {
+    return this.start.isEqual(other.start) && this.end.isEqual(other.end);
+  }
+
+  contains(value: Position | Range): boolean {
+    if (value instanceof Range) {
+      return this.contains(value.start) && this.contains(value.end);
+    }
+    return this.start.isBeforeOrEqual(value) && value.isBeforeOrEqual(this.end);
+  }
 }
 
-export class Selection extends Range {}
+export class Selection extends Range {
+  constructor(anchor: Position, active: Position) {
+    super(anchor, active);
+  }
+}
 
 export enum TreeItemCollapsibleState {
   None = 0,
