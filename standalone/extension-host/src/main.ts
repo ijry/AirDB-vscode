@@ -14,6 +14,7 @@ import { WebviewRegistry } from "./webviewRegistry.js";
 const standaloneRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const extensionsDir = process.env.AIRDB_STANDALONE_EXTENSIONS ?? path.join(standaloneRoot, "extensions");
 const storageRoot = process.env.AIRDB_STANDALONE_STORAGE ?? path.join(standaloneRoot, ".data");
+const workspaceRoot = process.env.AIRDB_STANDALONE_WORKSPACE ?? standaloneRoot;
 const logger = new Logger();
 const commandRegistry = new CommandRegistry();
 const contributionRegistry = new ContributionRegistry();
@@ -30,7 +31,14 @@ startStdinMessageLoop(process.stdin, controller, (line) => {
 }, (response) => bridge.handleResponse(response));
 
 try {
-  const loader = new ExtensionLoader({ extensionsDir, storageRoot, bridge, contributionRegistry, commandRegistry });
+  const loader = new ExtensionLoader({
+    extensionsDir,
+    storageRoot,
+    workspaceRoot,
+    bridge,
+    contributionRegistry,
+    commandRegistry
+  });
   const loaded = await loader.loadAll();
   bridge.notify("extension.registerContributions", { extensions: contributionRegistry.all() });
   bridge.notify("extension.activated", { loaded: loaded.map((extension) => extension.id) });

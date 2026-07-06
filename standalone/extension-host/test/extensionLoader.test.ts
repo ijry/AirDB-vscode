@@ -6,6 +6,10 @@ import { ExtensionLoader } from "../src/extensionLoader";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 
+function normalizePath(value: string): string {
+  return value.replace(/\\/g, "/");
+}
+
 describe("ExtensionLoader", () => {
   it("loads a built-in extension and registers its command", async () => {
     const commandRegistry = new CommandRegistry();
@@ -23,5 +27,49 @@ describe("ExtensionLoader", () => {
 
     expect(loaded.map((extension) => extension.id)).toEqual(["fixture.hello-extension"]);
     await expect(commandRegistry.executeCommand("fixture.hello")).resolves.toBe("hello");
+  });
+
+  it("passes workspace root and context paths into loaded extensions", async () => {
+    const commandRegistry = new CommandRegistry();
+    const workspaceRoot = path.join(testDir, "fixtures", "workspace-root");
+    const storageRoot = path.join(testDir, ".data");
+    const loader = new ExtensionLoader({
+      extensionsDir: path.join(testDir, "fixtures"),
+      storageRoot,
+      workspaceRoot,
+      commandRegistry,
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined
+      }
+    });
+
+    await loader.loadAll();
+
+    const result = await commandRegistry.executeCommand<{
+      rootPath: string;
+      name: string;
+      folderIndex: number;
+      folderName: string;
+      folderPath: string;
+      contextStoragePath: string;
+      contextGlobalStoragePath: string;
+      contextLogPath: string;
+    }>("fixture.workspaceRoot");
+
+    expect(normalizePath(result.rootPath)).toBe(normalizePath(path.resolve(workspaceRoot)));
+    expect(result.name).toBe("workspace-root");
+    expect(result.folderIndex).toBe(0);
+    expect(result.folderName).toBe("workspace-root");
+    expect(normalizePath(result.folderPath)).toBe(normalizePath(path.resolve(workspaceRoot)));
+    expect(normalizePath(result.contextStoragePath)).toBe(
+      normalizePath(path.join(storageRoot, "fixture.hello-extension", "workspace"))
+    );
+    expect(normalizePath(result.contextGlobalStoragePath)).toBe(
+      normalizePath(path.join(storageRoot, "fixture.hello-extension", "global"))
+    );
+    expect(normalizePath(result.contextLogPath)).toBe(
+      normalizePath(path.join(storageRoot, "fixture.hello-extension", "logs"))
+    );
   });
 });

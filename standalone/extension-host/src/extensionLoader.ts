@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { CommandRegistry, createVscodeApi } from "@airdb-standalone/vscode-shim";
@@ -22,7 +23,11 @@ export interface ExtensionLoaderOptions {
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
   contributionRegistry?: ContributionRegistry;
+  workspaceRoot?: string;
 }
+
+const extensionRequire = createRequire(import.meta.url);
+let extensionImportNonce = 0;
 
 export class ExtensionLoader {
   readonly commandRegistry: CommandRegistry;
@@ -59,13 +64,15 @@ export class ExtensionLoader {
       extensionPath,
       bridge: this.options.bridge,
       commandRegistry: this.commandRegistry,
-      extensions: [{ id: extensionId, extensionPath, packageJSON: manifest }]
+      extensions: [{ id: extensionId, extensionPath, packageJSON: manifest }],
+      workspaceRoot: this.options.workspaceRoot
     });
 
     const restore = patchVscodeModule(vscodeApi);
     try {
       const mainFile = await resolveMainFile(extensionPath, manifest.main ?? "./out/extension.js");
-      const moduleUrl = pathToFileURL(mainFile).href;
+      delete extensionRequire.cache[extensionRequire.resolve(mainFile)];
+      const moduleUrl = `${pathToFileURL(mainFile).href}?airdbLoad=${extensionImportNonce++}`;
       const extensionModule = await import(moduleUrl);
       const context = createExtensionContext({
         extensionPath,
