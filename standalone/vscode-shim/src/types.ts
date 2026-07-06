@@ -80,6 +80,56 @@ export class Uri {
   }
 }
 
+export enum FileType {
+  Unknown = 0,
+  File = 1,
+  Directory = 2,
+  SymbolicLink = 64
+}
+
+export class FileSystemError extends Error {
+  readonly code: string;
+
+  constructor(message: string, code = "Unknown") {
+    super(message);
+    this.name = "FileSystemError";
+    this.code = code;
+  }
+
+  static FileNotFound(messageOrUri?: unknown): FileSystemError {
+    return new FileSystemError(formatFileSystemErrorMessage("File not found", messageOrUri), "FileNotFound");
+  }
+
+  static FileExists(messageOrUri?: unknown): FileSystemError {
+    return new FileSystemError(formatFileSystemErrorMessage("File exists", messageOrUri), "FileExists");
+  }
+
+  static FileNotADirectory(messageOrUri?: unknown): FileSystemError {
+    return new FileSystemError(formatFileSystemErrorMessage("File is not a directory", messageOrUri), "FileNotADirectory");
+  }
+
+  static NoPermissions(messageOrUri?: unknown): FileSystemError {
+    return new FileSystemError(formatFileSystemErrorMessage("No permissions", messageOrUri), "NoPermissions");
+  }
+
+  static Unavailable(messageOrUri?: unknown): FileSystemError {
+    return new FileSystemError(formatFileSystemErrorMessage("File system unavailable", messageOrUri), "Unavailable");
+  }
+}
+
+function formatFileSystemErrorMessage(defaultMessage: string, messageOrUri?: unknown): string {
+  if (messageOrUri === undefined) {
+    return defaultMessage;
+  }
+  if (messageOrUri instanceof Uri) {
+    return `${defaultMessage}: ${messageOrUri.toString()}`;
+  }
+  if (typeof messageOrUri === "string") {
+    return messageOrUri;
+  }
+  return `${defaultMessage}: ${String(messageOrUri)}`;
+}
+
 export class Position {
   constructor(public readonly line: number, public readonly character: number) {}
 

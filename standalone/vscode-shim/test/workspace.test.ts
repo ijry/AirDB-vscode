@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createVscodeApi } from "../src";
+import { FileSystemError, FileType } from "../src";
 
 function createApi() {
   return createVscodeApi({
@@ -21,6 +22,37 @@ describe("workspace API", () => {
 
     expect(api.workspace.onDidChangeTextDocument(() => undefined)).toHaveProperty("dispose");
     expect(api.workspace.onDidSaveTextDocument(() => undefined)).toHaveProperty("dispose");
+  });
+
+  it("exports VS Code-like file type constants", () => {
+    const api = createApi();
+
+    expect(FileType.Unknown).toBe(0);
+    expect(FileType.File).toBe(1);
+    expect(FileType.Directory).toBe(2);
+    expect(FileType.SymbolicLink).toBe(64);
+    expect(api.FileType.File).toBe(1);
+  });
+
+  it("creates file-system errors with stable codes and readable messages", () => {
+    const api = createApi();
+    const uri = api.Uri.file(path.join(tmpdir(), "missing.sql"));
+
+    const missing = FileSystemError.FileNotFound(uri);
+    const exists = FileSystemError.FileExists(uri);
+    const notDirectory = FileSystemError.FileNotADirectory(uri);
+    const denied = FileSystemError.NoPermissions(uri);
+    const unavailable = FileSystemError.Unavailable("workspace.fs expects a Uri");
+
+    expect(missing).toBeInstanceOf(Error);
+    expect(missing.name).toBe("FileSystemError");
+    expect(missing.code).toBe("FileNotFound");
+    expect(missing.message).toContain("file://");
+    expect(exists.code).toBe("FileExists");
+    expect(notDirectory.code).toBe("FileNotADirectory");
+    expect(denied.code).toBe("NoPermissions");
+    expect(unavailable.code).toBe("Unavailable");
+    expect(unavailable.message).toBe("workspace.fs expects a Uri");
   });
 
   it("opens untitled text documents from language and content options", async () => {
