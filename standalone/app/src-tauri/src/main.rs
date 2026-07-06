@@ -294,8 +294,73 @@ fn prepare_extension_host_storage_root(app_data_dir: &Path) -> Result<PathBuf, S
     Ok(app_data_dir.to_path_buf())
 }
 
+fn resolve_node_runtime(standalone_root: &Path) -> Result<PathBuf, String> {
+    let env_node = std::env::var("AIRDB_STANDALONE_NODE")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .map(PathBuf::from);
+    resolve_node_runtime_from_candidates(env_node, &[standalone_root.to_path_buf()], true)
+}
+
+fn resolve_node_runtime_from_candidates(
+    env_node: Option<PathBuf>,
+    root_candidates: &[PathBuf],
+    allow_path_fallback: bool,
+) -> Result<PathBuf, String> {
+    if let Some(node) = env_node {
+        return Ok(node);
+    }
+
+    let relative_path = node_runtime_relative_path();
+    if let Some(node) = root_candidates
+        .iter()
+        .map(|root| root.join(&relative_path))
+        .find(|candidate| candidate.exists())
+    {
+        return Ok(node);
+    }
+
+    if allow_path_fallback {
+        return Ok(PathBuf::from("node"));
+    }
+
+    let relative_path_for_message = relative_path.to_string_lossy().replace('\\', "/");
+    Err(format!(
+        "Unable to resolve Node runtime. Set AIRDB_STANDALONE_NODE, include the packaged sidecar at {}, or install node on PATH for development.",
+        relative_path_for_message
+    ))
+}
+
+fn node_runtime_relative_path() -> PathBuf {
+    PathBuf::from("runtime")
+        .join("node")
+        .join(current_node_runtime_platform_dir())
+        .join(node_executable_name())
+}
+
+fn current_node_runtime_platform_dir() -> &'static str {
+    match (std::env::consts::OS, std::env::consts::ARCH) {
+        ("windows", "x86_64") => "windows-x64",
+        ("windows", "aarch64") => "windows-arm64",
+        ("macos", "x86_64") => "darwin-x64",
+        ("macos", "aarch64") => "darwin-arm64",
+        ("linux", "x86_64") => "linux-x64",
+        ("linux", "aarch64") => "linux-arm64",
+        _ => "unsupported",
+    }
+}
+
+fn node_executable_name() -> &'static str {
+    if std::env::consts::OS == "windows" {
+        "node.exe"
+    } else {
+        "node"
+    }
+}
+
 fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Result<(), String> {
     let standalone_root = resolve_standalone_root(&app)?;
+    let node_runtime = resolve_node_runtime(&standalone_root)?;
     let host_entry = standalone_root
         .join("extension-host")
         .join("dist")
@@ -307,7 +372,7 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
             .map_err(|error| error.to_string())?,
     )?;
 
-    let mut child = Command::new("node")
+    let mut child = Command::new(&node_runtime)
         .arg(&host_entry)
         .env("AIRDB_STANDALONE_EXTENSIONS", &extensions_dir)
         .env("AIRDB_STANDALONE_STORAGE", &storage_root)
@@ -318,7 +383,8 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
         .map_err(|error| {
             if error.kind() == ErrorKind::NotFound {
                 format!(
-                    "Failed to start extension host because `node` was not found on PATH. Packaged AirDB Standalone currently requires a Node.js runtime on PATH. Extension host entry: {}",
+                    "Failed to start extension host because the Node runtime was not found. Tried: {}. Set AIRDB_STANDALONE_NODE, include the packaged Node sidecar, or install node on PATH for development. Extension host entry: {}",
+                    node_runtime.display(),
                     host_entry.display()
                 )
             } else {
@@ -444,6 +510,13 @@ mod tests {
         let host_entry = root.join("extension-host").join("dist").join("main.js");
         fs::create_dir_all(host_entry.parent().unwrap()).unwrap();
         fs::write(host_entry, "console.log('host');").unwrap();
+    }
+
+    fn create_node_runtime(root: &std::path::Path) -> PathBuf {
+        let runtime_path = root.join(node_runtime_relative_path());
+        fs::create_dir_all(runtime_path.parent().unwrap()).unwrap();
+        fs::write(&runtime_path, "node").unwrap();
+        runtime_path
     }
 
     #[test]
@@ -658,5 +731,58 @@ mod tests {
         assert_eq!(resolved, root);
         assert!(resolved.exists());
         fs::remove_dir_all(resolved).unwrap();
+    }
+
+    #[test]
+    fn node_runtime_resolution_uses_env_override_first() {
+        let env_node = PathBuf::from("C:/custom/node.exe");
+        let resource_root = temp_root();
+        let sidecar = create_node_runtime(&resource_root);
+
+        let resolved = resolve_node_runtime_from_candidates(
+            Some(env_node.clone()),
+            &[resource_root.clone()],
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(resolved, env_node);
+        assert!(sidecar.exists());
+        fs::remove_dir_all(resource_root).unwrap();
+    }
+
+    #[test]
+    fn node_runtime_resolution_prefers_sidecar_before_path_fallback() {
+        let resource_root = temp_root();
+        let sidecar = create_node_runtime(&resource_root);
+
+        let resolved =
+            resolve_node_runtime_from_candidates(None, &[resource_root.clone()], true).unwrap();
+
+        assert_eq!(resolved, sidecar);
+        fs::remove_dir_all(resource_root).unwrap();
+    }
+
+    #[test]
+    fn node_runtime_resolution_falls_back_to_system_node_for_development() {
+        let resource_root = temp_root();
+
+        let resolved =
+            resolve_node_runtime_from_candidates(None, &[resource_root.clone()], true).unwrap();
+
+        assert_eq!(resolved, PathBuf::from("node"));
+        fs::remove_dir_all(resource_root).unwrap();
+    }
+
+    #[test]
+    fn node_runtime_resolution_errors_when_no_runtime_and_no_fallback() {
+        let resource_root = temp_root();
+
+        let error = resolve_node_runtime_from_candidates(None, &[resource_root.clone()], false)
+            .unwrap_err();
+
+        assert!(error.contains("AIRDB_STANDALONE_NODE"));
+        assert!(error.contains("runtime/node"));
+        fs::remove_dir_all(resource_root).unwrap();
     }
 }
