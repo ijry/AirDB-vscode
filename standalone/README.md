@@ -67,6 +67,16 @@ npm run smoke:text-document-ipc
 
 The smoke test starts the Node extension host with a temporary fixture extension, opens an untitled SQL text document, sends a simulated frontend editor response, and verifies the command sees the active editor content.
 
+## External Actions IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:external-actions-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension, exercises `vscode.open`, `env.openExternal`, and text clipboard APIs, sends simulated frontend responses, and verifies the command receives the expected values.
+
 ## Notification IPC Smoke Test
 
 ```bash
