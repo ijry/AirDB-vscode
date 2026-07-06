@@ -11,7 +11,8 @@
   ],
   "scripts": {
     "check:workspace": "node scripts/check-workspace.mjs",
-    "test": "npm run test --workspaces --if-present",
+    "test": "npm run test:scripts && npm run test --workspaces --if-present",
+    "test:scripts": "node scripts/node-runtime.test.mjs",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "build": "npm run build --workspaces --if-present",
     "build:airdb": "node scripts/build-airdb.mjs",

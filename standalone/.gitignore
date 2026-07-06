@@ -3,6 +3,8 @@ node_modules/
 !.packaged-resources/node_modules/
 .packaged-resources/node_modules/*
 !.packaged-resources/node_modules/.gitkeep
+runtime/node/*
+!runtime/node/.gitkeep
 dist/
 app/dist/
 app/src-tauri/gen/
