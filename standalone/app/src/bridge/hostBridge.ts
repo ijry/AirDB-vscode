@@ -44,6 +44,10 @@ export function createHostBridge(transport: HostBridgeTransport = createTauriTra
       const response = requests.register<TResponse>(request.id, timeoutMs);
       await transport.send(JSON.stringify(request));
       return response;
+    },
+
+    async sendHostResponse(response: HostResponse): Promise<void> {
+      await transport.send(JSON.stringify(response));
     }
   };
 }
@@ -61,6 +65,10 @@ export function sendHostRequest<TResponse>(
   timeoutMs?: number
 ) {
   return defaultHostBridge.sendHostRequest<TResponse>(group, payload, extensionId, timeoutMs);
+}
+
+export function sendHostResponse(response: HostResponse) {
+  return defaultHostBridge.sendHostResponse(response);
 }
 
 function createTauriTransport(): HostBridgeTransport {

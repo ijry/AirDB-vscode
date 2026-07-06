@@ -8,6 +8,21 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
 
   const payload = message.payload as Record<string, unknown>;
 
+  if (
+    message.kind === "request" &&
+    (message.group === "dialog.showInputBox" || message.group === "dialog.showQuickPick")
+  ) {
+    return [{
+      type: "dialog/open",
+      dialog: {
+        requestId: message.id,
+        group: message.group,
+        extensionId: message.extensionId,
+        payload: message.payload
+      }
+    }];
+  }
+
   switch (message.group) {
     case "extension.registerContributions": {
       const extensions = (payload.extensions as Array<Record<string, unknown>>) ?? [];

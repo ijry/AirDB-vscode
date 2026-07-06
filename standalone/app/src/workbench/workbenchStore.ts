@@ -1,5 +1,6 @@
 import type {
   ActivityContainer,
+  DialogState,
   EditorTab,
   NotificationState,
   TerminalState,
@@ -20,6 +21,8 @@ export type WorkbenchAction =
   | { type: "webview/html"; id: string; html: string }
   | { type: "webview/message"; id: string; message: unknown }
   | { type: "webview/error"; id: string; error: string }
+  | { type: "dialog/open"; dialog: DialogState }
+  | { type: "dialog/close"; requestId: string }
   | { type: "notification/show"; notification: NotificationState }
   | { type: "terminal/open"; terminal: TerminalState }
   | { type: "terminal/append"; id: string; line: string };
@@ -29,6 +32,7 @@ export const initialWorkbenchState: WorkbenchState = {
   treeViews: {},
   editors: [],
   webviews: [],
+  dialogs: [],
   notifications: [],
   terminals: []
 };
@@ -95,6 +99,16 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         webviews: state.webviews.map((panel) =>
           panel.id === action.id ? { ...panel, loading: false, error: action.error } : panel
         )
+      };
+    case "dialog/open":
+      return {
+        ...state,
+        dialogs: [...state.dialogs.filter((dialog) => dialog.requestId !== action.dialog.requestId), action.dialog]
+      };
+    case "dialog/close":
+      return {
+        ...state,
+        dialogs: state.dialogs.filter((dialog) => dialog.requestId !== action.requestId)
       };
     case "notification/show":
       return { ...state, notifications: [...state.notifications, action.notification] };

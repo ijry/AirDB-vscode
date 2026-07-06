@@ -94,4 +94,28 @@ describe("workbenchReducer", () => {
 
     expect(state.webviews[0].error).toBe("Failed to load app.js");
   });
+
+  it("opens and closes extension dialogs", () => {
+    const opened = workbenchReducer(initialWorkbenchState, {
+      type: "dialog/open",
+      dialog: {
+        requestId: "dialog-1",
+        group: "dialog.showInputBox",
+        extensionId: "fixture.one",
+        payload: { placeHolder: "Name" }
+      }
+    });
+
+    expect(opened.dialogs).toEqual([
+      {
+        requestId: "dialog-1",
+        group: "dialog.showInputBox",
+        extensionId: "fixture.one",
+        payload: { placeHolder: "Name" }
+      }
+    ]);
+
+    const closed = workbenchReducer(opened, { type: "dialog/close", requestId: "dialog-1" });
+    expect(closed.dialogs).toEqual([]);
+  });
 });

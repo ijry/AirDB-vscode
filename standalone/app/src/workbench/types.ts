@@ -43,6 +43,15 @@ export interface WebviewState {
   messages?: unknown[];
 }
 
+export type DialogGroup = "dialog.showInputBox" | "dialog.showQuickPick";
+
+export interface DialogState {
+  requestId: string;
+  group: DialogGroup;
+  extensionId?: string;
+  payload: unknown;
+}
+
 export interface NotificationState {
   id: string;
   level: "info" | "warning" | "error";
@@ -62,6 +71,7 @@ export interface WorkbenchState {
   editors: EditorTab[];
   activeEditorId?: string;
   webviews: WebviewState[];
+  dialogs: DialogState[];
   notifications: NotificationState[];
   terminals: TerminalState[];
 }

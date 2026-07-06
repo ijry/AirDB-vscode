@@ -23,6 +23,28 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps dialog requests to workbench dialog state", () => {
+    expect(
+      mapHostMessageToActions({
+        kind: "request",
+        id: "dialog-1",
+        group: "dialog.showInputBox",
+        extensionId: "fixture.one",
+        payload: { placeHolder: "Name" }
+      })
+    ).toEqual([
+      {
+        type: "dialog/open",
+        dialog: {
+          requestId: "dialog-1",
+          group: "dialog.showInputBox",
+          extensionId: "fixture.one",
+          payload: { placeHolder: "Name" }
+        }
+      }
+    ]);
+  });
+
   it("maps extension contributions to activity containers", () => {
     const actions = mapHostMessageToActions(
       createNotification("extension.registerContributions", {

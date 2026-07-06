@@ -47,4 +47,19 @@ describe("createHostBridge", () => {
       { kind: "notification", group: "tree.create", payload: { viewId: "fixture.view" } }
     ]);
   });
+
+  it("sends raw host responses through the active transport", async () => {
+    const sent: string[] = [];
+    const bridge = createHostBridge({
+      listen: async () => () => undefined,
+      send: async (message) => {
+        sent.push(message);
+      }
+    });
+    const response = createResponse({ id: "dialog-1", group: "dialog.showInputBox" }, "AirDB");
+
+    await bridge.sendHostResponse(response);
+
+    expect(JSON.parse(sent[0])).toEqual(response);
+  });
 });
