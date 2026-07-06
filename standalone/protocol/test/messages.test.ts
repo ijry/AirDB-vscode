@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
 import {
+  createNotification,
   createRequest,
   createResponse,
+  type HostCommandDto,
   type HostExternalUriDto,
   type HostFileUriDto,
+  type HostOutputChannelDto,
+  type HostStatusBarItemDto,
+  type HostTerminalDto,
   type HostTextDocumentDto,
   type HostTextEditorDto,
   type HostTreeNodeDto,
   type HostWebviewPanelDto,
   type OpenExternalUriPayload,
+  type OutputChannelAppendPayload,
   type ResolveTreeChildrenPayload,
   type ResolveTreeChildrenResponse,
   type ShowTextDocumentPayload,
+  type TerminalAppendPayload,
   type WebviewPostMessagePayload,
   type WebviewReceiveMessagePayload,
   type WebviewSetHtmlPayload,
@@ -146,5 +153,53 @@ describe("tree protocol DTOs", () => {
     expect(externalRequest.payload.uri).toEqual(webUri);
     expect(writeResponse.payload).toBe(true);
     expect(readResponse.payload).toBe("select 1");
+  });
+
+  it("supports typed workbench feedback DTOs", () => {
+    const command: HostCommandDto = {
+      command: "fixture.feedback.status",
+      title: "Feedback Status",
+      arguments: ["clicked"]
+    };
+    const output: HostOutputChannelDto = {
+      id: "fixture.one.output.1",
+      name: "Feedback",
+      extensionId: "fixture.one",
+      visible: false
+    };
+    const outputAppend: OutputChannelAppendPayload = {
+      id: output.id,
+      name: output.name,
+      value: "select 1\n"
+    };
+    const status: HostStatusBarItemDto = {
+      id: "fixture.one.status.1",
+      alignment: 1,
+      priority: 100,
+      text: "$(database) Ready",
+      tooltip: "Run feedback command",
+      command,
+      visible: true
+    };
+    const terminal: HostTerminalDto = {
+      id: "fixture.one.terminal.1",
+      name: "Feedback Terminal",
+      visible: true
+    };
+    const terminalAppend: TerminalAppendPayload = {
+      id: terminal.id,
+      name: terminal.name,
+      value: "select 1"
+    };
+
+    const outputNotification = createNotification("workbench.output.create", output, "fixture.one");
+    const appendNotification = createNotification("workbench.output.append", outputAppend, "fixture.one");
+    const statusNotification = createNotification("workbench.statusBar.show", status, "fixture.one");
+    const terminalNotification = createNotification("workbench.terminal.append", terminalAppend, "fixture.one");
+
+    expect(outputNotification.payload).toEqual(output);
+    expect(appendNotification.payload).toEqual(outputAppend);
+    expect(statusNotification.payload).toEqual(status);
+    expect(terminalNotification.payload).toEqual(terminalAppend);
   });
 });

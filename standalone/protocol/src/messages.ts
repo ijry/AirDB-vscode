@@ -16,6 +16,21 @@ export type HostMessageGroup =
   | "external.openUri"
   | "external.writeClipboard"
   | "external.readClipboard"
+  | "workbench.output.create"
+  | "workbench.output.append"
+  | "workbench.output.clear"
+  | "workbench.output.show"
+  | "workbench.output.hide"
+  | "workbench.output.dispose"
+  | "workbench.statusBar.update"
+  | "workbench.statusBar.show"
+  | "workbench.statusBar.hide"
+  | "workbench.statusBar.dispose"
+  | "workbench.terminal.create"
+  | "workbench.terminal.append"
+  | "workbench.terminal.show"
+  | "workbench.terminal.hide"
+  | "workbench.terminal.dispose"
   | "dialog.showInputBox"
   | "dialog.showQuickPick"
   | "dialog.showOpenDialog"
@@ -93,6 +108,47 @@ export interface OpenExternalUriPayload {
 
 export interface WriteClipboardPayload {
   text: string;
+}
+
+export interface HostCommandDto {
+  command: string;
+  title?: string;
+  arguments?: unknown[];
+}
+
+export interface HostOutputChannelDto {
+  id: string;
+  name: string;
+  extensionId?: string;
+  visible: boolean;
+}
+
+export interface OutputChannelAppendPayload {
+  id: string;
+  name: string;
+  value: string;
+}
+
+export interface HostStatusBarItemDto {
+  id: string;
+  alignment: 1 | 2;
+  priority?: number;
+  text: string;
+  tooltip?: string;
+  command?: HostCommandDto;
+  visible: boolean;
+}
+
+export interface HostTerminalDto {
+  id: string;
+  name: string;
+  visible: boolean;
+}
+
+export interface TerminalAppendPayload {
+  id: string;
+  name: string;
+  value: string;
 }
 
 export type HostMessage<TPayload = unknown> =
