@@ -2,17 +2,20 @@ import { describe, expect, it } from "vitest";
 import {
   createRequest,
   createResponse,
+  type HostExternalUriDto,
   type HostFileUriDto,
   type HostTextDocumentDto,
   type HostTextEditorDto,
   type HostTreeNodeDto,
   type HostWebviewPanelDto,
+  type OpenExternalUriPayload,
   type ResolveTreeChildrenPayload,
   type ResolveTreeChildrenResponse,
   type ShowTextDocumentPayload,
   type WebviewPostMessagePayload,
   type WebviewReceiveMessagePayload,
-  type WebviewSetHtmlPayload
+  type WebviewSetHtmlPayload,
+  type WriteClipboardPayload
 } from "../src";
 
 describe("tree protocol DTOs", () => {
@@ -118,5 +121,30 @@ describe("tree protocol DTOs", () => {
       document,
       viewColumn: 2
     });
+  });
+
+  it("supports typed external action DTOs", () => {
+    const fileUri: HostExternalUriDto = {
+      uri: "file:///C:/fixture/export.sql",
+      scheme: "file",
+      fsPath: "C:/fixture/export.sql"
+    };
+    const webUri: HostExternalUriDto = {
+      uri: "https://example.com/docs",
+      scheme: "https"
+    };
+
+    const openRequest = createRequest<OpenExternalUriPayload>("external.openUri", { uri: fileUri });
+    const openResponse = createResponse<boolean>(openRequest, true);
+    const externalRequest = createRequest<OpenExternalUriPayload>("external.openUri", { uri: webUri });
+    const writeRequest = createRequest<WriteClipboardPayload>("external.writeClipboard", { text: "select 1" });
+    const writeResponse = createResponse<boolean>(writeRequest, true);
+    const readRequest = createRequest("external.readClipboard", {});
+    const readResponse = createResponse<string>(readRequest, "select 1");
+
+    expect(openResponse.payload).toBe(true);
+    expect(externalRequest.payload.uri).toEqual(webUri);
+    expect(writeResponse.payload).toBe(true);
+    expect(readResponse.payload).toBe("select 1");
   });
 });

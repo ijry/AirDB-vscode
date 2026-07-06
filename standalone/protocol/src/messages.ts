@@ -13,6 +13,9 @@ export type HostMessageGroup =
   | "webview.receiveMessage"
   | "editor.openDocument"
   | "editor.showDocument"
+  | "external.openUri"
+  | "external.writeClipboard"
+  | "external.readClipboard"
   | "dialog.showInputBox"
   | "dialog.showQuickPick"
   | "dialog.showOpenDialog"
@@ -76,6 +79,20 @@ export interface ShowTextDocumentPayload {
   document: HostTextDocumentDto;
   viewColumn?: number;
   preserveFocus?: boolean;
+}
+
+export interface HostExternalUriDto {
+  uri: string;
+  scheme: string;
+  fsPath?: string;
+}
+
+export interface OpenExternalUriPayload {
+  uri: HostExternalUriDto;
+}
+
+export interface WriteClipboardPayload {
+  text: string;
 }
 
 export type HostMessage<TPayload = unknown> =
