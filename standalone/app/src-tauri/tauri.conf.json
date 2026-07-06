@@ -24,6 +24,9 @@
     "active": true,
     "targets": "all",
     "externalBin": [],
+    "icon": [
+      "icons/icon.ico"
+    ],
     "resources": {
       "../../extension-host/dist": "extension-host/dist",
       "../../vscode-shim/dist": "vscode-shim/dist",
