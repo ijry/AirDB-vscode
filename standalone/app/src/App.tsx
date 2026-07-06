@@ -1,5 +1,10 @@
 import { useEffect, useReducer } from "react";
-import { createResponse, type HostMessage, type ResolveTreeChildrenResponse } from "@airdb-standalone/protocol";
+import {
+  createResponse,
+  type HostMessage,
+  type HostResponse,
+  type ResolveTreeChildrenResponse
+} from "@airdb-standalone/protocol";
 import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
 import { ActivityBar } from "./workbench/ActivityBar";
@@ -9,8 +14,37 @@ import { NotificationHost } from "./workbench/NotificationHost";
 import { SideBar } from "./workbench/SideBar";
 import { TerminalPanel } from "./workbench/TerminalPanel";
 import { WebviewPanel } from "./workbench/WebviewPanel";
-import { initialWorkbenchState, workbenchReducer } from "./workbench/workbenchStore";
-import type { DialogState } from "./workbench/types";
+import { initialWorkbenchState, workbenchReducer, type WorkbenchAction } from "./workbench/workbenchStore";
+import type { DialogState, NotificationState } from "./workbench/types";
+
+export async function respondToNotification(
+  notification: NotificationState,
+  value: unknown,
+  sendResponse: (response: HostResponse) => Promise<void>,
+  dispatch: (action: WorkbenchAction) => void
+): Promise<void> {
+  dispatch({ type: "notification/close", id: notification.id });
+  if (!notification.requestId) {
+    return;
+  }
+
+  try {
+    await sendResponse(createResponse({
+      id: notification.requestId,
+      group: "notification.show",
+      extensionId: notification.extensionId
+    }, value));
+  } catch (error) {
+    dispatch({
+      type: "notification/show",
+      notification: {
+        id: `notification-response-error-${Date.now()}`,
+        level: "error",
+        message: error instanceof Error ? error.message : "Failed to send notification response"
+      }
+    });
+  }
+}
 
 export function App() {
   const [state, dispatch] = useReducer(workbenchReducer, initialWorkbenchState);
@@ -133,7 +167,11 @@ export function App() {
         <TerminalPanel state={state} />
       </section>
       <DialogHost dialogs={state.dialogs} onRespond={(dialog, value) => void respondToDialog(dialog, value)} />
-      <NotificationHost notifications={state.notifications} />
+      <NotificationHost
+        notifications={state.notifications}
+        onRespond={(notification, value) => void respondToNotification(notification, value, sendHostResponse, dispatch)}
+        onDismiss={(notification) => dispatch({ type: "notification/close", id: notification.id })}
+      />
     </main>
   );
 }

@@ -260,3 +260,34 @@ body {
 .notification.error {
   border-color: #e76f51;
 }
+
+.notification-message {
+  margin: 0;
+}
+
+.notification-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.notification-actions button,
+.notification-dismiss {
+  border: 1px solid #35566a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  color: #dbe7ef;
+  background: #203340;
+  cursor: pointer;
+}
+
+.notification-actions button:hover,
+.notification-dismiss:hover {
+  border-color: #78c6a3;
+  background: #244c43;
+}
+
+.notification-dismiss {
+  margin-top: 10px;
+}
