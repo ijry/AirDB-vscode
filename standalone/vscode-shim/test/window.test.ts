@@ -300,4 +300,150 @@ describe("window IPC API", () => {
     expect(api.window.activeTextEditor).toBe(editor);
     expect(events).toEqual([editor]);
   });
+
+  it("emits frontend-visible output channel notifications", () => {
+    const notifications: Array<{ group: HostMessageGroup; payload: Record<string, unknown>; extensionId?: string }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: (group, payload, extensionId) =>
+          notifications.push({ group, payload: payload as Record<string, unknown>, extensionId })
+      }
+    });
+
+    const channel = api.window.createOutputChannel("Feedback");
+    channel.append("select");
+    channel.appendLine(" 1");
+    channel.clear();
+    channel.show();
+    channel.hide();
+    channel.dispose();
+    channel.appendLine("ignored");
+
+    const id = notifications[0].payload.id;
+    expect(notifications).toEqual([
+      {
+        group: "workbench.output.create",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback", extensionId: "fixture.one", visible: false }
+      },
+      {
+        group: "workbench.output.append",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback", value: "select" }
+      },
+      {
+        group: "workbench.output.append",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback", value: " 1\n" }
+      },
+      { group: "workbench.output.clear", extensionId: "fixture.one", payload: { id } },
+      {
+        group: "workbench.output.show",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback", extensionId: "fixture.one", visible: true }
+      },
+      { group: "workbench.output.hide", extensionId: "fixture.one", payload: { id } },
+      { group: "workbench.output.dispose", extensionId: "fixture.one", payload: { id } }
+    ]);
+  });
+
+  it("emits status bar show, update, hide, and dispose notifications", () => {
+    const notifications: Array<{ group: HostMessageGroup; payload: Record<string, unknown>; extensionId?: string }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: (group, payload, extensionId) =>
+          notifications.push({ group, payload: payload as Record<string, unknown>, extensionId })
+      }
+    });
+
+    const item = api.window.createStatusBarItem(api.StatusBarAlignment.Right, 42);
+    item.text = "Ready";
+    item.tooltip = "Connected";
+    item.command = { command: "fixture.refresh", title: "Refresh", arguments: ["primary"] };
+    item.show();
+    item.text = "Busy";
+    item.hide();
+    item.dispose();
+    item.text = "ignored";
+
+    const id = notifications[0].payload.id;
+    expect(notifications).toEqual([
+      {
+        group: "workbench.statusBar.show",
+        extensionId: "fixture.one",
+        payload: {
+          id,
+          alignment: api.StatusBarAlignment.Right,
+          priority: 42,
+          text: "Ready",
+          tooltip: "Connected",
+          command: { command: "fixture.refresh", title: "Refresh", arguments: ["primary"] },
+          visible: true
+        }
+      },
+      {
+        group: "workbench.statusBar.update",
+        extensionId: "fixture.one",
+        payload: {
+          id,
+          alignment: api.StatusBarAlignment.Right,
+          priority: 42,
+          text: "Busy",
+          tooltip: "Connected",
+          command: { command: "fixture.refresh", title: "Refresh", arguments: ["primary"] },
+          visible: true
+        }
+      },
+      { group: "workbench.statusBar.hide", extensionId: "fixture.one", payload: { id } },
+      { group: "workbench.statusBar.dispose", extensionId: "fixture.one", payload: { id } }
+    ]);
+  });
+
+  it("emits virtual terminal notifications and updates activeTerminal", () => {
+    const notifications: Array<{ group: HostMessageGroup; payload: Record<string, unknown>; extensionId?: string }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: (group, payload, extensionId) =>
+          notifications.push({ group, payload: payload as Record<string, unknown>, extensionId })
+      }
+    });
+
+    const terminal = api.window.createTerminal({ name: "Feedback Terminal" });
+    terminal.sendText("select 1", false);
+    terminal.show();
+    terminal.hide();
+    terminal.dispose();
+    terminal.sendText("ignored");
+
+    const id = notifications[0].payload.id;
+    expect(api.window.activeTerminal).toBe(terminal);
+    expect(notifications).toEqual([
+      {
+        group: "workbench.terminal.create",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback Terminal", visible: false }
+      },
+      {
+        group: "workbench.terminal.append",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback Terminal", value: "select 1" }
+      },
+      {
+        group: "workbench.terminal.show",
+        extensionId: "fixture.one",
+        payload: { id, name: "Feedback Terminal", visible: true }
+      },
+      { group: "workbench.terminal.hide", extensionId: "fixture.one", payload: { id } },
+      { group: "workbench.terminal.dispose", extensionId: "fixture.one", payload: { id } }
+    ]);
+  });
 });

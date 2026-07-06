@@ -16,6 +16,11 @@ import {
   type StandaloneTextEditor
 } from "./textDocument.js";
 import { Disposable, EventEmitter, Uri } from "./types.js";
+import {
+  createOutputChannelApi,
+  createStatusBarItemApi,
+  createVirtualTerminalApi
+} from "./workbenchFeedback.js";
 
 export interface WebviewPanelBridgeRegistration {
   panelId: string;
@@ -268,33 +273,17 @@ export function createWindowApi(options: WindowApiOptions) {
     },
 
     createOutputChannel(name: string) {
-      return {
-        appendLine: (line: string) => options.bridge.notify("log", { channel: name, line }, options.extensionId),
-        append: (value: string) => options.bridge.notify("log", { channel: name, value }, options.extensionId),
-        show: () => options.bridge.notify("log", { channel: name, show: true }, options.extensionId),
-        dispose: () => undefined
-      };
+      return createOutputChannelApi(options.extensionId, options.bridge, name);
     },
 
-    createStatusBarItem() {
-      return {
-        text: "",
-        tooltip: "",
-        command: undefined as string | undefined,
-        show: () => undefined,
-        hide: () => undefined,
-        dispose: () => undefined
-      };
+    createStatusBarItem(alignment?: unknown, priority?: unknown) {
+      return createStatusBarItemApi(options.extensionId, options.bridge, alignment, priority);
     },
 
-    createTerminal(name: string) {
-      options.bridge.notify("terminal.create", { name }, options.extensionId);
-      const terminal = {
-        name,
-        sendText: (text: string) => options.bridge.notify("terminal.sendText", { name, text }, options.extensionId),
-        show: () => options.bridge.notify("terminal.create", { name, reveal: true }, options.extensionId),
-        dispose: () => undefined
-      };
+    createTerminal(nameOrOptions?: unknown) {
+      const terminal = createVirtualTerminalApi(options.extensionId, options.bridge, nameOrOptions, (shownTerminal) => {
+        activeTerminal = shownTerminal;
+      });
       activeTerminal = terminal;
       return terminal;
     },
