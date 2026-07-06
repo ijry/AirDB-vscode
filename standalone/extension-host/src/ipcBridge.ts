@@ -1,9 +1,17 @@
-import { createNotification, type HostMessageGroup, type HostRequest } from "@airdb-standalone/protocol";
+import {
+  RequestStore,
+  createNotification,
+  type HostMessageGroup,
+  type HostRequest,
+  type HostResponse
+} from "@airdb-standalone/protocol";
 import type { HostBridge, WebviewPanelBridgeRegistration } from "@airdb-standalone/vscode-shim";
 import type { TreeViewRegistry } from "./treeViewRegistry.js";
 import type { WebviewMessageReceiver, WebviewRegistry } from "./webviewRegistry.js";
 
 export class IpcBridge implements HostBridge {
+  private readonly requests = new RequestStore();
+
   constructor(
     private readonly write: (line: string) => void,
     private readonly treeViewRegistry?: TreeViewRegistry,
@@ -11,8 +19,13 @@ export class IpcBridge implements HostBridge {
   ) {}
 
   async request<TResponse>(request: HostRequest): Promise<TResponse> {
+    const response = this.requests.register<TResponse>(request.id, 30000);
     this.write(JSON.stringify(request));
-    return undefined as TResponse;
+    return response;
+  }
+
+  handleResponse(response: HostResponse): boolean {
+    return this.requests.resolve(response);
   }
 
   notify(group: HostMessageGroup, payload: unknown, extensionId?: string): void {

@@ -27,4 +27,37 @@ describe("startStdinMessageLoop", () => {
       payload: { value: "ok" }
     });
   });
+
+  it("routes response messages before controller handling", async () => {
+    const input = new PassThrough();
+    const written: string[] = [];
+    const response = createResponse(
+      { id: "frontend-response", group: "dialog.showInputBox" },
+      "AirDB"
+    );
+    const routed: unknown[] = [];
+    const handled: unknown[] = [];
+
+    startStdinMessageLoop(
+      input,
+      {
+        handleMessage: async (message) => {
+          handled.push(message);
+          return undefined;
+        }
+      },
+      (line) => written.push(line),
+      (message) => {
+        routed.push(message);
+        return true;
+      }
+    );
+
+    input.write(`${JSON.stringify(response)}\n`);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(routed).toEqual([response]);
+    expect(handled).toEqual([]);
+    expect(written).toEqual([]);
+  });
 });

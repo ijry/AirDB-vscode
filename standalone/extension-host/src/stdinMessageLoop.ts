@@ -7,13 +7,17 @@ export interface MessageController {
 export function startStdinMessageLoop(
   input: NodeJS.ReadableStream,
   controller: MessageController,
-  writeLine: (line: string) => void
+  writeLine: (line: string) => void,
+  handleResponse?: (response: HostResponse) => boolean
 ): void {
   const decoder = new JsonLineDecoder();
 
   input.setEncoding("utf8");
   input.on("data", (chunk: string) => {
     for (const message of decoder.push(chunk)) {
+      if (message.kind === "response" && handleResponse?.(message as HostResponse)) {
+        continue;
+      }
       void controller
         .handleMessage(message)
         .then((response) => {

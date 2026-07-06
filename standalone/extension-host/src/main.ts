@@ -27,7 +27,7 @@ const bridge = new IpcBridge((line) => {
 const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry, webviewRegistry });
 startStdinMessageLoop(process.stdin, controller, (line) => {
   process.stdout.write(`${line}\n`);
-});
+}, (response) => bridge.handleResponse(response));
 
 try {
   const loader = new ExtensionLoader({ extensionsDir, storageRoot, bridge, contributionRegistry, commandRegistry });
