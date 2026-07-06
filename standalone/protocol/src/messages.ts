@@ -55,6 +55,29 @@ export interface HostFileUriDto {
   fsPath: string;
 }
 
+export interface HostTextDocumentDto {
+  id: string;
+  uri: string;
+  fsPath?: string;
+  fileName: string;
+  title: string;
+  languageId: string;
+  content: string;
+  isUntitled: boolean;
+  version: number;
+}
+
+export interface HostTextEditorDto {
+  document: HostTextDocumentDto;
+  viewColumn?: number;
+}
+
+export interface ShowTextDocumentPayload {
+  document: HostTextDocumentDto;
+  viewColumn?: number;
+  preserveFocus?: boolean;
+}
+
 export type HostMessage<TPayload = unknown> =
   | HostRequest<TPayload>
   | HostResponse<TPayload>

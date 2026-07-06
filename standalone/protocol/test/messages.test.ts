@@ -3,10 +3,13 @@ import {
   createRequest,
   createResponse,
   type HostFileUriDto,
+  type HostTextDocumentDto,
+  type HostTextEditorDto,
   type HostTreeNodeDto,
   type HostWebviewPanelDto,
   type ResolveTreeChildrenPayload,
   type ResolveTreeChildrenResponse,
+  type ShowTextDocumentPayload,
   type WebviewPostMessagePayload,
   type WebviewReceiveMessagePayload,
   type WebviewSetHtmlPayload
@@ -87,5 +90,33 @@ describe("tree protocol DTOs", () => {
         fsPath: "C:/fixture/import.sql"
       }
     ]);
+  });
+
+  it("supports typed text document and editor DTOs", () => {
+    const document: HostTextDocumentDto = {
+      id: "document-1",
+      uri: "file:///C:/fixture/query.sql",
+      fsPath: "C:/fixture/query.sql",
+      fileName: "C:/fixture/query.sql",
+      title: "query.sql",
+      languageId: "sql",
+      content: "select 1",
+      isUntitled: false,
+      version: 1
+    };
+    const request = createRequest<ShowTextDocumentPayload>("editor.showDocument", {
+      document,
+      viewColumn: 2,
+      preserveFocus: true
+    });
+    const response = createResponse<HostTextEditorDto>(request, {
+      document,
+      viewColumn: 2
+    });
+
+    expect(response.payload).toEqual({
+      document,
+      viewColumn: 2
+    });
   });
 });
