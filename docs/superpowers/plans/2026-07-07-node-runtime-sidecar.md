@@ -723,7 +723,7 @@ npm run package
 Remove-Item Env:\AIRDB_STANDALONE_NODE_RUNTIME
 ```
 
-`AIRDB_STANDALONE_NODE_RUNTIME` may point to a Node executable or to a directory containing `runtime/node/<platform>/<executable>`. For Windows x64 packaging, the staged runtime path is `standalone/runtime/node/windows-x64/node.exe`. The application still falls back to system `node` during development.
+`AIRDB_STANDALONE_NODE_RUNTIME` may point to a Node executable, a directory containing `node.exe`, or a directory containing `<platform>/node.exe`. For Windows x64 packaging, the staged runtime path is `standalone/runtime/node/windows-x64/node.exe`. The application still falls back to system `node` during development.
 ````
 
 - [ ] **Step 5: Run script tests and Rust tests**
