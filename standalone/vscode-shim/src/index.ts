@@ -5,6 +5,7 @@ export * from "./unsupported.js";
 export * from "./createApi.js";
 export * from "./window.js";
 export * from "./workspace.js";
+export * from "./workspaceFs.js";
 export * from "./languages.js";
 export * from "./env.js";
 export * from "./extensions.js";

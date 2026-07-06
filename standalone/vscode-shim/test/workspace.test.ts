@@ -1,9 +1,8 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createVscodeApi } from "../src";
-import { FileSystemError, FileType } from "../src";
+import { createVscodeApi, FileSystemError, FileType } from "../src";
 
 function createApi() {
   return createVscodeApi({
@@ -53,6 +52,95 @@ describe("workspace API", () => {
     expect(denied.code).toBe("NoPermissions");
     expect(unavailable.code).toBe("Unavailable");
     expect(unavailable.message).toBe("workspace.fs expects a Uri");
+  });
+
+  it("supports workspace.fs operations for local file URIs", async () => {
+    const api = createApi();
+    const root = await mkdtemp(path.join(tmpdir(), "airdb-workspace-fs-"));
+
+    try {
+      const nestedDir = path.join(root, "nested", "cache");
+      const nestedUri = api.Uri.file(nestedDir);
+      const file = path.join(nestedDir, "query.sql");
+      const fileUri = api.Uri.file(file);
+      const arrayLikeUri = api.Uri.file(path.join(nestedDir, "array-like.txt"));
+      const childDirUri = api.Uri.file(path.join(nestedDir, "child"));
+
+      await api.workspace.fs.createDirectory(nestedUri);
+      await api.workspace.fs.writeFile(fileUri, new Uint8Array([115, 101, 108, 101, 99, 116, 32, 49]));
+      await api.workspace.fs.writeFile(arrayLikeUri, { 0: 65, 1: 66, length: 2 });
+      await api.workspace.fs.createDirectory(childDirUri);
+
+      await expect(readFile(file, "utf8")).resolves.toBe("select 1");
+      await expect(readFile(arrayLikeUri.fsPath, "utf8")).resolves.toBe("AB");
+
+      const bytes = await api.workspace.fs.readFile(fileUri);
+      expect(bytes).toBeInstanceOf(Uint8Array);
+      expect(Buffer.from(bytes).toString("utf8")).toBe("select 1");
+
+      const fileStat = await api.workspace.fs.stat(fileUri);
+      expect(fileStat.type).toBe(api.FileType.File);
+      expect(fileStat.size).toBe(8);
+      expect(fileStat.ctime).toEqual(expect.any(Number));
+      expect(fileStat.mtime).toEqual(expect.any(Number));
+
+      await expect(api.workspace.fs.stat(nestedUri)).resolves.toMatchObject({
+        type: api.FileType.Directory
+      });
+
+      await expect(api.workspace.fs.readDirectory(nestedUri)).resolves.toEqual(
+        expect.arrayContaining([
+          ["array-like.txt", api.FileType.File],
+          ["child", api.FileType.Directory],
+          ["query.sql", api.FileType.File]
+        ])
+      );
+
+      await api.workspace.fs.delete(fileUri);
+      await expect(stat(file)).rejects.toMatchObject({ code: "ENOENT" });
+
+      await api.workspace.fs.delete(api.Uri.file(path.join(root, "nested")), { recursive: true, useTrash: true });
+      await expect(stat(path.join(root, "nested"))).rejects.toMatchObject({ code: "ENOENT" });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("maps workspace.fs validation and Node errors to FileSystemError", async () => {
+    const api = createApi();
+    const root = await mkdtemp(path.join(tmpdir(), "airdb-workspace-fs-errors-"));
+
+    try {
+      const missingUri = api.Uri.file(path.join(root, "missing.sql"));
+      const fileUri = api.Uri.file(path.join(root, "plain.txt"));
+      await writeFile(fileUri.fsPath, "plain", "utf8");
+
+      await expect(api.workspace.fs.readFile(missingUri)).rejects.toMatchObject({
+        name: "FileSystemError",
+        code: "FileNotFound"
+      });
+      await expect(api.workspace.fs.readDirectory(fileUri)).rejects.toMatchObject({
+        name: "FileSystemError",
+        code: "FileNotADirectory"
+      });
+      await expect(api.workspace.fs.readFile(api.Uri.parse("untitled://fixture/query.sql"))).rejects.toMatchObject({
+        name: "FileSystemError",
+        code: "Unavailable",
+        message: "Not implemented in standalone host: workspace.fs(untitled)"
+      });
+      await expect(api.workspace.fs.readFile("not-a-uri")).rejects.toMatchObject({
+        name: "FileSystemError",
+        code: "Unavailable",
+        message: "workspace.fs expects a Uri"
+      });
+      await expect(api.workspace.fs.writeFile(fileUri, "plain text")).rejects.toMatchObject({
+        name: "FileSystemError",
+        code: "Unavailable",
+        message: "workspace.fs.writeFile expects Uint8Array content"
+      });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   it("opens untitled text documents from language and content options", async () => {
