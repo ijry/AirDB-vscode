@@ -52,6 +52,59 @@ fn send_extension_host_message(
     stdin.flush().map_err(|error| error.to_string())
 }
 
+fn parse_extension_host_protocol_message(line: &str) -> Option<String> {
+    if !line.trim_start().starts_with('{') {
+        return None;
+    }
+
+    let value = serde_json::from_str::<serde_json::Value>(line).ok()?;
+    if is_extension_host_protocol_message(&value) {
+        Some(line.to_string())
+    } else {
+        None
+    }
+}
+
+fn is_extension_host_protocol_message(value: &serde_json::Value) -> bool {
+    let Some(object) = value.as_object() else {
+        return false;
+    };
+
+    let Some(kind) = object.get("kind").and_then(serde_json::Value::as_str) else {
+        return false;
+    };
+    if object
+        .get("group")
+        .and_then(serde_json::Value::as_str)
+        .is_none()
+    {
+        return false;
+    }
+    if let Some(extension_id) = object.get("extensionId") {
+        if !extension_id.is_string() {
+            return false;
+        }
+    }
+
+    match kind {
+        "request" => object
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .is_some()
+            && object.contains_key("payload"),
+        "response" => object
+            .get("id")
+            .and_then(serde_json::Value::as_str)
+            .is_some()
+            && object
+                .get("ok")
+                .and_then(serde_json::Value::as_bool)
+                .is_some(),
+        "notification" => object.contains_key("payload"),
+        _ => false,
+    }
+}
+
 #[tauri::command]
 fn read_webview_resource(
     app: tauri::AppHandle,
@@ -409,8 +462,8 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
         std::thread::spawn(move || {
             let reader = BufReader::new(stdout);
             for line in reader.lines().map_while(Result::ok) {
-                if line.trim_start().starts_with('{') {
-                    let _ = app_for_stdout.emit("extension-host-message", line);
+                if let Some(message) = parse_extension_host_protocol_message(&line) {
+                    let _ = app_for_stdout.emit("extension-host-message", message);
                 } else {
                     let _ = app_for_stdout.emit("host-log", line);
                 }
@@ -784,5 +837,27 @@ mod tests {
         assert!(error.contains("AIRDB_STANDALONE_NODE"));
         assert!(error.contains("runtime/node"));
         fs::remove_dir_all(resource_root).unwrap();
+    }
+
+    #[test]
+    fn accepts_valid_extension_host_protocol_stdout() {
+        let line = r#"{"kind":"notification","group":"tree.create","payload":{"viewId":"fixture.view"}}"#;
+
+        assert_eq!(
+            parse_extension_host_protocol_message(line).as_deref(),
+            Some(line)
+        );
+    }
+
+    #[test]
+    fn rejects_json_like_stdout_that_is_not_protocol() {
+        assert_eq!(
+            parse_extension_host_protocol_message(r#"{"message":"plain stdout"}"#),
+            None
+        );
+        assert_eq!(
+            parse_extension_host_protocol_message(r#"{"kind":"response","group":"command.execute"}"#),
+            None
+        );
     }
 }

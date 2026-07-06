@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createExtensionContext } from "../src/extensionContext";
@@ -32,5 +34,23 @@ describe("createExtensionContext", () => {
       normalizePath(path.resolve(extensionPath, "../shared/file.txt"))
     );
     expect(normalizePath(context.asAbsolutePath(absolutePath))).toBe(normalizePath(absolutePath));
+  });
+
+  it("persists global and workspace state across context recreation", async () => {
+    const extensionPath = path.resolve("C:/fixture/extensions/context-test");
+    const storageRoot = fs.mkdtempSync(path.join(os.tmpdir(), "airdb-context-test-"));
+
+    try {
+      const firstContext = createExtensionContext({ extensionPath, storageRoot });
+      await firstContext.globalState.update("global.key", { enabled: true });
+      await firstContext.workspaceState.update("workspace.key", ["fixture"]);
+
+      const reloadedContext = createExtensionContext({ extensionPath, storageRoot });
+
+      expect(reloadedContext.globalState.get("global.key")).toEqual({ enabled: true });
+      expect(reloadedContext.workspaceState.get("workspace.key")).toEqual(["fixture"]);
+    } finally {
+      fs.rmSync(storageRoot, { recursive: true, force: true });
+    }
   });
 });

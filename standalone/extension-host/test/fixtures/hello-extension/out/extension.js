@@ -3,6 +3,10 @@ const vscode = require("vscode");
 exports.activate = function activate(context) {
   context.subscriptions.push(
     vscode.commands.registerCommand("fixture.hello", () => "hello"),
+    vscode.commands.registerCommand("fixture.lazyRequire", async () => {
+      const lazyVscode = require("vscode");
+      return lazyVscode.commands.executeCommand("fixture.hello");
+    }),
     vscode.commands.registerCommand("fixture.workspaceRoot", () => {
       const folder = vscode.workspace.workspaceFolders?.[0];
       return {

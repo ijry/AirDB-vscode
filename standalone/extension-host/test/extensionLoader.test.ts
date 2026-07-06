@@ -29,6 +29,23 @@ describe("ExtensionLoader", () => {
     await expect(commandRegistry.executeCommand("fixture.hello")).resolves.toBe("hello");
   });
 
+  it("keeps vscode module resolution available for lazy command callbacks", async () => {
+    const commandRegistry = new CommandRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: path.join(testDir, "fixtures"),
+      storageRoot: path.join(testDir, ".data"),
+      commandRegistry,
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined
+      }
+    });
+
+    await loader.loadAll();
+
+    await expect(commandRegistry.executeCommand("fixture.lazyRequire")).resolves.toBe("hello");
+  });
+
   it("passes workspace root and context paths into loaded extensions", async () => {
     const commandRegistry = new CommandRegistry();
     const workspaceRoot = path.join(testDir, "fixtures", "workspace-root");

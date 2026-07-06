@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createResponse, type HostMessage } from "@airdb-standalone/protocol";
-import { createHostBridge } from "./hostBridge";
+import { createHostBridge, parseHostMessagePayload } from "./hostBridge";
 
 describe("createHostBridge", () => {
   it("sends requests and resolves matching host responses", async () => {
@@ -61,5 +61,22 @@ describe("createHostBridge", () => {
     await bridge.sendHostResponse(response);
 
     expect(JSON.parse(sent[0])).toEqual(response);
+  });
+
+  it("ignores JSON payloads that do not match the host protocol shape", () => {
+    expect(parseHostMessagePayload('{"message":"plain stdout"}')).toBeUndefined();
+    expect(parseHostMessagePayload('{"kind":"response","group":"command.execute"}')).toBeUndefined();
+  });
+
+  it("parses valid host protocol payloads", () => {
+    expect(
+      parseHostMessagePayload(
+        '{"kind":"notification","group":"tree.create","payload":{"viewId":"fixture.view"}}'
+      )
+    ).toEqual({
+      kind: "notification",
+      group: "tree.create",
+      payload: { viewId: "fixture.view" }
+    });
   });
 });

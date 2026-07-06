@@ -68,21 +68,18 @@ export class ExtensionLoader {
       workspaceRoot: this.options.workspaceRoot
     });
 
-    const restore = patchVscodeModule(vscodeApi);
-    try {
-      const mainFile = await resolveMainFile(extensionPath, manifest.main ?? "./out/extension.js");
-      delete extensionRequire.cache[extensionRequire.resolve(mainFile)];
-      const moduleUrl = `${pathToFileURL(mainFile).href}?airdbLoad=${extensionImportNonce++}`;
-      const extensionModule = await import(moduleUrl);
-      const context = createExtensionContext({
-        extensionPath,
-        storageRoot: path.join(this.options.storageRoot, extensionId)
-      });
-      const exports = extensionModule.activate ? await extensionModule.activate(context) : undefined;
-      return { id: extensionId, extensionPath, manifest, exports };
-    } finally {
-      restore();
-    }
+    patchVscodeModule(extensionPath, vscodeApi);
+
+    const mainFile = await resolveMainFile(extensionPath, manifest.main ?? "./out/extension.js");
+    delete extensionRequire.cache[extensionRequire.resolve(mainFile)];
+    const moduleUrl = `${pathToFileURL(mainFile).href}?airdbLoad=${extensionImportNonce++}`;
+    const extensionModule = await import(moduleUrl);
+    const context = createExtensionContext({
+      extensionPath,
+      storageRoot: path.join(this.options.storageRoot, extensionId)
+    });
+    const exports = extensionModule.activate ? await extensionModule.activate(context) : undefined;
+    return { id: extensionId, extensionPath, manifest, exports };
   }
 }
 

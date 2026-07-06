@@ -71,15 +71,56 @@ export function sendHostResponse(response: HostResponse) {
   return defaultHostBridge.sendHostResponse(response);
 }
 
+export function parseHostMessagePayload(payload: string): HostMessage | undefined {
+  try {
+    const parsed = JSON.parse(payload) as unknown;
+    return isHostMessage(parsed) ? parsed : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function createTauriTransport(): HostBridgeTransport {
   return {
     async listen(onMessage) {
       return listen<string>("extension-host-message", (event) => {
-        onMessage(JSON.parse(event.payload) as HostMessage);
+        const message = parseHostMessagePayload(event.payload);
+        if (message) {
+          onMessage(message);
+        }
       });
     },
     async send(message) {
       await invoke("send_extension_host_message", { message });
     }
   };
+}
+
+function isHostMessage(value: unknown): value is HostMessage {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+  if (typeof record.group !== "string") {
+    return false;
+  }
+  if (record.extensionId !== undefined && typeof record.extensionId !== "string") {
+    return false;
+  }
+
+  switch (record.kind) {
+    case "request":
+      return typeof record.id === "string" && hasOwn(record, "payload");
+    case "response":
+      return typeof record.id === "string" && typeof record.ok === "boolean";
+    case "notification":
+      return hasOwn(record, "payload");
+    default:
+      return false;
+  }
+}
+
+function hasOwn(value: Record<string, unknown>, key: string) {
+  return Object.prototype.hasOwnProperty.call(value, key);
 }
