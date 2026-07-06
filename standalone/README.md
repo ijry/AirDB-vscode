@@ -47,6 +47,16 @@ npm run smoke:dialog-ipc
 
 The smoke test starts the Node extension host with a temporary fixture extension, executes a command that awaits `showInputBox` and `showQuickPick`, sends simulated frontend responses, and verifies the command returns both dialog values.
 
+## File Dialog IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:file-dialog-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension, executes a command that awaits `showOpenDialog`, sends a simulated frontend file URI response, and verifies the command returns the selected `Uri.fsPath`.
+
 ## Notification IPC Smoke Test
 
 ```bash
