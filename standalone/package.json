@@ -19,6 +19,7 @@
     "smoke:tree-ipc": "node scripts/smoke-tree-ipc.mjs",
     "smoke:dialog-ipc": "node scripts/smoke-dialog-ipc.mjs",
     "smoke:file-dialog-ipc": "node scripts/smoke-file-dialog-ipc.mjs",
+    "smoke:text-document-ipc": "node scripts/smoke-text-document-ipc.mjs",
     "smoke:notification-ipc": "node scripts/smoke-notification-ipc.mjs",
     "smoke:webview-ipc": "node scripts/smoke-webview-ipc.mjs",
     "package": "node scripts/build-standalone.mjs"
