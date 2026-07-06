@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from "react";
-import type { HostMessage, ResolveTreeChildrenResponse } from "@airdb-standalone/protocol";
-import { listenToHostMessages, sendHostRequest } from "./bridge/hostBridge";
+import { createResponse, type HostMessage, type ResolveTreeChildrenResponse } from "@airdb-standalone/protocol";
+import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
 import { ActivityBar } from "./workbench/ActivityBar";
 import { DialogHost } from "./workbench/DialogHost";
@@ -10,6 +10,7 @@ import { SideBar } from "./workbench/SideBar";
 import { TerminalPanel } from "./workbench/TerminalPanel";
 import { WebviewPanel } from "./workbench/WebviewPanel";
 import { initialWorkbenchState, workbenchReducer } from "./workbench/workbenchStore";
+import type { DialogState } from "./workbench/types";
 
 export function App() {
   const [state, dispatch] = useReducer(workbenchReducer, initialWorkbenchState);
@@ -52,6 +53,26 @@ export function App() {
           id: `tree-command-error-${Date.now()}`,
           level: "error",
           message: error instanceof Error ? error.message : `Failed to invoke tree command ${nodeId}`
+        }
+      });
+    }
+  }
+
+  async function respondToDialog(dialog: DialogState, value: unknown) {
+    dispatch({ type: "dialog/close", requestId: dialog.requestId });
+    try {
+      await sendHostResponse(createResponse({
+        id: dialog.requestId,
+        group: dialog.group,
+        extensionId: dialog.extensionId
+      }, value));
+    } catch (error) {
+      dispatch({
+        type: "notification/show",
+        notification: {
+          id: `dialog-response-error-${Date.now()}`,
+          level: "error",
+          message: error instanceof Error ? error.message : "Failed to send dialog response"
         }
       });
     }
@@ -111,7 +132,7 @@ export function App() {
         <WebviewPanel state={state} />
         <TerminalPanel state={state} />
       </section>
-      <DialogHost />
+      <DialogHost dialogs={state.dialogs} onRespond={(dialog, value) => void respondToDialog(dialog, value)} />
       <NotificationHost notifications={state.notifications} />
     </main>
   );
