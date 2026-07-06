@@ -298,12 +298,24 @@ git commit -m "feat: materialize file dialog uris"
 - Create: `standalone/app/src/bridge/fileDialogs.ts`
 - Create: `standalone/app/src/bridge/fileDialogs.test.ts`
 - Modify: `standalone/app/src/App.tsx`
+- Modify: `standalone/app/package.json`
+- Modify: `standalone/package-lock.json`
 
 **Interfaces:**
-- Consumes: `HostRequest`, `createResponse`, `createErrorResponse`, `sendHostResponse`.
+- Consumes: `HostRequest`, `createResponse`, `createErrorResponse`, `sendHostResponse`, and installed `@tauri-apps/plugin-dialog`.
 - Produces: `handleFileDialogRequest(request, sendResponse, transport): Promise<boolean>` and `createDefaultFileDialogTransport()`.
 
-- [ ] **Step 1: Add failing frontend file dialog tests**
+- [ ] **Step 1: Install JavaScript dialog plugin**
+
+Run:
+
+```powershell
+npm --prefix standalone install @tauri-apps/plugin-dialog --workspace @airdb-standalone/app
+```
+
+Expected: `standalone/app/package.json` includes `@tauri-apps/plugin-dialog`, and `standalone/package-lock.json` includes package metadata for the plugin.
+
+- [ ] **Step 2: Add failing frontend file dialog tests**
 
 Create `standalone/app/src/bridge/fileDialogs.test.ts`:
 
@@ -446,13 +458,13 @@ function request(payload: Record<string, unknown>): HostRequest<Record<string, u
 }
 ```
 
-- [ ] **Step 2: Run app tests and verify they fail**
+- [ ] **Step 3: Run app tests and verify they fail**
 
 Run: `npm --prefix standalone run test --workspace @airdb-standalone/app -- fileDialogs.test.ts`
 
 Expected: FAIL because `standalone/app/src/bridge/fileDialogs.ts` does not exist.
 
-- [ ] **Step 3: Implement frontend bridge**
+- [ ] **Step 4: Implement frontend bridge**
 
 Create `standalone/app/src/bridge/fileDialogs.ts`:
 
@@ -583,7 +595,7 @@ function stringValue(value: unknown): string | undefined {
 }
 ```
 
-- [ ] **Step 4: Hook file dialog requests into `App.tsx`**
+- [ ] **Step 5: Hook file dialog requests into `App.tsx`**
 
 Update imports in `standalone/app/src/App.tsx`:
 
@@ -622,7 +634,7 @@ listenToHostMessages((message: HostMessage) => {
 })
 ```
 
-- [ ] **Step 5: Run app bridge tests**
+- [ ] **Step 6: Run app bridge tests**
 
 Run:
 
@@ -633,12 +645,12 @@ npm --prefix standalone run test --workspace @airdb-standalone/app -- App.test.t
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit frontend bridge task**
+- [ ] **Step 7: Commit frontend bridge task**
 
 Run:
 
 ```powershell
-git add standalone/app/src/App.tsx standalone/app/src/bridge/fileDialogs.ts standalone/app/src/bridge/fileDialogs.test.ts
+git add standalone/app/src/App.tsx standalone/app/src/bridge/fileDialogs.ts standalone/app/src/bridge/fileDialogs.test.ts standalone/app/package.json standalone/package-lock.json
 git commit -m "feat: bridge file dialog requests"
 ```
 
@@ -647,8 +659,6 @@ git commit -m "feat: bridge file dialog requests"
 ### Task 3: Tauri Dialog Plugin Configuration
 
 **Files:**
-- Modify: `standalone/app/package.json`
-- Modify: `standalone/package-lock.json`
 - Modify: `standalone/app/src-tauri/Cargo.toml`
 - Modify: `standalone/app/src-tauri/Cargo.lock`
 - Modify: `standalone/app/src-tauri/src/main.rs`
@@ -658,17 +668,7 @@ git commit -m "feat: bridge file dialog requests"
 - Consumes: Tauri v2 plugin initialization and capability permissions.
 - Produces: Installed JS/Rust dialog plugin and main-window open/save permissions.
 
-- [ ] **Step 1: Install JavaScript dialog plugin**
-
-Run:
-
-```powershell
-npm --prefix standalone install @tauri-apps/plugin-dialog --workspace @airdb-standalone/app
-```
-
-Expected: `standalone/app/package.json` includes `@tauri-apps/plugin-dialog`, and `standalone/package-lock.json` includes package metadata for the plugin.
-
-- [ ] **Step 2: Add Rust dialog plugin dependency**
+- [ ] **Step 1: Add Rust dialog plugin dependency**
 
 Run:
 
@@ -682,7 +682,7 @@ Expected: `standalone/app/src-tauri/Cargo.toml` includes:
 tauri-plugin-dialog = "2"
 ```
 
-- [ ] **Step 3: Register the Rust plugin**
+- [ ] **Step 2: Register the Rust plugin**
 
 Add dialog plugin registration in `standalone/app/src-tauri/src/main.rs` immediately after the shell plugin:
 
@@ -691,7 +691,7 @@ Add dialog plugin registration in `standalone/app/src-tauri/src/main.rs` immedia
         .plugin(tauri_plugin_dialog::init())
 ```
 
-- [ ] **Step 4: Add Tauri capabilities**
+- [ ] **Step 3: Add Tauri capabilities**
 
 Create `standalone/app/src-tauri/capabilities/default.json`:
 
@@ -710,7 +710,7 @@ Create `standalone/app/src-tauri/capabilities/default.json`:
 }
 ```
 
-- [ ] **Step 5: Verify Rust configuration**
+- [ ] **Step 4: Verify Rust configuration**
 
 Run:
 
@@ -720,7 +720,7 @@ cargo check --manifest-path standalone/app/src-tauri/Cargo.toml
 
 Expected: PASS. If capability schema or command permission errors mention a missing permission, use `systematic-debugging` before changing permissions.
 
-- [ ] **Step 6: Verify TypeScript dependency wiring**
+- [ ] **Step 5: Verify TypeScript dependency wiring**
 
 Run:
 
@@ -731,12 +731,12 @@ npm --prefix standalone run typecheck --workspace @airdb-standalone/app
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit Tauri plugin configuration**
+- [ ] **Step 6: Commit Tauri plugin configuration**
 
 Run:
 
 ```powershell
-git add standalone/app/package.json standalone/package-lock.json standalone/app/src-tauri/Cargo.toml standalone/app/src-tauri/Cargo.lock standalone/app/src-tauri/src/main.rs standalone/app/src-tauri/capabilities/default.json
+git add standalone/app/src-tauri/Cargo.toml standalone/app/src-tauri/Cargo.lock standalone/app/src-tauri/src/main.rs standalone/app/src-tauri/capabilities/default.json
 git commit -m "feat: enable tauri file dialogs"
 ```
 
