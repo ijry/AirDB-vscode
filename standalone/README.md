@@ -77,6 +77,16 @@ npm run smoke:external-actions-ipc
 
 The smoke test starts the Node extension host with a temporary fixture extension, exercises `vscode.open`, `env.openExternal`, and text clipboard APIs, sends simulated frontend responses, and verifies the command receives the expected values.
 
+## Workbench Feedback IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:workbench-feedback-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension, exercises output channels, status bar items, and virtual terminals, then verifies the status bar command uses the generic command bridge.
+
 ## Notification IPC Smoke Test
 
 ```bash

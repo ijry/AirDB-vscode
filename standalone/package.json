@@ -21,6 +21,7 @@
     "smoke:file-dialog-ipc": "node scripts/smoke-file-dialog-ipc.mjs",
     "smoke:text-document-ipc": "node scripts/smoke-text-document-ipc.mjs",
     "smoke:external-actions-ipc": "node scripts/smoke-external-actions-ipc.mjs",
+    "smoke:workbench-feedback-ipc": "node scripts/smoke-workbench-feedback-ipc.mjs",
     "smoke:notification-ipc": "node scripts/smoke-notification-ipc.mjs",
     "smoke:webview-ipc": "node scripts/smoke-webview-ipc.mjs",
     "package": "node scripts/build-standalone.mjs"
