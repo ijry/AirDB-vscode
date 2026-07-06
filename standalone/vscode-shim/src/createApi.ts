@@ -22,7 +22,7 @@ export function createVscodeApi(options: VscodeApiOptions) {
   return {
     ...types,
     commands,
-    window: createWindowApi({ extensionId: options.extensionId, bridge: options.bridge }),
+    window: createWindowApi({ extensionId: options.extensionId, extensionPath: options.extensionPath, bridge: options.bridge }),
     workspace: createWorkspaceApi(options.extensionId, options.bridge),
     languages: createLanguagesApi(),
     env: createEnvApi(options.extensionId, options.bridge),

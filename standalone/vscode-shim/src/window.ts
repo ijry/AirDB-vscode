@@ -1,14 +1,29 @@
 import { createRequest, type HostMessageGroup, type HostRequest } from "@airdb-standalone/protocol";
+import { Buffer } from "node:buffer";
 import { Disposable, EventEmitter, Uri } from "./types.js";
+
+export interface WebviewPanelBridgeRegistration {
+  panelId: string;
+  viewType: string;
+  title: string;
+  extensionId?: string;
+  extensionPath: string;
+  localResourceRoots?: string[];
+}
 
 export interface HostBridge {
   request<TResponse>(request: HostRequest): Promise<TResponse>;
   notify(group: HostMessageGroup, payload: unknown, extensionId?: string): void;
   registerTreeView?(viewId: string, treeOptions: unknown, extensionId?: string): void;
+  registerWebviewPanel?(panel: WebviewPanelBridgeRegistration, receiveMessage: (message: unknown) => void): void;
+  setWebviewHtml?(panelId: string, html: string, extensionId?: string): void;
+  postWebviewMessage?(panelId: string, message: unknown, extensionId?: string): Promise<boolean>;
+  disposeWebviewPanel?(panelId: string, extensionId?: string): void;
 }
 
 export interface WindowApiOptions {
   extensionId: string;
+  extensionPath: string;
   bridge: HostBridge;
 }
 
@@ -56,36 +71,62 @@ export function createWindowApi(options: WindowApiOptions) {
       const panelId = `${options.extensionId}:${viewType}:${Date.now()}`;
       const htmlState = { value: "" };
       const messageEmitter = new EventEmitter<unknown>();
+      const disposeEmitter = new EventEmitter<unknown>();
+      const registration: WebviewPanelBridgeRegistration = {
+        panelId,
+        viewType,
+        title,
+        extensionId: options.extensionId,
+        extensionPath: options.extensionPath
+      };
 
-      options.bridge.notify("webview.create", { panelId, viewType, title, showOptions, panelOptions }, options.extensionId);
+      if (options.bridge.registerWebviewPanel) {
+        options.bridge.registerWebviewPanel(registration, (message) => messageEmitter.fire(message));
+      } else {
+        options.bridge.notify("webview.create", { panelId, viewType, title, showOptions, panelOptions }, options.extensionId);
+      }
 
       return {
         viewType,
         title,
+        visible: true,
         webview: {
           get html() {
             return htmlState.value;
           },
           set html(value: string) {
             htmlState.value = value;
-            options.bridge.notify("webview.setHtml", { panelId, html: value }, options.extensionId);
+            if (options.bridge.setWebviewHtml) {
+              options.bridge.setWebviewHtml(panelId, value, options.extensionId);
+            } else {
+              options.bridge.notify("webview.setHtml", { panelId, html: value }, options.extensionId);
+            }
           },
           postMessage(message: unknown) {
+            if (options.bridge.postWebviewMessage) {
+              return options.bridge.postWebviewMessage(panelId, message, options.extensionId);
+            }
             return options.bridge.request<boolean>(
               createRequest("webview.postMessage", { panelId, message }, options.extensionId)
             );
           },
           onDidReceiveMessage: messageEmitter.event,
           asWebviewUri(uri: Uri) {
-            return Uri.parse(`standalone-resource://${encodeURIComponent(uri.fsPath)}`);
+            return Uri.parse(
+              `standalone-resource://${encodeURIComponent(panelId)}/${Buffer.from(uri.fsPath, "utf8").toString("base64url")}`
+            );
           }
         },
+        onDidDispose: disposeEmitter.event,
         reveal() {
           options.bridge.notify("webview.create", { panelId, viewType, title, reveal: true }, options.extensionId);
         },
         dispose() {
+          options.bridge.disposeWebviewPanel?.(panelId, options.extensionId);
           options.bridge.notify("webview.setHtml", { panelId, html: "" }, options.extensionId);
+          disposeEmitter.fire(undefined);
           messageEmitter.dispose();
+          disposeEmitter.dispose();
         }
       };
     },

@@ -66,6 +66,66 @@ describe("window IPC API", () => {
     ]);
   });
 
+  it("registers webview panels locally when the bridge supports webview registration", async () => {
+    const registered: Array<{
+      panel: { panelId: string; viewType: string; title: string; extensionPath: string };
+      receiver: (message: unknown) => void;
+    }> = [];
+    const htmlUpdates: Array<{ panelId: string; html: string }> = [];
+    const posted: Array<{ panelId: string; message: unknown }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined,
+        registerWebviewPanel: (panel, receiveMessage) => registered.push({ panel, receiver: receiveMessage }),
+        setWebviewHtml: (panelId, html) => htmlUpdates.push({ panelId, html }),
+        postWebviewMessage: async (panelId, message) => {
+          posted.push({ panelId, message });
+          return true;
+        }
+      }
+    });
+
+    const panel = api.window.createWebviewPanel("connect", "Connection", {}, {});
+    const received: unknown[] = [];
+    panel.webview.onDidReceiveMessage((message: unknown) => received.push(message));
+    panel.webview.html = "<main>Connect</main>";
+    await panel.webview.postMessage({ type: "syncState" });
+    registered[0].receiver({ type: "init" });
+
+    expect(registered[0].panel).toMatchObject({
+      panelId: expect.stringContaining("fixture.one:connect:"),
+      viewType: "connect",
+      title: "Connection",
+      extensionPath: "C:/fixture"
+    });
+    expect(htmlUpdates).toEqual([{ panelId: registered[0].panel.panelId, html: "<main>Connect</main>" }]);
+    expect(posted).toEqual([{ panelId: registered[0].panel.panelId, message: { type: "syncState" } }]);
+    expect(received).toEqual([{ type: "init" }]);
+  });
+
+  it("creates standalone-resource URIs that include the webview panel id", () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined,
+        registerWebviewPanel: () => undefined,
+        setWebviewHtml: () => undefined,
+        postWebviewMessage: async () => true
+      }
+    });
+
+    const panel = api.window.createWebviewPanel("connect", "Connection", {}, {});
+    const uri = panel.webview.asWebviewUri(api.Uri.file("C:/fixture/out/webview/app.js")).toString();
+
+    expect(uri).toContain("standalone-resource://");
+    expect(uri).toContain("fixture.one%3Aconnect%3A");
+  });
+
   it("creates disposable text editor decoration types", () => {
     const api = createVscodeApi({
       extensionId: "fixture.one",

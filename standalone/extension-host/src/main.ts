@@ -9,6 +9,7 @@ import { ExtensionLoader } from "./extensionLoader.js";
 import { Logger } from "./logger.js";
 import { startStdinMessageLoop } from "./stdinMessageLoop.js";
 import { TreeViewRegistry } from "./treeViewRegistry.js";
+import { WebviewRegistry } from "./webviewRegistry.js";
 
 const standaloneRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const extensionsDir = process.env.AIRDB_STANDALONE_EXTENSIONS ?? path.join(standaloneRoot, "extensions");
@@ -17,10 +18,11 @@ const logger = new Logger();
 const commandRegistry = new CommandRegistry();
 const contributionRegistry = new ContributionRegistry();
 const treeViewRegistry = new TreeViewRegistry();
+const webviewRegistry = new WebviewRegistry();
 
 const bridge = new IpcBridge((line) => {
   process.stdout.write(`${line}\n`);
-}, treeViewRegistry);
+}, treeViewRegistry, webviewRegistry);
 
 const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry });
 startStdinMessageLoop(process.stdin, controller, (line) => {
