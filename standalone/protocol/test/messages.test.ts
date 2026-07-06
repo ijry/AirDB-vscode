@@ -3,8 +3,12 @@ import {
   createRequest,
   createResponse,
   type HostTreeNodeDto,
+  type HostWebviewPanelDto,
   type ResolveTreeChildrenPayload,
-  type ResolveTreeChildrenResponse
+  type ResolveTreeChildrenResponse,
+  type WebviewPostMessagePayload,
+  type WebviewReceiveMessagePayload,
+  type WebviewSetHtmlPayload
 } from "../src";
 
 describe("tree protocol DTOs", () => {
@@ -34,5 +38,37 @@ describe("tree protocol DTOs", () => {
       collapsibleState: 1,
       command: { command: "airdb.connection.open" }
     });
+  });
+
+  it("supports typed webview create, html, and message payloads", () => {
+    const panel: HostWebviewPanelDto = {
+      panelId: "fixture.one:connect:1",
+      viewType: "connect",
+      title: "Connection",
+      extensionId: "fixture.one",
+      html: "<html></html>",
+      localResourceRoots: ["C:/fixture/out/webview"]
+    };
+
+    const htmlPayload: WebviewSetHtmlPayload = {
+      panelId: panel.panelId,
+      html: "<script src=\"standalone-resource://fixture.one%3Aconnect%3A1/main.js\"></script>"
+    };
+
+    const postPayload: WebviewPostMessagePayload = {
+      panelId: panel.panelId,
+      message: { type: "syncState", content: { lang: "en" } }
+    };
+
+    const receiveRequest = createRequest<WebviewReceiveMessagePayload>("webview.receiveMessage", {
+      panelId: panel.panelId,
+      message: { type: "init" }
+    });
+    const response = createResponse(receiveRequest, { delivered: true });
+
+    expect(panel).toMatchObject({ panelId: "fixture.one:connect:1", viewType: "connect" });
+    expect(htmlPayload.html).toContain("standalone-resource://");
+    expect(postPayload.message).toMatchObject({ type: "syncState" });
+    expect(response).toMatchObject({ kind: "response", ok: true, payload: { delivered: true } });
   });
 });

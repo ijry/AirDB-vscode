@@ -97,6 +97,36 @@ export interface ExecuteCommandPayload {
   arguments?: unknown[];
 }
 
+export interface HostWebviewPanelDto {
+  panelId: string;
+  viewType: string;
+  title: string;
+  extensionId?: string;
+  html: string;
+  localResourceRoots?: string[];
+}
+
+export interface WebviewSetHtmlPayload {
+  panelId: string;
+  html: string;
+}
+
+export interface WebviewPostMessagePayload {
+  panelId: string;
+  message: unknown;
+}
+
+export interface WebviewReceiveMessagePayload {
+  panelId: string;
+  message: unknown;
+}
+
+export interface WebviewResourceResponse {
+  uri: string;
+  mimeType: string;
+  base64: string;
+}
+
 let nextRequestId = 1;
 
 export function createRequest<TPayload>(
