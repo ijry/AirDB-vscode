@@ -37,6 +37,16 @@ npm run smoke:tree-ipc
 
 The smoke test starts the Node extension host, waits for AirDB activation, sends a `tree.resolveChildren` request for `activitybar.airdb.sql`, and verifies a successful response.
 
+## Dialog IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:dialog-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension, executes a command that awaits `showInputBox` and `showQuickPick`, sends simulated frontend responses, and verifies the command returns both dialog values.
+
 ## Webview IPC Smoke Test
 
 ```bash
