@@ -130,4 +130,106 @@ describe("mapHostMessageToActions", () => {
       containers: [{ id: "activitybar.airdb.sql", title: "AirDB" }]
     });
   });
+
+  it("maps workbench output notifications to output actions", () => {
+    expect(
+      mapHostMessageToActions(createNotification("workbench.output.create", {
+        id: "output-1",
+        name: "Feedback",
+        extensionId: "fixture.one",
+        visible: false
+      }, "fixture.one"))
+    ).toEqual([
+      {
+        type: "output/create",
+        output: {
+          id: "output-1",
+          name: "Feedback",
+          extensionId: "fixture.one",
+          visible: false,
+          content: ""
+        }
+      }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("workbench.output.append", {
+        id: "output-1",
+        name: "Feedback",
+        value: "select 1\n"
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "output/append", id: "output-1", name: "Feedback", value: "select 1\n" }
+    ]);
+  });
+
+  it("maps legacy log notifications into output actions", () => {
+    expect(
+      mapHostMessageToActions(createNotification("log", {
+        channel: "Legacy",
+        line: "connected"
+      }, "fixture.one"))
+    ).toEqual([
+      {
+        type: "output/create",
+        output: {
+          id: "legacy-log:Legacy",
+          name: "Legacy",
+          extensionId: "fixture.one",
+          visible: false,
+          content: ""
+        }
+      },
+      { type: "output/append", id: "legacy-log:Legacy", name: "Legacy", value: "connected\n" }
+    ]);
+  });
+
+  it("maps status bar notifications to status bar actions", () => {
+    expect(
+      mapHostMessageToActions(createNotification("workbench.statusBar.show", {
+        id: "status-1",
+        alignment: 1,
+        priority: 100,
+        text: "Ready",
+        tooltip: "Connected",
+        command: { command: "fixture.refresh", arguments: ["primary"] },
+        visible: true
+      }, "fixture.one"))
+    ).toEqual([
+      {
+        type: "statusBar/upsert",
+        item: {
+          id: "status-1",
+          alignment: 1,
+          priority: 100,
+          text: "Ready",
+          tooltip: "Connected",
+          command: { command: "fixture.refresh", arguments: ["primary"] },
+          visible: true
+        }
+      }
+    ]);
+  });
+
+  it("maps workbench terminal notifications to terminal actions", () => {
+    expect(
+      mapHostMessageToActions(createNotification("workbench.terminal.create", {
+        id: "terminal-1",
+        name: "Feedback Terminal",
+        visible: false
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "terminal/open", terminal: { id: "terminal-1", name: "Feedback Terminal", lines: [], visible: false } }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("workbench.terminal.append", {
+        id: "terminal-1",
+        name: "Feedback Terminal",
+        value: "select 1"
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "terminal/append", id: "terminal-1", name: "Feedback Terminal", line: "select 1" }
+    ]);
+  });
 });

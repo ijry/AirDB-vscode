@@ -91,20 +91,145 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
         }
       }];
     }
+    case "workbench.output.create":
+      return isStringRecord(message.payload) ? outputActions(message.payload, message.extensionId) : [];
+    case "workbench.output.append":
+      if (typeof payload.id !== "string" || typeof payload.name !== "string" || typeof payload.value !== "string") {
+        return [];
+      }
+      return [{
+        type: "output/append",
+        id: payload.id,
+        name: payload.name,
+        value: payload.value
+      }];
+    case "workbench.output.clear":
+      return typeof payload.id === "string" ? [{ type: "output/clear", id: payload.id }] : [];
+    case "workbench.output.show":
+      return typeof payload.id === "string" ? [
+        ...outputActions(payload, message.extensionId),
+        { type: "output/show", id: payload.id }
+      ] : [];
+    case "workbench.output.hide":
+      return typeof payload.id === "string" ? [{ type: "output/hide", id: payload.id }] : [];
+    case "workbench.output.dispose":
+      return typeof payload.id === "string" ? [{ type: "output/dispose", id: payload.id }] : [];
+    case "workbench.statusBar.update":
+    case "workbench.statusBar.show":
+      return statusBarItemAction(payload);
+    case "workbench.statusBar.hide":
+      return typeof payload.id === "string" ? [{ type: "statusBar/hide", id: payload.id }] : [];
+    case "workbench.statusBar.dispose":
+      return typeof payload.id === "string" ? [{ type: "statusBar/dispose", id: payload.id }] : [];
+    case "workbench.terminal.create":
+      if (typeof payload.id !== "string" || typeof payload.name !== "string") {
+        return [];
+      }
+      return [{
+        type: "terminal/open",
+        terminal: {
+          id: payload.id,
+          name: payload.name,
+          lines: [],
+          visible: payload.visible === true
+        }
+      }];
+    case "workbench.terminal.append":
+      if (typeof payload.id !== "string" || typeof payload.value !== "string") {
+        return [];
+      }
+      return [{
+        type: "terminal/append",
+        id: payload.id,
+        name: typeof payload.name === "string" ? payload.name : undefined,
+        line: payload.value
+      }];
+    case "workbench.terminal.show":
+      return typeof payload.id === "string" ? [{ type: "terminal/show", id: payload.id }] : [];
+    case "workbench.terminal.hide":
+      return typeof payload.id === "string" ? [{ type: "terminal/hide", id: payload.id }] : [];
+    case "workbench.terminal.dispose":
+      return typeof payload.id === "string" ? [{ type: "terminal/dispose", id: payload.id }] : [];
+    case "log": {
+      const channel = typeof payload.channel === "string" ? payload.channel : "Log";
+      const id = `legacy-log:${channel}`;
+      const value = typeof payload.line === "string"
+        ? `${payload.line}\n`
+        : typeof payload.value === "string"
+          ? payload.value
+          : "";
+      return [
+        {
+          type: "output/create",
+          output: { id, name: channel, extensionId: message.extensionId, visible: false, content: "" }
+        },
+        ...(value ? [{ type: "output/append" as const, id, name: channel, value }] : []),
+        ...(payload.show === true ? [{ type: "output/show" as const, id }] : [])
+      ];
+    }
     case "terminal.create":
       return [{
         type: "terminal/open",
         terminal: {
           id: String(payload.name),
           name: String(payload.name),
-          lines: []
+          lines: [],
+          visible: true
         }
       }];
     case "terminal.sendText":
-      return [{ type: "terminal/append", id: String(payload.name), line: String(payload.text ?? "") }];
+      return [{
+        type: "terminal/append",
+        id: String(payload.name),
+        name: String(payload.name),
+        line: String(payload.text ?? "")
+      }];
     default:
       return [];
   }
+}
+
+function isStringRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object");
+}
+
+function outputActions(payload: Record<string, unknown>, extensionId?: string): WorkbenchAction[] {
+  if (typeof payload.id !== "string" || typeof payload.name !== "string") {
+    return [];
+  }
+  return [{
+    type: "output/create",
+    output: {
+      id: payload.id,
+      name: payload.name,
+      extensionId,
+      visible: payload.visible === true,
+      content: ""
+    }
+  }];
+}
+
+function statusBarItemAction(payload: Record<string, unknown>): WorkbenchAction[] {
+  if (typeof payload.id !== "string" || typeof payload.text !== "string") {
+    return [];
+  }
+  const alignment = payload.alignment === 2 ? 2 : 1;
+  return [{
+    type: "statusBar/upsert",
+    item: {
+      id: payload.id,
+      alignment,
+      ...(typeof payload.priority === "number" ? { priority: payload.priority } : {}),
+      text: payload.text,
+      ...(typeof payload.tooltip === "string" ? { tooltip: payload.tooltip } : {}),
+      ...(isCommandDto(payload.command) ? { command: payload.command } : {}),
+      visible: payload.visible === true
+    }
+  }];
+}
+
+function isCommandDto(value: unknown): value is { command: string; title?: string; arguments?: unknown[] } {
+  return Boolean(value && typeof value === "object" && typeof (value as { command?: unknown }).command === "string");
 }
 
 function normalizeNotificationItems(items: unknown): NotificationItem[] {

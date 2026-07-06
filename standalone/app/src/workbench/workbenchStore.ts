@@ -3,6 +3,8 @@ import type {
   DialogState,
   EditorTab,
   NotificationState,
+  OutputChannelState,
+  StatusBarItemState,
   TerminalState,
   TreeViewState,
   WebviewState,
@@ -25,8 +27,20 @@ export type WorkbenchAction =
   | { type: "dialog/close"; requestId: string }
   | { type: "notification/show"; notification: NotificationState }
   | { type: "notification/close"; id: string }
+  | { type: "output/create"; output: OutputChannelState }
+  | { type: "output/append"; id: string; name: string; value: string; extensionId?: string }
+  | { type: "output/clear"; id: string }
+  | { type: "output/show"; id: string }
+  | { type: "output/hide"; id: string }
+  | { type: "output/dispose"; id: string }
+  | { type: "statusBar/upsert"; item: Omit<StatusBarItemState, "order"> & { order?: number } }
+  | { type: "statusBar/hide"; id: string }
+  | { type: "statusBar/dispose"; id: string }
   | { type: "terminal/open"; terminal: TerminalState }
-  | { type: "terminal/append"; id: string; line: string };
+  | { type: "terminal/append"; id: string; name?: string; line: string }
+  | { type: "terminal/show"; id: string }
+  | { type: "terminal/hide"; id: string }
+  | { type: "terminal/dispose"; id: string };
 
 export const initialWorkbenchState: WorkbenchState = {
   containers: [],
@@ -35,6 +49,8 @@ export const initialWorkbenchState: WorkbenchState = {
   webviews: [],
   dialogs: [],
   notifications: [],
+  outputs: [],
+  statusBarItems: [],
   terminals: []
 };
 
@@ -115,18 +131,158 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return { ...state, notifications: [...state.notifications, action.notification] };
     case "notification/close":
       return { ...state, notifications: state.notifications.filter((notification) => notification.id !== action.id) };
+    case "output/create":
+      return {
+        ...state,
+        outputs: upsertOutput(state.outputs, action.output)
+      };
+    case "output/append":
+      return {
+        ...state,
+        outputs: appendOutput(state.outputs, action)
+      };
+    case "output/clear":
+      return {
+        ...state,
+        outputs: state.outputs.map((output) => output.id === action.id ? { ...output, content: "" } : output)
+      };
+    case "output/show":
+      return {
+        ...state,
+        activeOutputId: action.id,
+        outputs: state.outputs.map((output) => output.id === action.id ? { ...output, visible: true } : output)
+      };
+    case "output/hide":
+      return {
+        ...state,
+        activeOutputId: state.activeOutputId === action.id ? undefined : state.activeOutputId,
+        outputs: state.outputs.map((output) => output.id === action.id ? { ...output, visible: false } : output)
+      };
+    case "output/dispose":
+      return {
+        ...state,
+        activeOutputId: state.activeOutputId === action.id ? undefined : state.activeOutputId,
+        outputs: state.outputs.filter((output) => output.id !== action.id)
+      };
+    case "statusBar/upsert":
+      return {
+        ...state,
+        statusBarItems: upsertStatusBarItem(state.statusBarItems, action.item)
+      };
+    case "statusBar/hide":
+      return {
+        ...state,
+        statusBarItems: state.statusBarItems.map((item) =>
+          item.id === action.id ? { ...item, visible: false } : item
+        )
+      };
+    case "statusBar/dispose":
+      return {
+        ...state,
+        statusBarItems: state.statusBarItems.filter((item) => item.id !== action.id)
+      };
     case "terminal/open":
-      return { ...state, terminals: [...state.terminals.filter((terminal) => terminal.id !== action.terminal.id), action.terminal] };
+      return {
+        ...state,
+        terminals: [...state.terminals.filter((terminal) => terminal.id !== action.terminal.id), action.terminal]
+      };
     case "terminal/append":
       return {
         ...state,
+        terminals: appendTerminal(state.terminals, action.id, action.name, action.line)
+      };
+    case "terminal/show":
+      return {
+        ...state,
         terminals: state.terminals.map((terminal) =>
-          terminal.id === action.id ? { ...terminal, lines: [...terminal.lines, action.line] } : terminal
+          terminal.id === action.id ? { ...terminal, visible: true } : terminal
         )
+      };
+    case "terminal/hide":
+      return {
+        ...state,
+        terminals: state.terminals.map((terminal) =>
+          terminal.id === action.id ? { ...terminal, visible: false } : terminal
+        )
+      };
+    case "terminal/dispose":
+      return {
+        ...state,
+        terminals: state.terminals.filter((terminal) => terminal.id !== action.id)
       };
     default:
       return state;
   }
+}
+
+function upsertOutput(outputs: OutputChannelState[], output: OutputChannelState): OutputChannelState[] {
+  const existing = outputs.find((item) => item.id === output.id);
+  if (!existing) {
+    return [...outputs, output];
+  }
+  return outputs.map((item) =>
+    item.id === output.id ? { ...existing, ...output, content: existing.content } : item
+  );
+}
+
+function appendOutput(
+  outputs: OutputChannelState[],
+  action: { id: string; name: string; value: string; extensionId?: string }
+): OutputChannelState[] {
+  const existing = outputs.find((item) => item.id === action.id);
+  if (!existing) {
+    return [
+      ...outputs,
+      {
+        id: action.id,
+        name: action.name,
+        extensionId: action.extensionId,
+        visible: false,
+        content: action.value
+      }
+    ];
+  }
+  return outputs.map((item) =>
+    item.id === action.id ? { ...item, content: `${item.content}${action.value}` } : item
+  );
+}
+
+function upsertStatusBarItem(
+  items: StatusBarItemState[],
+  item: Omit<StatusBarItemState, "order"> & { order?: number }
+): StatusBarItemState[] {
+  const existing = items.find((candidate) => candidate.id === item.id);
+  const next: StatusBarItemState = {
+    ...item,
+    order: existing?.order ?? item.order ?? items.length + 1
+  };
+  if (!existing) {
+    return [...items, next];
+  }
+  return items.map((candidate) => candidate.id === item.id ? next : candidate);
+}
+
+function appendTerminal(
+  terminals: TerminalState[],
+  id: string,
+  name: string | undefined,
+  line: string
+): TerminalState[] {
+  const existing = terminals.find((terminal) => terminal.id === id);
+  if (!existing) {
+    return [
+      ...terminals,
+      {
+        id,
+        name: name ?? id,
+        lines: [line],
+        visible: true
+      }
+    ];
+  }
+  return terminals.map((terminal) =>
+    terminal.id === id ? { ...terminal, lines: [...terminal.lines, line] } : terminal
+  );
 }
 
 function updateTreeChildren(

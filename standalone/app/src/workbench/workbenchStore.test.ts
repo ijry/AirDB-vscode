@@ -136,4 +136,82 @@ describe("workbenchReducer", () => {
 
     expect(closed.notifications).toEqual([]);
   });
+
+  it("stores output channels with append, clear, hide, and dispose behavior", () => {
+    const created = workbenchReducer(initialWorkbenchState, {
+      type: "output/create",
+      output: { id: "output-1", name: "Feedback", extensionId: "fixture.one", visible: false, content: "" }
+    });
+    const appended = workbenchReducer(created, {
+      type: "output/append",
+      id: "output-1",
+      name: "Feedback",
+      value: "select 1\n"
+    });
+    const shown = workbenchReducer(appended, { type: "output/show", id: "output-1" });
+    const cleared = workbenchReducer(shown, { type: "output/clear", id: "output-1" });
+    const hidden = workbenchReducer(cleared, { type: "output/hide", id: "output-1" });
+    const disposed = workbenchReducer(hidden, { type: "output/dispose", id: "output-1" });
+
+    expect(appended.outputs[0].content).toBe("select 1\n");
+    expect(shown.activeOutputId).toBe("output-1");
+    expect(cleared.outputs[0].content).toBe("");
+    expect(hidden.activeOutputId).toBeUndefined();
+    expect(disposed.outputs).toEqual([]);
+  });
+
+  it("upserts status bar items and removes disposed items", () => {
+    const shown = workbenchReducer(initialWorkbenchState, {
+      type: "statusBar/upsert",
+      item: {
+        id: "status-1",
+        alignment: 1,
+        priority: 100,
+        text: "Ready",
+        tooltip: "Connected",
+        command: { command: "fixture.refresh", arguments: ["primary"] },
+        visible: true,
+        order: 1
+      }
+    });
+    const updated = workbenchReducer(shown, {
+      type: "statusBar/upsert",
+      item: {
+        id: "status-1",
+        alignment: 1,
+        priority: 100,
+        text: "Busy",
+        visible: true,
+        order: 99
+      }
+    });
+    const hidden = workbenchReducer(updated, { type: "statusBar/hide", id: "status-1" });
+    const disposed = workbenchReducer(hidden, { type: "statusBar/dispose", id: "status-1" });
+
+    expect(shown.statusBarItems[0]).toMatchObject({ text: "Ready", order: 1 });
+    expect(updated.statusBarItems[0]).toMatchObject({ text: "Busy", order: 1 });
+    expect(hidden.statusBarItems[0].visible).toBe(false);
+    expect(disposed.statusBarItems).toEqual([]);
+  });
+
+  it("handles virtual terminal show, hide, append, and dispose", () => {
+    const created = workbenchReducer(initialWorkbenchState, {
+      type: "terminal/open",
+      terminal: { id: "terminal-1", name: "Feedback Terminal", lines: [], visible: false }
+    });
+    const appended = workbenchReducer(created, {
+      type: "terminal/append",
+      id: "terminal-1",
+      name: "Feedback Terminal",
+      line: "select 1"
+    });
+    const shown = workbenchReducer(appended, { type: "terminal/show", id: "terminal-1" });
+    const hidden = workbenchReducer(shown, { type: "terminal/hide", id: "terminal-1" });
+    const disposed = workbenchReducer(hidden, { type: "terminal/dispose", id: "terminal-1" });
+
+    expect(appended.terminals[0].lines).toEqual(["select 1"]);
+    expect(shown.terminals[0].visible).toBe(true);
+    expect(hidden.terminals[0].visible).toBe(false);
+    expect(disposed.terminals).toEqual([]);
+  });
 });

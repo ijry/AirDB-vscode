@@ -1,3 +1,5 @@
+import type { HostCommandDto } from "@airdb-standalone/protocol";
+
 export interface ActivityContainer {
   id: string;
   title: string;
@@ -67,10 +69,30 @@ export interface NotificationState {
   items?: NotificationItem[];
 }
 
+export interface OutputChannelState {
+  id: string;
+  name: string;
+  extensionId?: string;
+  visible: boolean;
+  content: string;
+}
+
+export interface StatusBarItemState {
+  id: string;
+  alignment: 1 | 2;
+  priority?: number;
+  text: string;
+  tooltip?: string;
+  command?: HostCommandDto;
+  visible: boolean;
+  order: number;
+}
+
 export interface TerminalState {
   id: string;
   name: string;
   lines: string[];
+  visible: boolean;
 }
 
 export interface WorkbenchState {
@@ -82,5 +104,8 @@ export interface WorkbenchState {
   webviews: WebviewState[];
   dialogs: DialogState[];
   notifications: NotificationState[];
+  outputs: OutputChannelState[];
+  activeOutputId?: string;
+  statusBarItems: StatusBarItemState[];
   terminals: TerminalState[];
 }
