@@ -24,6 +24,7 @@ export type WorkbenchAction =
   | { type: "dialog/open"; dialog: DialogState }
   | { type: "dialog/close"; requestId: string }
   | { type: "notification/show"; notification: NotificationState }
+  | { type: "notification/close"; id: string }
   | { type: "terminal/open"; terminal: TerminalState }
   | { type: "terminal/append"; id: string; line: string };
 
@@ -112,6 +113,8 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       };
     case "notification/show":
       return { ...state, notifications: [...state.notifications, action.notification] };
+    case "notification/close":
+      return { ...state, notifications: state.notifications.filter((notification) => notification.id !== action.id) };
     case "terminal/open":
       return { ...state, terminals: [...state.terminals.filter((terminal) => terminal.id !== action.terminal.id), action.terminal] };
     case "terminal/append":

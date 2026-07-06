@@ -45,6 +45,38 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps notification requests to actionable notification state", () => {
+    expect(
+      mapHostMessageToActions({
+        kind: "request",
+        id: "notification-1",
+        group: "notification.show",
+        extensionId: "fixture.one",
+        payload: {
+          level: "warning",
+          message: "Delete record?",
+          items: ["Yes", { title: "No", value: "no" }]
+        }
+      })
+    ).toEqual([
+      {
+        type: "notification/show",
+        notification: {
+          id: "notification-1",
+          requestId: "notification-1",
+          group: "notification.show",
+          extensionId: "fixture.one",
+          level: "warning",
+          message: "Delete record?",
+          items: [
+            { label: "Yes", value: "Yes" },
+            { label: "No", value: { title: "No", value: "no" } }
+          ]
+        }
+      }
+    ]);
+  });
+
   it("maps extension contributions to activity containers", () => {
     const actions = mapHostMessageToActions(
       createNotification("extension.registerContributions", {

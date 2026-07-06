@@ -52,10 +52,19 @@ export interface DialogState {
   payload: unknown;
 }
 
+export interface NotificationItem {
+  label: string;
+  value: unknown;
+}
+
 export interface NotificationState {
   id: string;
+  requestId?: string;
+  group?: "notification.show";
+  extensionId?: string;
   level: "info" | "warning" | "error";
   message: string;
+  items?: NotificationItem[];
 }
 
 export interface TerminalState {

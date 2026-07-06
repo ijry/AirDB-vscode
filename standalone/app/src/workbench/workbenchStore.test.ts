@@ -118,4 +118,22 @@ describe("workbenchReducer", () => {
     const closed = workbenchReducer(opened, { type: "dialog/close", requestId: "dialog-1" });
     expect(closed.dialogs).toEqual([]);
   });
+
+  it("closes notifications by id", () => {
+    const shown = workbenchReducer(initialWorkbenchState, {
+      type: "notification/show",
+      notification: {
+        id: "notification-1",
+        level: "info",
+        message: "Saved"
+      }
+    });
+
+    const closed = workbenchReducer(shown, {
+      type: "notification/close",
+      id: "notification-1"
+    });
+
+    expect(closed.notifications).toEqual([]);
+  });
 });

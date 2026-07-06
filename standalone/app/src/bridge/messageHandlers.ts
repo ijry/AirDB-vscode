@@ -1,5 +1,6 @@
 import type { HostMessage } from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
+import type { NotificationItem } from "../workbench/types";
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
   if (message.kind !== "notification" && message.kind !== "request") {
@@ -59,15 +60,21 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       return [{ type: "webview/message", id: String(payload.panelId), message: payload.message }];
     case "webview.setHtml":
       return [{ type: "webview/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
-    case "notification.show":
+    case "notification.show": {
+      const isRequest = message.kind === "request";
       return [{
         type: "notification/show",
         notification: {
-          id: `${Date.now()}`,
+          id: isRequest ? message.id : `${Date.now()}`,
+          requestId: isRequest ? message.id : undefined,
+          group: isRequest ? "notification.show" : undefined,
+          extensionId: message.extensionId,
           level: (payload.level as "info" | "warning" | "error") ?? "info",
-          message: String(payload.message ?? "")
+          message: String(payload.message ?? ""),
+          items: isRequest ? normalizeNotificationItems(payload.items) : undefined
         }
       }];
+    }
     case "terminal.create":
       return [{
         type: "terminal/open",
@@ -82,4 +89,24 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
     default:
       return [];
   }
+}
+
+function normalizeNotificationItems(items: unknown): NotificationItem[] {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+  return items.map((item) => ({
+    label: getNotificationItemLabel(item),
+    value: item
+  }));
+}
+
+function getNotificationItemLabel(item: unknown): string {
+  if (typeof item === "string") {
+    return item;
+  }
+  if (item && typeof item === "object" && typeof (item as { title?: unknown }).title === "string") {
+    return (item as { title: string }).title;
+  }
+  return String(item);
 }
