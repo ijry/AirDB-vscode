@@ -23,6 +23,12 @@
   "bundle": {
     "active": true,
     "targets": "all",
-    "externalBin": []
+    "externalBin": [],
+    "resources": {
+      "../../extension-host/dist": "extension-host/dist",
+      "../../vscode-shim/dist": "vscode-shim/dist",
+      "../../protocol/dist": "protocol/dist",
+      "../../extensions": "extensions"
+    }
   }
 }

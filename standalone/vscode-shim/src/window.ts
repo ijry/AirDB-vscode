@@ -77,6 +77,44 @@ function materializeSaveDialogResponse(value: HostFileUriDto | null | undefined)
   return fileDtoToUri(value);
 }
 
+function normalizeCancellationResponse<T>(value: T | null | undefined): T | undefined {
+  return value == null ? undefined : value;
+}
+
+function normalizeLocalResourceRoots(panelOptions: unknown, extensionPath: string): string[] {
+  const roots = panelOptions && typeof panelOptions === "object"
+    ? (panelOptions as { localResourceRoots?: unknown }).localResourceRoots
+    : undefined;
+  if (!Array.isArray(roots)) {
+    return [normalizeFsPath(extensionPath)];
+  }
+  return roots.flatMap((root) => {
+    const normalized = normalizeLocalResourceRoot(root);
+    return normalized ? [normalized] : [];
+  });
+}
+
+function normalizeLocalResourceRoot(root: unknown): string | undefined {
+  if (root instanceof Uri) {
+    return root.scheme === "file" ? normalizeFsPath(root.fsPath) : undefined;
+  }
+  if (root && typeof root === "object") {
+    const value = root as { scheme?: unknown; fsPath?: unknown };
+    if ((value.scheme === undefined || value.scheme === "file") && typeof value.fsPath === "string") {
+      return normalizeFsPath(value.fsPath);
+    }
+  }
+  return typeof root === "string" ? normalizeFsPath(root) : undefined;
+}
+
+function normalizeFsPath(value: string): string {
+  const normalized = value.replace(/\\/g, "/");
+  if (normalized === "/" || /^[A-Za-z]:\/?$/.test(normalized)) {
+    return normalized;
+  }
+  return normalized.replace(/\/+$/, "");
+}
+
 function materializeTextDocument(value: unknown): StandaloneTextDocument {
   if (isStandaloneTextDocument(value)) {
     return value;
@@ -152,18 +190,24 @@ export function createWindowApi(options: WindowApiOptions) {
       const htmlState = { value: "" };
       const messageEmitter = new EventEmitter<unknown>();
       const disposeEmitter = new EventEmitter<unknown>();
+      const localResourceRoots = normalizeLocalResourceRoots(panelOptions, options.extensionPath);
       const registration: WebviewPanelBridgeRegistration = {
         panelId,
         viewType,
         title,
         extensionId: options.extensionId,
-        extensionPath: options.extensionPath
+        extensionPath: options.extensionPath,
+        localResourceRoots
       };
 
       if (options.bridge.registerWebviewPanel) {
         options.bridge.registerWebviewPanel(registration, (message) => messageEmitter.fire(message));
       } else {
-        options.bridge.notify("webview.create", { panelId, viewType, title, showOptions, panelOptions }, options.extensionId);
+        options.bridge.notify(
+          "webview.create",
+          { panelId, viewType, title, showOptions, panelOptions, extensionPath: options.extensionPath, localResourceRoots },
+          options.extensionId
+        );
       }
 
       return {
@@ -199,7 +243,11 @@ export function createWindowApi(options: WindowApiOptions) {
         },
         onDidDispose: disposeEmitter.event,
         reveal() {
-          options.bridge.notify("webview.create", { panelId, viewType, title, reveal: true }, options.extensionId);
+          options.bridge.notify(
+            "webview.create",
+            { panelId, viewType, title, reveal: true, extensionPath: options.extensionPath, localResourceRoots },
+            options.extensionId
+          );
         },
         dispose() {
           options.bridge.disposeWebviewPanel?.(panelId, options.extensionId);
@@ -211,34 +259,39 @@ export function createWindowApi(options: WindowApiOptions) {
       };
     },
 
-    showInformationMessage(message: string, ...items: string[]) {
-      return options.bridge.request<string | undefined>(
+    async showInformationMessage(message: string, ...items: string[]) {
+      const response = await options.bridge.request<string | null | undefined>(
         createRequest("notification.show", { level: "info", message, items }, options.extensionId)
       );
+      return normalizeCancellationResponse(response);
     },
 
-    showWarningMessage(message: string, ...items: string[]) {
-      return options.bridge.request<string | undefined>(
+    async showWarningMessage(message: string, ...items: string[]) {
+      const response = await options.bridge.request<string | null | undefined>(
         createRequest("notification.show", { level: "warning", message, items }, options.extensionId)
       );
+      return normalizeCancellationResponse(response);
     },
 
-    showErrorMessage(message: string, ...items: string[]) {
-      return options.bridge.request<string | undefined>(
+    async showErrorMessage(message: string, ...items: string[]) {
+      const response = await options.bridge.request<string | null | undefined>(
         createRequest("notification.show", { level: "error", message, items }, options.extensionId)
       );
+      return normalizeCancellationResponse(response);
     },
 
-    showInputBox(inputOptions: unknown) {
-      return options.bridge.request<string | undefined>(
+    async showInputBox(inputOptions: unknown) {
+      const response = await options.bridge.request<string | null | undefined>(
         createRequest("dialog.showInputBox", inputOptions, options.extensionId)
       );
+      return normalizeCancellationResponse(response);
     },
 
-    showQuickPick(items: unknown, quickPickOptions?: unknown) {
-      return options.bridge.request<unknown>(
+    async showQuickPick(items: unknown, quickPickOptions?: unknown) {
+      const response = await options.bridge.request<unknown>(
         createRequest("dialog.showQuickPick", { items, quickPickOptions }, options.extensionId)
       );
+      return normalizeCancellationResponse(response);
     },
 
     async showOpenDialog(openDialogOptions: unknown) {

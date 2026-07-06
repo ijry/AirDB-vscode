@@ -54,7 +54,8 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
           title: String(payload.title ?? payload.viewType ?? "Webview"),
           viewType: typeof payload.viewType === "string" ? payload.viewType : undefined,
           extensionId: message.extensionId,
-          html: typeof payload.html === "string" ? payload.html : ""
+          html: typeof payload.html === "string" ? payload.html : "",
+          localResourceRoots: normalizeStringArray(payload.localResourceRoots)
         }
       }];
     case "webview.postMessage":
@@ -191,6 +192,10 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
 
 function isStringRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object");
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 }
 
 function outputActions(payload: Record<string, unknown>, extensionId?: string): WorkbenchAction[] {

@@ -3,6 +3,31 @@ import { createNotification } from "@airdb-standalone/protocol";
 import { mapHostMessageToActions } from "./messageHandlers";
 
 describe("mapHostMessageToActions", () => {
+  it("maps webview create notifications with local resource roots", () => {
+    const actions = mapHostMessageToActions(
+      createNotification("webview.create", {
+        panelId: "panel-1",
+        viewType: "connect",
+        title: "Connection",
+        localResourceRoots: ["C:/fixture/out/webview"]
+      }, "fixture.one")
+    );
+
+    expect(actions).toEqual([
+      {
+        type: "webview/open",
+        webview: {
+          id: "panel-1",
+          title: "Connection",
+          viewType: "connect",
+          extensionId: "fixture.one",
+          html: "",
+          localResourceRoots: ["C:/fixture/out/webview"]
+        }
+      }
+    ]);
+  });
+
   it("maps webview HTML notifications to workbench actions", () => {
     const actions = mapHostMessageToActions(
       createNotification("webview.setHtml", { panelId: "panel-1", html: "<h1>Result</h1>" }, "fixture.one")

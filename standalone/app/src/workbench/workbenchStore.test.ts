@@ -68,7 +68,7 @@ describe("workbenchReducer", () => {
   it("stores messages destined for a webview panel", () => {
     const opened = workbenchReducer(initialWorkbenchState, {
       type: "webview/open",
-      webview: { id: "panel-1", title: "Panel", html: "" }
+      webview: { id: "panel-1", title: "Panel", html: "", localResourceRoots: [] }
     });
 
     const state = workbenchReducer(opened, {
@@ -83,7 +83,7 @@ describe("workbenchReducer", () => {
   it("stores webview render errors", () => {
     const opened = workbenchReducer(initialWorkbenchState, {
       type: "webview/open",
-      webview: { id: "panel-1", title: "Panel", html: "" }
+      webview: { id: "panel-1", title: "Panel", html: "", localResourceRoots: [] }
     });
 
     const state = workbenchReducer(opened, {

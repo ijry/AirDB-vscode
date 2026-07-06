@@ -17,7 +17,7 @@ function WebviewFrame({ panel }: { panel: WebviewState }) {
   useEffect(() => {
     let disposed = false;
     setError(undefined);
-    prepareWebviewHtml(panel.id, panel.html, readWebviewResource)
+    prepareWebviewHtml(panel.id, panel.html, (uri) => readWebviewResource(panel.id, panel.localResourceRoots, uri))
       .then((html) => {
         if (!disposed) {
           setPreparedHtml(html);
@@ -31,7 +31,7 @@ function WebviewFrame({ panel }: { panel: WebviewState }) {
     return () => {
       disposed = true;
     };
-  }, [panel.html, panel.id]);
+  }, [panel.html, panel.id, panel.localResourceRoots]);
 
   useEffect(() => {
     const messages = panel.messages ?? [];
@@ -65,7 +65,7 @@ function WebviewFrame({ panel }: { panel: WebviewState }) {
       {error ? <div className="empty-state">{error}</div> : null}
       <iframe
         ref={iframeRef}
-        sandbox="allow-forms allow-scripts allow-same-origin"
+        sandbox="allow-forms allow-scripts"
         srcDoc={preparedHtml}
         title={panel.title}
       />

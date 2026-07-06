@@ -22,4 +22,18 @@ describe("core VS Code types", () => {
     expect(uri.fsPath).toContain("C:/data/query.sql");
     expect(range.end.character).toBe(6);
   });
+
+  it("preserves POSIX absolute file paths", () => {
+    const uri = Uri.file("/tmp/Air DB/query file.sql");
+
+    expect(uri.path).toBe("/tmp/Air DB/query file.sql");
+    expect(uri.fsPath).toBe("/tmp/Air DB/query file.sql");
+  });
+
+  it("keeps Windows drive file paths without the URI leading slash", () => {
+    const uri = Uri.file("C:\\Program Files\\AirDB\\query file.sql");
+
+    expect(uri.path).toBe("/C:/Program Files/AirDB/query file.sql");
+    expect(uri.fsPath).toBe("C:/Program Files/AirDB/query file.sql");
+  });
 });

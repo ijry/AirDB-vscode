@@ -1,4 +1,5 @@
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -19,4 +20,18 @@ function run(args, cwd = standaloneRoot) {
 run(["run", "build"]);
 run(["run", "build:airdb"]);
 run(["run", "prepare:extensions"]);
+
+for (const resourcePath of [
+  "extension-host/dist/main.js",
+  "vscode-shim/dist/index.js",
+  "protocol/dist/index.js",
+  "extensions"
+]) {
+  const absolutePath = path.join(standaloneRoot, resourcePath);
+  if (!fs.existsSync(absolutePath)) {
+    console.error(`Standalone package resource is missing: ${absolutePath}`);
+    process.exit(1);
+  }
+}
+
 run(["run", "tauri", "--workspace", "@airdb-standalone/app", "--", "build"]);

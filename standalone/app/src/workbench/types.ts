@@ -38,6 +38,7 @@ export interface WebviewState {
   id: string;
   title: string;
   html: string;
+  localResourceRoots: string[];
   viewType?: string;
   extensionId?: string;
   loading?: boolean;

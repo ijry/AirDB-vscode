@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { HostMessageGroup, HostRequest } from "@airdb-standalone/protocol";
-import { createVscodeApi } from "../src";
+import { createVscodeApi, type WebviewPanelBridgeRegistration } from "../src";
 
 describe("window IPC API", () => {
   it("sends notification requests through the bridge", async () => {
@@ -24,6 +24,35 @@ describe("window IPC API", () => {
       extensionId: "fixture.one",
       payload: { level: "info", message: "Saved", items: ["OK"] }
     });
+  });
+
+  it("maps cancelled notification responses to undefined", async () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => null as never,
+        notify: () => undefined
+      }
+    });
+
+    await expect(api.window.showInformationMessage("Saved", "OK")).resolves.toBeUndefined();
+    await expect(api.window.showWarningMessage("Careful", "OK")).resolves.toBeUndefined();
+    await expect(api.window.showErrorMessage("Failed", "OK")).resolves.toBeUndefined();
+  });
+
+  it("maps cancelled input and quick pick responses to undefined", async () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => null as never,
+        notify: () => undefined
+      }
+    });
+
+    await expect(api.window.showInputBox({ placeHolder: "Name" })).resolves.toBeUndefined();
+    await expect(api.window.showQuickPick(["one", "two"])).resolves.toBeUndefined();
   });
 
   it("registers tree views locally when the bridge supports provider registration", () => {
@@ -68,7 +97,7 @@ describe("window IPC API", () => {
 
   it("registers webview panels locally when the bridge supports webview registration", async () => {
     const registered: Array<{
-      panel: { panelId: string; viewType: string; title: string; extensionPath: string };
+      panel: WebviewPanelBridgeRegistration;
       receiver: (message: unknown) => void;
     }> = [];
     const htmlUpdates: Array<{ panelId: string; html: string }> = [];
@@ -99,11 +128,61 @@ describe("window IPC API", () => {
       panelId: expect.stringContaining("fixture.one:connect:"),
       viewType: "connect",
       title: "Connection",
-      extensionPath: "C:/fixture"
+      extensionPath: "C:/fixture",
+      localResourceRoots: ["C:/fixture"]
     });
     expect(htmlUpdates).toEqual([{ panelId: registered[0].panel.panelId, html: "<main>Connect</main>" }]);
     expect(posted).toEqual([{ panelId: registered[0].panel.panelId, message: { type: "syncState" } }]);
     expect(received).toEqual([{ type: "init" }]);
+  });
+
+  it("normalizes webview localResourceRoots into bridge registrations", () => {
+    const registered: WebviewPanelBridgeRegistration[] = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined,
+        registerWebviewPanel: (panel) => registered.push(panel)
+      }
+    });
+
+    api.window.createWebviewPanel("connect", "Connection", {}, {
+      localResourceRoots: [
+        api.Uri.file("C:\\fixture\\out\\webview"),
+        api.Uri.file("/tmp/fixture assets")
+      ]
+    });
+
+    expect(registered[0].localResourceRoots).toEqual([
+      "C:/fixture/out/webview",
+      "/tmp/fixture assets"
+    ]);
+  });
+
+  it("includes webview localResourceRoots in fallback create notifications", () => {
+    const notifications: Array<{ group: HostMessageGroup; payload: Record<string, unknown> }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: (group, payload) => notifications.push({ group, payload: payload as Record<string, unknown> })
+      }
+    });
+
+    api.window.createWebviewPanel("connect", "Connection", {}, {
+      localResourceRoots: [api.Uri.file("C:/fixture/media")]
+    });
+
+    expect(notifications[0]).toMatchObject({
+      group: "webview.create",
+      payload: {
+        panelId: expect.stringContaining("fixture.one:connect:"),
+        localResourceRoots: ["C:/fixture/media"]
+      }
+    });
   });
 
   it("creates standalone-resource URIs that include the webview panel id", () => {

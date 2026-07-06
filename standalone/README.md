@@ -23,7 +23,16 @@ npm run prepare:extensions
 npm run tauri --workspace @airdb-standalone/app -- dev
 ```
 
-The development runner expects `node` to be available on `PATH`. Installer packaging can replace this with a Tauri sidecar binary wrapper once the extension-host runtime is stable.
+The development runner expects `node` to be available on `PATH`.
+
+## Packaging
+
+```bash
+cd standalone
+npm run package
+```
+
+Packaged builds include the compiled extension host, VS Code shim, protocol package, and prepared extensions as Tauri resources. They still shell out to `node`, so the installed application currently requires a Node.js runtime available on `PATH`. A future sidecar build can remove this runtime requirement by bundling a platform-specific Node binary.
 
 ## Tree IPC Smoke Test
 

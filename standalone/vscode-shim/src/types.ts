@@ -67,7 +67,8 @@ export class Uri {
     if (this.scheme !== "file") {
       return this.path;
     }
-    return decodeURIComponent(this.path.replace(/^\//, ""));
+    const filePath = /^\/[A-Za-z]:(?:\/|$)/.test(this.path) ? this.path.slice(1) : this.path;
+    return decodeUriPath(filePath);
   }
 
   toString(): string {
@@ -77,6 +78,14 @@ export class Uri {
     const query = this.query ? `?${this.query}` : "";
     const fragment = this.fragment ? `#${this.fragment}` : "";
     return `${this.scheme}://${this.authority}${this.path}${query}${fragment}`;
+  }
+}
+
+function decodeUriPath(path: string): string {
+  try {
+    return decodeURIComponent(path);
+  } catch {
+    return path;
   }
 }
 

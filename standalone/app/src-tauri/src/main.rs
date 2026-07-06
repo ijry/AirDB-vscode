@@ -1,6 +1,6 @@
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::Serialize;
-use std::io::{BufRead, BufReader, Write};
+use std::io::{BufRead, BufReader, ErrorKind, Write};
 use std::path::{Path, PathBuf};
 use std::process::{ChildStdin, Command, Stdio};
 use std::sync::{Arc, Mutex};
@@ -55,32 +55,36 @@ fn send_extension_host_message(
 #[tauri::command]
 fn read_webview_resource(
     app: tauri::AppHandle,
+    panel_id: String,
+    local_resource_roots: Vec<String>,
     uri: String,
 ) -> Result<WebviewResourceResponse, String> {
     let standalone_root = resolve_standalone_root(&app)?;
-    read_webview_resource_from_root(&standalone_root, &uri)
+    read_webview_resource_from_root(&standalone_root, &panel_id, &local_resource_roots, &uri)
 }
 
 fn read_webview_resource_from_root(
     standalone_root: &Path,
+    panel_id: &str,
+    local_resource_roots: &[String],
     uri: &str,
 ) -> Result<WebviewResourceResponse, String> {
-    let path = parse_standalone_resource_uri(uri)?;
-    let canonical_path = std::fs::canonicalize(&path).map_err(|error| {
+    let resource = parse_standalone_resource_uri(uri)?;
+    if resource.panel_id != panel_id {
+        return Err("Webview resource panel id does not match requesting panel id".to_string());
+    }
+
+    let canonical_path = std::fs::canonicalize(&resource.path).map_err(|error| {
         format!(
             "Failed to read webview resource {}: {error}",
-            path.display()
+            resource.path.display()
         )
     })?;
-    let extensions_root = std::fs::canonicalize(standalone_root.join("extensions"))
-        .map_err(|error| format!("Failed to resolve extensions root: {error}"))?;
+    let allowed_roots = canonicalize_local_resource_roots(standalone_root, local_resource_roots)?;
 
-    if !canonical_path.starts_with(&extensions_root) {
-        return Err("Webview resource is outside allowed roots".to_string());
-    }
-    if !canonical_path
-        .components()
-        .any(|component| component.as_os_str() == std::ffi::OsStr::new("webview"))
+    if !allowed_roots
+        .iter()
+        .any(|root| canonical_path.starts_with(root))
     {
         return Err("Webview resource is outside allowed roots".to_string());
     }
@@ -98,13 +102,22 @@ fn read_webview_resource_from_root(
     })
 }
 
-fn parse_standalone_resource_uri(uri: &str) -> Result<PathBuf, String> {
+struct ParsedWebviewResource {
+    panel_id: String,
+    path: PathBuf,
+}
+
+fn parse_standalone_resource_uri(uri: &str) -> Result<ParsedWebviewResource, String> {
     let rest = uri
         .strip_prefix("standalone-resource://")
         .ok_or_else(|| "Invalid webview resource scheme".to_string())?;
-    let (_, resource_path) = rest
+    let (encoded_panel_id, resource_path) = rest
         .split_once('/')
         .ok_or_else(|| "Invalid webview resource URI".to_string())?;
+    let panel_id = percent_decode(encoded_panel_id)?;
+    if panel_id.is_empty() {
+        return Err("Invalid webview resource panel id".to_string());
+    }
     let mut segments = resource_path.split('/');
     let encoded_path = segments
         .next()
@@ -126,7 +139,69 @@ fn parse_standalone_resource_uri(uri: &str) -> Result<PathBuf, String> {
         path.push(segment);
     }
 
-    Ok(path)
+    Ok(ParsedWebviewResource { panel_id, path })
+}
+
+fn canonicalize_local_resource_roots(
+    standalone_root: &Path,
+    local_resource_roots: &[String],
+) -> Result<Vec<PathBuf>, String> {
+    if local_resource_roots.is_empty() {
+        return Err("Webview local resource roots are not configured".to_string());
+    }
+
+    local_resource_roots
+        .iter()
+        .map(|root| {
+            let path = PathBuf::from(root);
+            let path = if path.is_absolute() {
+                path
+            } else {
+                standalone_root.join(path)
+            };
+            std::fs::canonicalize(&path).map_err(|error| {
+                format!(
+                    "Failed to resolve webview local resource root {}: {error}",
+                    path.display()
+                )
+            })
+        })
+        .collect()
+}
+
+fn percent_decode(value: &str) -> Result<String, String> {
+    let bytes = value.as_bytes();
+    let mut output = Vec::with_capacity(bytes.len());
+    let mut index = 0;
+
+    while index < bytes.len() {
+        if bytes[index] == b'%' {
+            if index + 2 >= bytes.len() {
+                return Err("Invalid webview resource panel id encoding".to_string());
+            }
+            let high = hex_value(bytes[index + 1])
+                .ok_or_else(|| "Invalid webview resource panel id encoding".to_string())?;
+            let low = hex_value(bytes[index + 2])
+                .ok_or_else(|| "Invalid webview resource panel id encoding".to_string())?;
+            output.push((high << 4) | low);
+            index += 3;
+        } else {
+            output.push(bytes[index]);
+            index += 1;
+        }
+    }
+
+    String::from_utf8(output)
+        .map_err(|error| format!("Invalid webview resource panel id UTF-8: {error}"))
+}
+
+fn hex_value(value: u8) -> Option<u8> {
+    match value {
+        b'0'..=b'9' => Some(value - b'0'),
+        b'a'..=b'f' => Some(value - b'a' + 10),
+        b'A'..=b'F' => Some(value - b'A' + 10),
+        _ => None,
+    }
 }
 
 fn mime_type_for_path(path: &Path) -> &'static str {
@@ -190,10 +265,7 @@ fn resolve_standalone_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
         }
     }
 
-    Err(
-        "Unable to resolve standalone root. Run from standalone/app or set AIRDB_STANDALONE_ROOT."
-            .to_string(),
-    )
+    Err("Unable to resolve standalone resources. Expected extension-host/dist/main.js in AIRDB_STANDALONE_ROOT, the source standalone directory, or the packaged Tauri resource directory. Run the standalone package build after preparing resources, or set AIRDB_STANDALONE_ROOT.".to_string())
 }
 
 fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Result<(), String> {
@@ -216,10 +288,17 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
         .stderr(Stdio::piped())
         .spawn()
         .map_err(|error| {
-            format!(
-                "Failed to start extension host at {}: {error}",
-                host_entry.display()
-            )
+            if error.kind() == ErrorKind::NotFound {
+                format!(
+                    "Failed to start extension host because `node` was not found on PATH. Packaged AirDB Standalone currently requires a Node.js runtime on PATH. Extension host entry: {}",
+                    host_entry.display()
+                )
+            } else {
+                format!(
+                    "Failed to start extension host at {}: {error}",
+                    host_entry.display()
+                )
+            }
         })?;
 
     let child_stdin = child
@@ -315,28 +394,38 @@ mod tests {
         root
     }
 
-    fn resource_uri(path: &std::path::Path) -> String {
+    fn resource_uri(panel_id: &str, path: &std::path::Path) -> String {
         let encoded_path = URL_SAFE_NO_PAD.encode(path.to_string_lossy().as_bytes());
-        format!("standalone-resource://panel-1/{encoded_path}")
+        format!("standalone-resource://{panel_id}/{encoded_path}")
     }
 
-    fn resource_uri_with_suffix(path: &std::path::Path, suffix: &str) -> String {
+    fn resource_uri_with_suffix(panel_id: &str, path: &std::path::Path, suffix: &str) -> String {
         let encoded_path = URL_SAFE_NO_PAD.encode(path.to_string_lossy().as_bytes());
-        format!("standalone-resource://panel-1/{encoded_path}/{suffix}")
+        format!("standalone-resource://{panel_id}/{encoded_path}/{suffix}")
+    }
+
+    fn root_string(path: &std::path::Path) -> String {
+        path.to_string_lossy().into_owned()
     }
 
     #[test]
     fn reads_allowed_webview_resource() {
         let root = temp_root();
-        let file = root
+        let webview_root = root
             .join("extensions")
             .join("airdb")
             .join("out")
-            .join("webview")
-            .join("app.js");
+            .join("webview");
+        let file = webview_root.join("app.js");
         fs::write(&file, "console.log('ok');").unwrap();
 
-        let response = read_webview_resource_from_root(&root, &resource_uri(&file)).unwrap();
+        let response = read_webview_resource_from_root(
+            &root,
+            "panel-1",
+            &[root_string(&webview_root)],
+            &resource_uri("panel-1", &file),
+        )
+        .unwrap();
 
         assert_eq!(response.mime_type, "text/javascript");
         assert_eq!(response.base64, "Y29uc29sZS5sb2coJ29rJyk7");
@@ -349,9 +438,67 @@ mod tests {
         let file = root.join("secret.txt");
         fs::write(&file, "secret").unwrap();
 
-        let error = read_webview_resource_from_root(&root, &resource_uri(&file)).unwrap_err();
+        let error = read_webview_resource_from_root(
+            &root,
+            "panel-1",
+            &[root_string(&root.join("extensions").join("airdb"))],
+            &resource_uri("panel-1", &file),
+        )
+        .unwrap_err();
 
         assert!(error.contains("outside allowed roots"));
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn rejects_resource_outside_local_resource_roots() {
+        let root = temp_root();
+        let allowed_root = root
+            .join("extensions")
+            .join("airdb")
+            .join("out")
+            .join("webview");
+        let other_root = root
+            .join("extensions")
+            .join("other")
+            .join("out")
+            .join("webview");
+        fs::create_dir_all(&other_root).unwrap();
+        let file = other_root.join("app.js");
+        fs::write(&file, "console.log('other');").unwrap();
+
+        let error = read_webview_resource_from_root(
+            &root,
+            "panel-1",
+            &[root_string(&allowed_root)],
+            &resource_uri("panel-1", &file),
+        )
+        .unwrap_err();
+
+        assert!(error.contains("outside allowed roots"));
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn rejects_resource_for_different_panel_id() {
+        let root = temp_root();
+        let webview_root = root
+            .join("extensions")
+            .join("airdb")
+            .join("out")
+            .join("webview");
+        let file = webview_root.join("app.js");
+        fs::write(&file, "console.log('ok');").unwrap();
+
+        let error = read_webview_resource_from_root(
+            &root,
+            "panel-1",
+            &[root_string(&webview_root)],
+            &resource_uri("panel-2", &file),
+        )
+        .unwrap_err();
+
+        assert!(error.contains("panel id"));
         fs::remove_dir_all(root).unwrap();
     }
 
@@ -368,7 +515,9 @@ mod tests {
 
         let response = read_webview_resource_from_root(
             &root,
-            &resource_uri_with_suffix(&webview_root, "app.js"),
+            "panel-1",
+            &[root_string(&webview_root)],
+            &resource_uri_with_suffix("panel-1", &webview_root, "app.js"),
         )
         .unwrap();
 
@@ -388,7 +537,9 @@ mod tests {
 
         let error = read_webview_resource_from_root(
             &root,
-            &resource_uri_with_suffix(&webview_root, "../secret.txt"),
+            "panel-1",
+            &[root_string(&webview_root)],
+            &resource_uri_with_suffix("panel-1", &webview_root, "../secret.txt"),
         )
         .unwrap_err();
 
