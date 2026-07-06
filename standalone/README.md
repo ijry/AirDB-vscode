@@ -27,14 +27,10 @@ The development runner expects `node` to be available on `PATH`.
 
 ## Packaging
 
-```bash
-cd standalone
-npm run package
-```
-
 Packaged builds include the compiled extension host, VS Code shim, protocol package, prepared extensions, and a platform-specific Node runtime sidecar as Tauri resources. The packaging command does not download Node; provide a runtime explicitly:
 
 ```powershell
+cd standalone
 $env:AIRDB_STANDALONE_NODE_RUNTIME = (node -p "process.execPath")
 npm run package
 Remove-Item Env:\AIRDB_STANDALONE_NODE_RUNTIME

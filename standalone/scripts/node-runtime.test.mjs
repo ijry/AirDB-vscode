@@ -75,6 +75,23 @@ describe("node runtime packaging helpers", () => {
     assert.equal(resolved.sourceKind, "env");
   });
 
+  it("resolves AIRDB_STANDALONE_NODE_RUNTIME when it points to a directory containing node.exe", () => {
+    const root = tempRoot();
+    const runtimeRoot = path.join(root, "node-runtime");
+    const executable = path.join(runtimeRoot, "node.exe");
+    writeExecutable(executable);
+
+    const resolved = resolveNodeRuntimeSource({
+      standaloneRoot: root,
+      env: { AIRDB_STANDALONE_NODE_RUNTIME: runtimeRoot },
+      platform: "win32",
+      arch: "x64"
+    });
+
+    assert.equal(resolved.sourcePath, executable);
+    assert.equal(resolved.sourceKind, "env");
+  });
+
   it("resolves a staged runtime when no environment override is provided", () => {
     const root = tempRoot();
     const executable = path.join(root, "runtime", "node", "windows-x64", "node.exe");
