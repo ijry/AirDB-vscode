@@ -17,6 +17,7 @@
     "build:airdb": "node scripts/build-airdb.mjs",
     "prepare:extensions": "node scripts/prepare-extensions.mjs",
     "smoke:tree-ipc": "node scripts/smoke-tree-ipc.mjs",
+    "smoke:webview-ipc": "node scripts/smoke-webview-ipc.mjs",
     "package": "node scripts/build-standalone.mjs"
   },
   "devDependencies": {

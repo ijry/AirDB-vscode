@@ -37,6 +37,18 @@ npm run smoke:tree-ipc
 
 The smoke test starts the Node extension host, waits for AirDB activation, sends a `tree.resolveChildren` request for `activitybar.airdb.sql`, and verifies a successful response.
 
+## Webview IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run build:airdb
+npm run prepare:extensions
+npm run smoke:webview-ipc
+```
+
+The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, and verifies that a webview panel emits HTML containing standalone local resource URIs.
+
 ## Packages
 
 - `protocol`: shared IPC message types and JSON-line utilities.
