@@ -76,7 +76,8 @@ export class ExtensionLoader {
     const extensionModule = await import(moduleUrl);
     const context = createExtensionContext({
       extensionPath,
-      storageRoot: path.join(this.options.storageRoot, extensionId)
+      storageRoot: path.join(this.options.storageRoot, extensionId),
+      workspaceRoot: this.options.workspaceRoot
     });
     const exports = extensionModule.activate ? await extensionModule.activate(context) : undefined;
     return { id: extensionId, extensionPath, manifest, exports };

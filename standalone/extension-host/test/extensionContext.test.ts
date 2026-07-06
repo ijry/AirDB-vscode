@@ -14,7 +14,7 @@ describe("createExtensionContext", () => {
     const storageRoot = path.resolve("C:/fixture/storage/context-test");
     const context = createExtensionContext({ extensionPath, storageRoot });
 
-    expect(normalizePath(context.storagePath)).toBe(normalizePath(path.join(storageRoot, "workspace")));
+    expect(normalizePath(context.storagePath)).toBe(normalizePath(path.join(storageRoot, "workspace", "default")));
     expect(normalizePath(context.globalStoragePath)).toBe(normalizePath(path.join(storageRoot, "global")));
     expect(normalizePath(context.storageUri.fsPath)).toBe(normalizePath(context.storagePath));
     expect(normalizePath(context.globalStorageUri.fsPath)).toBe(normalizePath(context.globalStoragePath));
@@ -49,6 +49,33 @@ describe("createExtensionContext", () => {
 
       expect(reloadedContext.globalState.get("global.key")).toEqual({ enabled: true });
       expect(reloadedContext.workspaceState.get("workspace.key")).toEqual(["fixture"]);
+    } finally {
+      fs.rmSync(storageRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("keeps workspace state isolated by workspace root", async () => {
+    const extensionPath = path.resolve("C:/fixture/extensions/context-test");
+    const storageRoot = fs.mkdtempSync(path.join(os.tmpdir(), "airdb-context-test-"));
+
+    try {
+      const firstWorkspace = createExtensionContext({
+        extensionPath,
+        storageRoot,
+        workspaceRoot: path.join(storageRoot, "workspace-a")
+      });
+      const secondWorkspace = createExtensionContext({
+        extensionPath,
+        storageRoot,
+        workspaceRoot: path.join(storageRoot, "workspace-b")
+      });
+
+      await firstWorkspace.workspaceState.update("workspace.key", "a");
+      await secondWorkspace.workspaceState.update("workspace.key", "b");
+
+      expect(firstWorkspace.workspaceState.get("workspace.key")).toBe("a");
+      expect(secondWorkspace.workspaceState.get("workspace.key")).toBe("b");
+      expect(firstWorkspace.storagePath).not.toBe(secondWorkspace.storagePath);
     } finally {
       fs.rmSync(storageRoot, { recursive: true, force: true });
     }

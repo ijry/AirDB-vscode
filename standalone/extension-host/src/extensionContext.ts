@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import { createHash } from "node:crypto";
 import path from "node:path";
 import type { Memento } from "@airdb-standalone/vscode-shim";
 import { Uri } from "@airdb-standalone/vscode-shim";
@@ -6,6 +7,7 @@ import { Uri } from "@airdb-standalone/vscode-shim";
 export interface ExtensionContextOptions {
   extensionPath: string;
   storageRoot: string;
+  workspaceRoot?: string;
 }
 
 class PersistentMemento implements Memento {
@@ -35,7 +37,7 @@ export function createExtensionContext(options: ExtensionContextOptions) {
   const extensionPath = path.resolve(options.extensionPath);
   const storageRoot = path.resolve(options.storageRoot);
   const globalStorageUri = Uri.file(path.join(storageRoot, "global"));
-  const storageUri = Uri.file(path.join(storageRoot, "workspace"));
+  const storageUri = Uri.file(path.join(storageRoot, "workspace", workspaceStorageKey(options.workspaceRoot)));
   const logUri = Uri.file(path.join(storageRoot, "logs"));
   fs.mkdirSync(globalStorageUri.fsPath, { recursive: true });
   fs.mkdirSync(storageUri.fsPath, { recursive: true });
@@ -80,4 +82,14 @@ function hasOwn(values: Record<string, unknown>, key: string) {
 
 function isMissingFileError(error: unknown) {
   return error instanceof Error && "code" in error && error.code === "ENOENT";
+}
+
+function workspaceStorageKey(workspaceRoot: string | undefined) {
+  if (!workspaceRoot) {
+    return "default";
+  }
+  const normalizedWorkspaceRoot = process.platform === "win32"
+    ? path.resolve(workspaceRoot).toLowerCase()
+    : path.resolve(workspaceRoot);
+  return createHash("sha256").update(normalizedWorkspaceRoot).digest("hex");
 }

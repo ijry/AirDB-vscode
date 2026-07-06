@@ -79,8 +79,8 @@ describe("ExtensionLoader", () => {
     expect(result.folderIndex).toBe(0);
     expect(result.folderName).toBe("workspace-root");
     expect(normalizePath(result.folderPath)).toBe(normalizePath(path.resolve(workspaceRoot)));
-    expect(normalizePath(result.contextStoragePath)).toBe(
-      normalizePath(path.join(storageRoot, "fixture.hello-extension", "workspace"))
+    expect(normalizePath(result.contextStoragePath)).toMatch(
+      new RegExp(`${normalizePath(path.join(storageRoot, "fixture.hello-extension", "workspace")).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/[a-f0-9]{64}$`)
     );
     expect(normalizePath(result.contextGlobalStoragePath)).toBe(
       normalizePath(path.join(storageRoot, "fixture.hello-extension", "global"))
