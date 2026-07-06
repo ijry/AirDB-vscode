@@ -102,15 +102,31 @@ fn parse_standalone_resource_uri(uri: &str) -> Result<PathBuf, String> {
     let rest = uri
         .strip_prefix("standalone-resource://")
         .ok_or_else(|| "Invalid webview resource scheme".to_string())?;
-    let (_, encoded_path) = rest
+    let (_, resource_path) = rest
         .split_once('/')
+        .ok_or_else(|| "Invalid webview resource URI".to_string())?;
+    let mut segments = resource_path.split('/');
+    let encoded_path = segments
+        .next()
         .ok_or_else(|| "Invalid webview resource URI".to_string())?;
     let bytes = URL_SAFE_NO_PAD
         .decode(encoded_path)
         .map_err(|error| format!("Invalid webview resource path encoding: {error}"))?;
     let path = String::from_utf8(bytes)
         .map_err(|error| format!("Invalid webview resource path UTF-8: {error}"))?;
-    Ok(PathBuf::from(path))
+    let mut path = PathBuf::from(path);
+
+    for segment in segments {
+        if segment.is_empty() {
+            continue;
+        }
+        if segment == "." || segment == ".." || segment.contains('\\') {
+            return Err("Invalid webview resource suffix".to_string());
+        }
+        path.push(segment);
+    }
+
+    Ok(path)
 }
 
 fn mime_type_for_path(path: &Path) -> &'static str {
@@ -301,6 +317,11 @@ mod tests {
         format!("standalone-resource://panel-1/{encoded_path}")
     }
 
+    fn resource_uri_with_suffix(path: &std::path::Path, suffix: &str) -> String {
+        let encoded_path = URL_SAFE_NO_PAD.encode(path.to_string_lossy().as_bytes());
+        format!("standalone-resource://panel-1/{encoded_path}/{suffix}")
+    }
+
     #[test]
     fn reads_allowed_webview_resource() {
         let root = temp_root();
@@ -328,6 +349,47 @@ mod tests {
         let error = read_webview_resource_from_root(&root, &resource_uri(&file)).unwrap_err();
 
         assert!(error.contains("outside allowed roots"));
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn reads_allowed_webview_resource_with_uri_suffix() {
+        let root = temp_root();
+        let webview_root = root
+            .join("extensions")
+            .join("airdb")
+            .join("out")
+            .join("webview");
+        let file = webview_root.join("app.js");
+        fs::write(&file, "console.log('ok');").unwrap();
+
+        let response = read_webview_resource_from_root(
+            &root,
+            &resource_uri_with_suffix(&webview_root, "app.js"),
+        )
+        .unwrap();
+
+        assert_eq!(response.mime_type, "text/javascript");
+        assert_eq!(response.base64, "Y29uc29sZS5sb2coJ29rJyk7");
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn rejects_traversal_in_uri_suffix() {
+        let root = temp_root();
+        let webview_root = root
+            .join("extensions")
+            .join("airdb")
+            .join("out")
+            .join("webview");
+
+        let error = read_webview_resource_from_root(
+            &root,
+            &resource_uri_with_suffix(&webview_root, "../secret.txt"),
+        )
+        .unwrap_err();
+
+        assert!(error.contains("Invalid webview resource suffix"));
         fs::remove_dir_all(root).unwrap();
     }
 }
