@@ -1,6 +1,7 @@
 import type { HostMessage } from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
 import type { NotificationItem } from "../workbench/types";
+import { isHostTextDocumentDto } from "./textEditors";
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
   if (message.kind !== "notification" && message.kind !== "request") {
@@ -60,6 +61,21 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       return [{ type: "webview/message", id: String(payload.panelId), message: payload.message }];
     case "webview.setHtml":
       return [{ type: "webview/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
+    case "editor.showDocument": {
+      const document = (payload.document ?? {}) as unknown;
+      if (!isHostTextDocumentDto(document)) {
+        return [];
+      }
+      return [{
+        type: "editor/open",
+        editor: {
+          id: document.id,
+          title: document.title,
+          language: document.languageId,
+          content: document.content
+        }
+      }];
+    }
     case "notification.show": {
       const isRequest = message.kind === "request";
       return [{

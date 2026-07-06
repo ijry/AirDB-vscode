@@ -77,6 +77,39 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps editor.showDocument requests to editor tabs", () => {
+    expect(
+      mapHostMessageToActions({
+        kind: "request",
+        id: "editor-1",
+        group: "editor.showDocument",
+        extensionId: "fixture.one",
+        payload: {
+          document: {
+            id: "document-1",
+            uri: "untitled:///Untitled-1.sql",
+            fileName: "untitled:Untitled-1.sql",
+            title: "Untitled-1.sql",
+            languageId: "sql",
+            content: "select 1",
+            isUntitled: true,
+            version: 1
+          }
+        }
+      })
+    ).toEqual([
+      {
+        type: "editor/open",
+        editor: {
+          id: "document-1",
+          title: "Untitled-1.sql",
+          language: "sql",
+          content: "select 1"
+        }
+      }
+    ]);
+  });
+
   it("maps extension contributions to activity containers", () => {
     const actions = mapHostMessageToActions(
       createNotification("extension.registerContributions", {

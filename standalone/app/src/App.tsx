@@ -8,6 +8,7 @@ import {
 import { handleFileDialogRequest } from "./bridge/fileDialogs";
 import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
+import { respondToTextEditorRequest } from "./bridge/textEditors";
 import { ActivityBar } from "./workbench/ActivityBar";
 import { DialogHost } from "./workbench/DialogHost";
 import { EditorTabs } from "./workbench/EditorTabs";
@@ -129,6 +130,22 @@ export function App() {
               id: `file-dialog-error-${Date.now()}`,
               level: "error",
               message: error instanceof Error ? error.message : "Failed to handle file dialog request"
+            }
+          });
+        });
+        return;
+      }
+      if (message.kind === "request" && message.group === "editor.showDocument") {
+        for (const action of mapHostMessageToActions(message)) {
+          dispatch(action);
+        }
+        void respondToTextEditorRequest(message, sendHostResponse).catch((error: unknown) => {
+          dispatch({
+            type: "notification/show",
+            notification: {
+              id: `text-editor-error-${Date.now()}`,
+              level: "error",
+              message: error instanceof Error ? error.message : "Failed to handle text editor request"
             }
           });
         });
