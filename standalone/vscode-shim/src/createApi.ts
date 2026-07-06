@@ -1,5 +1,6 @@
-import { CommandRegistry } from "./commands.js";
+import { CommandRegistry, createCommandsApi } from "./commands.js";
 import { createEnvApi } from "./env.js";
+import { createExternalActionCommandHandler } from "./externalActions.js";
 import { createExtensionsApi, type ExtensionRecord } from "./extensions.js";
 import { createLanguagesApi } from "./languages.js";
 import { createL10nApi } from "./l10n.js";
@@ -17,7 +18,11 @@ export interface VscodeApiOptions {
 }
 
 export function createVscodeApi(options: VscodeApiOptions) {
-  const commands = options.commandRegistry ?? new CommandRegistry();
+  const commandRegistry = options.commandRegistry ?? new CommandRegistry();
+  const commands = createCommandsApi(
+    commandRegistry,
+    createExternalActionCommandHandler(options.extensionId, options.bridge)
+  );
 
   return {
     ...types,
