@@ -3,6 +3,7 @@ import { CommandRegistry } from "@airdb-standalone/vscode-shim";
 import { createRequest } from "@airdb-standalone/protocol";
 import { ExtensionHostController } from "../src/extensionHostController";
 import { TreeViewRegistry } from "../src/treeViewRegistry";
+import { WebviewRegistry } from "../src/webviewRegistry";
 
 describe("ExtensionHostController", () => {
   it("dispatches command.execute requests", async () => {
@@ -35,5 +36,34 @@ describe("ExtensionHostController", () => {
       ok: false,
       error: "Unsupported extension host request group: webview.postMessage"
     });
+  });
+
+  it("dispatches webview.receiveMessage requests", async () => {
+    const received: unknown[] = [];
+    const webviewRegistry = new WebviewRegistry();
+    webviewRegistry.registerPanel(
+      {
+        panelId: "fixture.one:connect:1",
+        viewType: "connect",
+        title: "Connection",
+        extensionPath: "C:/fixture"
+      },
+      (message) => received.push(message)
+    );
+    const controller = new ExtensionHostController({
+      commandRegistry: new CommandRegistry(),
+      treeViewRegistry: new TreeViewRegistry(),
+      webviewRegistry
+    });
+
+    const response = await controller.handleMessage(
+      createRequest("webview.receiveMessage", {
+        panelId: "fixture.one:connect:1",
+        message: { type: "init" }
+      })
+    );
+
+    expect(response).toMatchObject({ kind: "response", ok: true, payload: { delivered: true } });
+    expect(received).toEqual([{ type: "init" }]);
   });
 });

@@ -6,14 +6,17 @@ import {
   type HostRequest,
   type HostResponse,
   type InvokeTreeItemCommandPayload,
-  type ResolveTreeChildrenPayload
+  type ResolveTreeChildrenPayload,
+  type WebviewReceiveMessagePayload
 } from "@airdb-standalone/protocol";
 import type { CommandRegistry } from "@airdb-standalone/vscode-shim";
 import type { TreeViewRegistry } from "./treeViewRegistry.js";
+import type { WebviewRegistry } from "./webviewRegistry.js";
 
 export interface ExtensionHostControllerOptions {
   commandRegistry: CommandRegistry;
   treeViewRegistry: TreeViewRegistry;
+  webviewRegistry?: WebviewRegistry;
 }
 
 export class ExtensionHostController {
@@ -50,6 +53,14 @@ export class ExtensionHostController {
         const payload = request.payload as ExecuteCommandPayload;
         const result = await this.options.commandRegistry.executeCommand(payload.command, ...(payload.arguments ?? []));
         return toJsonSafe(result);
+      }
+      case "webview.receiveMessage": {
+        if (!this.options.webviewRegistry) {
+          throw new Error("Webview registry is not available");
+        }
+        const payload = request.payload as WebviewReceiveMessagePayload;
+        const delivered = await this.options.webviewRegistry.receiveMessageFromIframe(payload.panelId, payload.message);
+        return { delivered };
       }
       default:
         throw new Error(`Unsupported extension host request group: ${request.group}`);

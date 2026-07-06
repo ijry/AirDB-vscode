@@ -24,7 +24,7 @@ const bridge = new IpcBridge((line) => {
   process.stdout.write(`${line}\n`);
 }, treeViewRegistry, webviewRegistry);
 
-const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry });
+const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry, webviewRegistry });
 startStdinMessageLoop(process.stdin, controller, (line) => {
   process.stdout.write(`${line}\n`);
 });
