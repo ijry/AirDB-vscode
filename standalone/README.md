@@ -97,6 +97,16 @@ npm run smoke:workspace-fs-ipc
 
 The smoke test starts the Node extension host with a temporary fixture extension, exercises `vscode.workspace.fs` against `context.globalStorageUri`, and verifies read, write, stat, readDirectory, createDirectory, and recursive delete behavior.
 
+## Workspace Metadata IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:workspace-metadata-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension, sets `AIRDB_STANDALONE_WORKSPACE`, and verifies `workspace.workspaceFolders`, `workspace.name`, `workspace.rootPath`, `context.asAbsolutePath`, storage path aliases, and `context.logUri`.
+
 ## Notification IPC Smoke Test
 
 ```bash
