@@ -5,6 +5,7 @@ import {
   type HostResponse,
   type ResolveTreeChildrenResponse
 } from "@airdb-standalone/protocol";
+import { handleFileDialogRequest } from "./bridge/fileDialogs";
 import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
 import { ActivityBar } from "./workbench/ActivityBar";
@@ -118,6 +119,19 @@ export function App() {
 
     listenToHostMessages((message: HostMessage) => {
       if (disposed) {
+        return;
+      }
+      if (message.kind === "request" && message.group === "dialog.showOpenDialog") {
+        void handleFileDialogRequest(message, sendHostResponse).catch((error: unknown) => {
+          dispatch({
+            type: "notification/show",
+            notification: {
+              id: `file-dialog-error-${Date.now()}`,
+              level: "error",
+              message: error instanceof Error ? error.message : "Failed to handle file dialog request"
+            }
+          });
+        });
         return;
       }
       for (const action of mapHostMessageToActions(message)) {
