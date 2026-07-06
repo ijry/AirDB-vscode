@@ -1,7 +1,76 @@
-import type { WorkbenchState } from "./types";
+import { useEffect, useRef, useState } from "react";
+import { sendHostRequest } from "../bridge/hostBridge";
+import { readWebviewResource } from "../bridge/webviewResources";
+import { prepareWebviewHtml } from "./webviewRuntime";
+import type { WebviewState, WorkbenchState } from "./types";
 
 interface WebviewPanelProps {
   state: WorkbenchState;
+}
+
+function WebviewFrame({ panel }: { panel: WebviewState }) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const deliveredCount = useRef(0);
+  const [preparedHtml, setPreparedHtml] = useState("");
+  const [error, setError] = useState<string | undefined>();
+
+  useEffect(() => {
+    let disposed = false;
+    setError(undefined);
+    prepareWebviewHtml(panel.id, panel.html, readWebviewResource)
+      .then((html) => {
+        if (!disposed) {
+          setPreparedHtml(html);
+        }
+      })
+      .catch((cause: unknown) => {
+        if (!disposed) {
+          setError(cause instanceof Error ? cause.message : String(cause));
+        }
+      });
+    return () => {
+      disposed = true;
+    };
+  }, [panel.html, panel.id]);
+
+  useEffect(() => {
+    const messages = panel.messages ?? [];
+    for (const message of messages.slice(deliveredCount.current)) {
+      iframeRef.current?.contentWindow?.postMessage(message, "*");
+    }
+    deliveredCount.current = messages.length;
+  }, [panel.messages]);
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      const data = event.data as { source?: string; panelId?: string; message?: unknown };
+      if (data?.source !== "airdb-standalone-webview" || data.panelId !== panel.id) {
+        return;
+      }
+      void sendHostRequest<{ delivered: boolean }>(
+        "webview.receiveMessage",
+        { panelId: panel.id, message: data.message },
+        panel.extensionId,
+        10000
+      );
+    }
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [panel.extensionId, panel.id]);
+
+  return (
+    <article className="webview-panel">
+      <h2>{panel.title}</h2>
+      {error ? <div className="empty-state">{error}</div> : null}
+      <iframe
+        ref={iframeRef}
+        sandbox="allow-forms allow-scripts allow-same-origin"
+        srcDoc={preparedHtml}
+        title={panel.title}
+      />
+    </article>
+  );
 }
 
 export function WebviewPanel({ state }: WebviewPanelProps) {
@@ -12,10 +81,7 @@ export function WebviewPanel({ state }: WebviewPanelProps) {
   return (
     <section className="webview-stack">
       {state.webviews.map((panel) => (
-        <article className="webview-panel" key={panel.id}>
-          <h2>{panel.title}</h2>
-          <iframe sandbox="allow-forms allow-scripts allow-same-origin" srcDoc={panel.html} title={panel.title} />
-        </article>
+        <WebviewFrame key={panel.id} panel={panel} />
       ))}
     </section>
   );

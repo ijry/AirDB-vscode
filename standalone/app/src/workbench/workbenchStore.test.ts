@@ -64,4 +64,34 @@ describe("workbenchReducer", () => {
 
     expect(state.treeViews["fixture.view"].nodes[0]).toMatchObject({ loading: true });
   });
+
+  it("stores messages destined for a webview panel", () => {
+    const opened = workbenchReducer(initialWorkbenchState, {
+      type: "webview/open",
+      webview: { id: "panel-1", title: "Panel", html: "" }
+    });
+
+    const state = workbenchReducer(opened, {
+      type: "webview/message",
+      id: "panel-1",
+      message: { type: "syncState" }
+    });
+
+    expect(state.webviews[0].messages).toEqual([{ type: "syncState" }]);
+  });
+
+  it("stores webview render errors", () => {
+    const opened = workbenchReducer(initialWorkbenchState, {
+      type: "webview/open",
+      webview: { id: "panel-1", title: "Panel", html: "" }
+    });
+
+    const state = workbenchReducer(opened, {
+      type: "webview/error",
+      id: "panel-1",
+      error: "Failed to load app.js"
+    });
+
+    expect(state.webviews[0].error).toBe("Failed to load app.js");
+  });
 });

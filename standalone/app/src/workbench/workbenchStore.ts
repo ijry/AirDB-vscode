@@ -18,6 +18,8 @@ export type WorkbenchAction =
   | { type: "editor/open"; editor: EditorTab }
   | { type: "webview/open"; webview: WebviewState }
   | { type: "webview/html"; id: string; html: string }
+  | { type: "webview/message"; id: string; message: unknown }
+  | { type: "webview/error"; id: string; error: string }
   | { type: "notification/show"; notification: NotificationState }
   | { type: "terminal/open"; terminal: TerminalState }
   | { type: "terminal/append"; id: string; line: string };
@@ -79,6 +81,20 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return {
         ...state,
         webviews: state.webviews.map((panel) => panel.id === action.id ? { ...panel, html: action.html } : panel)
+      };
+    case "webview/message":
+      return {
+        ...state,
+        webviews: state.webviews.map((panel) =>
+          panel.id === action.id ? { ...panel, messages: [...(panel.messages ?? []), action.message] } : panel
+        )
+      };
+    case "webview/error":
+      return {
+        ...state,
+        webviews: state.webviews.map((panel) =>
+          panel.id === action.id ? { ...panel, loading: false, error: action.error } : panel
+        )
       };
     case "notification/show":
       return { ...state, notifications: [...state.notifications, action.notification] };

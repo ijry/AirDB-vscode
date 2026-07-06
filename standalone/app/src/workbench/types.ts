@@ -36,6 +36,11 @@ export interface WebviewState {
   id: string;
   title: string;
   html: string;
+  viewType?: string;
+  extensionId?: string;
+  loading?: boolean;
+  error?: string;
+  messages?: unknown[];
 }
 
 export interface NotificationState {

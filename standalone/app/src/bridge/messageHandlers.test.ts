@@ -13,6 +13,16 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps webview postMessage notifications to workbench actions", () => {
+    expect(
+      mapHostMessageToActions(
+        createNotification("webview.postMessage", { panelId: "panel-1", message: { type: "syncState" } }, "fixture.one")
+      )
+    ).toEqual([
+      { type: "webview/message", id: "panel-1", message: { type: "syncState" } }
+    ]);
+  });
+
   it("maps extension contributions to activity containers", () => {
     const actions = mapHostMessageToActions(
       createNotification("extension.registerContributions", {

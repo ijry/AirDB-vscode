@@ -35,9 +35,13 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
         webview: {
           id: String(payload.panelId),
           title: String(payload.title ?? payload.viewType ?? "Webview"),
-          html: ""
+          viewType: typeof payload.viewType === "string" ? payload.viewType : undefined,
+          extensionId: message.extensionId,
+          html: typeof payload.html === "string" ? payload.html : ""
         }
       }];
+    case "webview.postMessage":
+      return [{ type: "webview/message", id: String(payload.panelId), message: payload.message }];
     case "webview.setHtml":
       return [{ type: "webview/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
     case "notification.show":
