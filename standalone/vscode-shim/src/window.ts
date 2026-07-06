@@ -2,9 +2,19 @@ import {
   createRequest,
   type HostFileUriDto,
   type HostMessageGroup,
-  type HostRequest
+  type HostRequest,
+  type HostTextEditorDto,
+  type ShowTextDocumentPayload
 } from "@airdb-standalone/protocol";
 import { Buffer } from "node:buffer";
+import {
+  isStandaloneTextDocument,
+  textDocumentFromDto,
+  textDocumentToDto,
+  textEditorFromDto,
+  type StandaloneTextDocument,
+  type StandaloneTextEditor
+} from "./textDocument.js";
 import { Disposable, EventEmitter, Uri } from "./types.js";
 
 export interface WebviewPanelBridgeRegistration {
@@ -62,16 +72,46 @@ function materializeSaveDialogResponse(value: HostFileUriDto | null | undefined)
   return fileDtoToUri(value);
 }
 
+function materializeTextDocument(value: unknown): StandaloneTextDocument {
+  if (isStandaloneTextDocument(value)) {
+    return value;
+  }
+  if (value && typeof value === "object" && typeof (value as { id?: unknown }).id === "string") {
+    return textDocumentFromDto(value as never);
+  }
+  throw new Error("showTextDocument expects a standalone text document");
+}
+
+function normalizeShowTextDocumentOptions(
+  viewColumnOrOptions: unknown,
+  preserveFocus?: boolean
+): { viewColumn?: number; preserveFocus?: boolean } {
+  if (typeof viewColumnOrOptions === "number") {
+    return { viewColumn: viewColumnOrOptions, preserveFocus };
+  }
+  if (viewColumnOrOptions && typeof viewColumnOrOptions === "object") {
+    const options = viewColumnOrOptions as { viewColumn?: unknown; preserveFocus?: unknown };
+    return {
+      viewColumn: typeof options.viewColumn === "number" ? options.viewColumn : undefined,
+      preserveFocus: typeof options.preserveFocus === "boolean" ? options.preserveFocus : undefined
+    };
+  }
+  return { preserveFocus };
+}
+
 export function createWindowApi(options: WindowApiOptions) {
   const activeTextEditorEmitter = new EventEmitter<unknown>();
   const textEditorSelectionEmitter = new EventEmitter<unknown>();
   const treeCollapseEmitter = new EventEmitter<{ element: unknown }>();
   const treeExpandEmitter = new EventEmitter<{ element: unknown }>();
   let activeTerminal: unknown;
+  let activeTextEditor: StandaloneTextEditor | undefined;
   let nextDecorationTypeId = 1;
 
   return {
-    activeTextEditor: undefined as unknown,
+    get activeTextEditor() {
+      return activeTextEditor;
+    },
     get activeTerminal() {
       return activeTerminal;
     },
@@ -210,10 +250,21 @@ export function createWindowApi(options: WindowApiOptions) {
       return materializeSaveDialogResponse(response);
     },
 
-    showTextDocument(document: unknown) {
-      return options.bridge.request<unknown>(
-        createRequest("editor.showDocument", { document }, options.extensionId)
+    async showTextDocument(document: unknown, viewColumnOrOptions?: unknown, preserveFocus?: boolean) {
+      const textDocument = materializeTextDocument(document);
+      const showOptions = normalizeShowTextDocumentOptions(viewColumnOrOptions, preserveFocus);
+      const payload: ShowTextDocumentPayload = {
+        document: textDocumentToDto(textDocument),
+        ...(showOptions.viewColumn !== undefined ? { viewColumn: showOptions.viewColumn } : {}),
+        ...(showOptions.preserveFocus !== undefined ? { preserveFocus: showOptions.preserveFocus } : {})
+      };
+      const response = await options.bridge.request<HostTextEditorDto>(
+        createRequest("editor.showDocument", payload, options.extensionId)
       );
+      const editor = textEditorFromDto(response, textDocument);
+      activeTextEditor = editor;
+      activeTextEditorEmitter.fire(editor);
+      return editor;
     },
 
     createOutputChannel(name: string) {

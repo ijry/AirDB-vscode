@@ -236,4 +236,68 @@ describe("window IPC API", () => {
 
     await expect(api.window.showSaveDialog({ saveLabel: "Export" })).resolves.toBeUndefined();
   });
+
+  it("shows text documents through editor.showDocument and returns a text editor", async () => {
+    const requests: HostRequest[] = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async (request) => {
+          requests.push(request);
+          if (request.group === "editor.showDocument") {
+            const payload = request.payload as { document: unknown; viewColumn?: number };
+            return { document: payload.document, viewColumn: payload.viewColumn } as never;
+          }
+          return undefined as never;
+        },
+        notify: () => undefined
+      }
+    });
+    const document = await api.workspace.openTextDocument({ content: "select 1", language: "sql" });
+
+    const editor = await api.window.showTextDocument(document, api.ViewColumn.Two, true);
+
+    expect(requests[0]).toMatchObject({
+      kind: "request",
+      group: "editor.showDocument",
+      extensionId: "fixture.one",
+      payload: {
+        viewColumn: api.ViewColumn.Two,
+        preserveFocus: true,
+        document: {
+          languageId: "sql",
+          content: "select 1",
+          isUntitled: true
+        }
+      }
+    });
+    expect(editor.document.getText()).toBe("select 1");
+    expect(editor.viewColumn).toBe(api.ViewColumn.Two);
+    expect(editor.selection.start.isEqual(new api.Position(0, 0))).toBe(true);
+    expect(editor.selections).toHaveLength(1);
+    await expect(editor.edit(() => undefined)).resolves.toBe(false);
+  });
+
+  it("updates activeTextEditor and fires active editor events after showTextDocument", async () => {
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async (request) => {
+          const payload = request.payload as { document: unknown; viewColumn?: number };
+          return { document: payload.document, viewColumn: payload.viewColumn } as never;
+        },
+        notify: () => undefined
+      }
+    });
+    const events: unknown[] = [];
+    api.window.onDidChangeActiveTextEditor((editor: unknown) => events.push(editor));
+    const document = await api.workspace.openTextDocument({ content: "select active", language: "sql" });
+
+    const editor = await api.window.showTextDocument(document);
+
+    expect(api.window.activeTextEditor).toBe(editor);
+    expect(events).toEqual([editor]);
+  });
 });
