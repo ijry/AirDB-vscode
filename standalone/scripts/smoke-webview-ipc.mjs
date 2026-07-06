@@ -12,6 +12,12 @@ const executeCommandRequest = {
   group: "command.execute",
   payload: { command: "airdb.connection.add" }
 };
+const webviewInitRequest = {
+  kind: "request",
+  id: "smoke-webview-init",
+  group: "webview.receiveMessage",
+  payload: { panelId: "", message: { type: "init" } }
+};
 
 const child = spawn("node", [hostEntry], {
   cwd: standaloneRoot,
@@ -27,11 +33,15 @@ let sentOpen = false;
 let webviewPanelId = "";
 let sawHtml = false;
 let sawResource = false;
+let sentInit = false;
+let sawInitDelivered = false;
+let sawSyncState = false;
 let stderr = "";
 
 const timeout = setTimeout(() => {
   child.kill();
   console.error("Timed out waiting for webview IPC smoke response.");
+  console.error(`Missing checkpoint(s): ${missingCheckpoints().join(", ")}`);
   if (stderr) {
     console.error(stderr);
   }
@@ -45,10 +55,28 @@ function sendOpenRequest() {
   }
 }
 
+function sendInitIfReady() {
+  if (!sentInit && webviewPanelId && sawHtml && sawResource) {
+    webviewInitRequest.payload.panelId = webviewPanelId;
+    child.stdin.write(`${JSON.stringify(webviewInitRequest)}\n`);
+    sentInit = true;
+  }
+}
+
+function missingCheckpoints() {
+  return [
+    webviewPanelId ? "" : "webview.create",
+    sawHtml ? "" : "webview.setHtml",
+    sawResource ? "" : "standalone-resource URI",
+    sentInit && sawInitDelivered ? "" : "webview.receiveMessage delivery",
+    sawSyncState ? "" : "webview.postMessage syncState"
+  ].filter(Boolean);
+}
+
 function finishIfReady() {
-  if (webviewPanelId && sawHtml && sawResource) {
+  if (webviewPanelId && sawHtml && sawResource && sawInitDelivered && sawSyncState) {
     clearTimeout(timeout);
-    console.log(`Opened ${webviewPanelId} with local webview resources.`);
+    console.log(`Opened ${webviewPanelId} with local webview resources and syncState handshake.`);
     child.kill();
   }
 }
@@ -82,14 +110,32 @@ child.stdout.on("data", (chunk) => {
       sawHtml = Boolean(message.payload.html);
       sawResource = String(message.payload.html).includes("standalone-resource://");
     }
+    if (message.kind === "response" && message.id === webviewInitRequest.id) {
+      if (!message.ok) {
+        console.error(message.error);
+        child.kill();
+        process.exit(1);
+      }
+      sawInitDelivered = message.payload?.delivered === true;
+    }
+    if (
+      message.kind === "notification" &&
+      message.group === "webview.postMessage" &&
+      message.payload?.panelId === webviewPanelId &&
+      message.payload?.message?.type === "syncState"
+    ) {
+      sawSyncState = true;
+    }
+    sendInitIfReady();
     finishIfReady();
   }
 });
 
 child.on("exit", (code) => {
   clearTimeout(timeout);
-  if (!webviewPanelId || !sawHtml || !sawResource) {
+  if (!webviewPanelId || !sawHtml || !sawResource || !sawInitDelivered || !sawSyncState) {
     console.error(`Extension host exited before webview smoke completed. Exit code: ${code}`);
+    console.error(`Missing checkpoint(s): ${missingCheckpoints().join(", ")}`);
     if (stderr) {
       console.error(stderr);
     }

@@ -47,7 +47,7 @@ npm run prepare:extensions
 npm run smoke:webview-ipc
 ```
 
-The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, and verifies that a webview panel emits HTML containing standalone local resource URIs.
+The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, verifies that a webview panel emits HTML containing standalone local resource URIs, sends a simulated webview `init` message, and verifies the extension replies with `syncState`.
 
 ## Packages
 
