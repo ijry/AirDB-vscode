@@ -14,11 +14,13 @@ import { ActivityBar } from "./workbench/ActivityBar";
 import { DialogHost } from "./workbench/DialogHost";
 import { EditorTabs } from "./workbench/EditorTabs";
 import { NotificationHost } from "./workbench/NotificationHost";
+import { OutputPanel } from "./workbench/OutputPanel";
 import { SideBar } from "./workbench/SideBar";
+import { StatusBar } from "./workbench/StatusBar";
 import { TerminalPanel } from "./workbench/TerminalPanel";
 import { WebviewPanel } from "./workbench/WebviewPanel";
 import { initialWorkbenchState, workbenchReducer, type WorkbenchAction } from "./workbench/workbenchStore";
-import type { DialogState, NotificationState } from "./workbench/types";
+import type { DialogState, NotificationState, StatusBarItemState } from "./workbench/types";
 
 export async function respondToNotification(
   notification: NotificationState,
@@ -44,6 +46,45 @@ export async function respondToNotification(
         id: `notification-response-error-${Date.now()}`,
         level: "error",
         message: error instanceof Error ? error.message : "Failed to send notification response"
+      }
+    });
+  }
+}
+
+export async function executeStatusBarCommand(
+  item: StatusBarItemState,
+  sendRequest: (
+    group: "command.execute",
+    payload: unknown,
+    extensionId?: string,
+    timeoutMs?: number
+  ) => Promise<unknown>,
+  dispatch: (action: WorkbenchAction) => void
+): Promise<void> {
+  if (!item.command || typeof item.command.command !== "string") {
+    dispatch({
+      type: "notification/show",
+      notification: {
+        id: `status-bar-command-error-${Date.now()}`,
+        level: "error",
+        message: "Invalid status bar command"
+      }
+    });
+    return;
+  }
+
+  try {
+    await sendRequest("command.execute", {
+      command: item.command.command,
+      arguments: item.command.arguments ?? []
+    }, undefined, 10000);
+  } catch (error) {
+    dispatch({
+      type: "notification/show",
+      notification: {
+        id: `status-bar-command-error-${Date.now()}`,
+        level: "error",
+        message: error instanceof Error ? error.message : `Failed to execute status bar command ${item.command.command}`
       }
     });
   }
@@ -216,6 +257,7 @@ export function App() {
       <section className="editor-area">
         <EditorTabs state={state} />
         <WebviewPanel state={state} />
+        <OutputPanel state={state} />
         <TerminalPanel state={state} />
       </section>
       <DialogHost dialogs={state.dialogs} onRespond={(dialog, value) => void respondToDialog(dialog, value)} />
@@ -223,6 +265,10 @@ export function App() {
         notifications={state.notifications}
         onRespond={(notification, value) => void respondToNotification(notification, value, sendHostResponse, dispatch)}
         onDismiss={(notification) => dispatch({ type: "notification/close", id: notification.id })}
+      />
+      <StatusBar
+        items={state.statusBarItems}
+        onExecuteCommand={(item) => void executeStatusBarCommand(item, sendHostRequest, dispatch)}
       />
     </main>
   );
