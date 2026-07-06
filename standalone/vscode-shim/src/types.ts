@@ -130,6 +130,12 @@ function formatFileSystemErrorMessage(defaultMessage: string, messageOrUri?: unk
   return `${defaultMessage}: ${String(messageOrUri)}`;
 }
 
+export interface WorkspaceFolder {
+  readonly uri: Uri;
+  readonly name: string;
+  readonly index: number;
+}
+
 export class Position {
   constructor(public readonly line: number, public readonly character: number) {}
 

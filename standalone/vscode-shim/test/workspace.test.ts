@@ -4,15 +4,20 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { createVscodeApi, FileSystemError, FileType } from "../src";
 
-function createApi() {
+function createApi(options: { workspaceRoot?: string } = {}) {
   return createVscodeApi({
     extensionId: "fixture.one",
     extensionPath: "C:/fixture",
+    workspaceRoot: options.workspaceRoot,
     bridge: {
       request: async () => undefined as never,
       notify: () => undefined
     }
   });
+}
+
+function normalizePath(value: string): string {
+  return value.replace(/\\/g, "/");
 }
 
 describe("workspace API", () => {
@@ -21,6 +26,31 @@ describe("workspace API", () => {
 
     expect(api.workspace.onDidChangeTextDocument(() => undefined)).toHaveProperty("dispose");
     expect(api.workspace.onDidSaveTextDocument(() => undefined)).toHaveProperty("dispose");
+  });
+
+  it("exposes a single synthetic workspace folder from the configured root", () => {
+    const workspaceRoot = path.join(tmpdir(), "airdb metadata workspace");
+    const resolvedRoot = path.resolve(workspaceRoot);
+    const api = createApi({ workspaceRoot });
+
+    expect(api.workspace.workspaceFolders).toHaveLength(1);
+    expect(api.workspace.workspaceFolders).toBe(api.workspace.workspaceFolders);
+
+    const folder = api.workspace.workspaceFolders[0];
+    expect(folder.index).toBe(0);
+    expect(folder.name).toBe(path.basename(resolvedRoot));
+    expect(normalizePath(folder.uri.fsPath)).toBe(normalizePath(resolvedRoot));
+    expect(api.workspace.name).toBe(path.basename(resolvedRoot));
+    expect(normalizePath(api.workspace.rootPath)).toBe(normalizePath(resolvedRoot));
+  });
+
+  it("falls back to a non-empty process workspace root", () => {
+    const api = createApi();
+
+    expect(api.workspace.workspaceFolders).toHaveLength(1);
+    expect(api.workspace.name.length).toBeGreaterThan(0);
+    expect(api.workspace.rootPath.length).toBeGreaterThan(0);
+    expect(normalizePath(api.workspace.workspaceFolders[0].uri.fsPath)).toBe(normalizePath(api.workspace.rootPath));
   });
 
   it("exports VS Code-like file type constants", () => {

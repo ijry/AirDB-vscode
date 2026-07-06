@@ -15,6 +15,7 @@ export interface VscodeApiOptions {
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
   extensions?: ExtensionRecord[];
+  workspaceRoot?: string;
 }
 
 export function createVscodeApi(options: VscodeApiOptions) {
@@ -28,7 +29,7 @@ export function createVscodeApi(options: VscodeApiOptions) {
     ...types,
     commands,
     window: createWindowApi({ extensionId: options.extensionId, extensionPath: options.extensionPath, bridge: options.bridge }),
-    workspace: createWorkspaceApi(options.extensionId, options.bridge),
+    workspace: createWorkspaceApi(options.extensionId, options.bridge, { workspaceRoot: options.workspaceRoot }),
     languages: createLanguagesApi(),
     env: createEnvApi(options.extensionId, options.bridge),
     extensions: createExtensionsApi(options.extensions ?? []),
