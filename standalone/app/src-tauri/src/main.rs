@@ -230,42 +230,68 @@ fn resolve_standalone_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
         return Ok(PathBuf::from(root));
     }
 
-    let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    if let Some(root) = manifest_dir.parent().and_then(|path| path.parent()) {
-        let root = root.to_path_buf();
-        if root
-            .join("extension-host")
-            .join("dist")
-            .join("main.js")
-            .exists()
-        {
-            return Ok(root);
-        }
-    }
-
     let resource_dir = app
         .path()
         .resource_dir()
         .map_err(|error| error.to_string())?;
-    for candidate in [
-        resource_dir.clone(),
-        resource_dir
-            .parent()
-            .and_then(|path| path.parent())
-            .map(PathBuf::from)
-            .unwrap_or_else(|| resource_dir.clone()),
-    ] {
-        if candidate
-            .join("extension-host")
-            .join("dist")
-            .join("main.js")
-            .exists()
-        {
-            return Ok(candidate);
-        }
+    resolve_standalone_root_from_candidates(
+        None,
+        &packaged_resource_root_candidates(&resource_dir),
+        source_checkout_root(),
+    )
+}
+
+fn resolve_standalone_root_from_candidates(
+    env_root: Option<PathBuf>,
+    resource_candidates: &[PathBuf],
+    source_root: Option<PathBuf>,
+) -> Result<PathBuf, String> {
+    if let Some(root) = env_root {
+        return Ok(root);
     }
 
-    Err("Unable to resolve standalone resources. Expected extension-host/dist/main.js in AIRDB_STANDALONE_ROOT, the source standalone directory, or the packaged Tauri resource directory. Run the standalone package build after preparing resources, or set AIRDB_STANDALONE_ROOT.".to_string())
+    if let Some(root) = resource_candidates
+        .iter()
+        .find(|candidate| has_extension_host_entry(candidate))
+    {
+        return Ok(root.clone());
+    }
+
+    if let Some(root) = source_root.filter(|candidate| has_extension_host_entry(candidate)) {
+        return Ok(root);
+    }
+
+    Err("Unable to resolve standalone resources. Expected extension-host/dist/main.js in AIRDB_STANDALONE_ROOT, the packaged Tauri resource directory, or the source standalone directory. Run the standalone package build after preparing resources, or set AIRDB_STANDALONE_ROOT.".to_string())
+}
+
+fn packaged_resource_root_candidates(resource_dir: &Path) -> Vec<PathBuf> {
+    let mut candidates = vec![resource_dir.to_path_buf()];
+    if let Some(parent_root) = resource_dir.parent().and_then(|path| path.parent()) {
+        let parent_root = parent_root.to_path_buf();
+        if parent_root != resource_dir {
+            candidates.push(parent_root);
+        }
+    }
+    candidates
+}
+
+fn source_checkout_root() -> Option<PathBuf> {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(|path| path.parent())
+        .map(PathBuf::from)
+}
+
+fn has_extension_host_entry(root: &Path) -> bool {
+    root.join("extension-host")
+        .join("dist")
+        .join("main.js")
+        .exists()
+}
+
+fn prepare_extension_host_storage_root(app_data_dir: &Path) -> Result<PathBuf, String> {
+    std::fs::create_dir_all(app_data_dir).map_err(|error| error.to_string())?;
+    Ok(app_data_dir.to_path_buf())
 }
 
 fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Result<(), String> {
@@ -275,9 +301,11 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
         .join("dist")
         .join("main.js");
     let extensions_dir = standalone_root.join("extensions");
-    let storage_root = standalone_root.join(".data");
-
-    std::fs::create_dir_all(&storage_root).map_err(|error| error.to_string())?;
+    let storage_root = prepare_extension_host_storage_root(
+        &app.path()
+            .app_data_dir()
+            .map_err(|error| error.to_string())?,
+    )?;
 
     let mut child = Command::new("node")
         .arg(&host_entry)
@@ -376,14 +404,18 @@ mod tests {
     use super::*;
     use base64::engine::general_purpose::URL_SAFE_NO_PAD;
     use std::fs;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    static TEMP_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
 
     fn temp_root() -> PathBuf {
         let suffix = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        let root = std::env::temp_dir().join(format!("airdb-webview-test-{suffix}"));
+        let counter = TEMP_ROOT_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let root = std::env::temp_dir().join(format!("airdb-webview-test-{suffix}-{counter}"));
         fs::create_dir_all(
             root.join("extensions")
                 .join("airdb")
@@ -406,6 +438,12 @@ mod tests {
 
     fn root_string(path: &std::path::Path) -> String {
         path.to_string_lossy().into_owned()
+    }
+
+    fn create_host_entry(root: &std::path::Path) {
+        let host_entry = root.join("extension-host").join("dist").join("main.js");
+        fs::create_dir_all(host_entry.parent().unwrap()).unwrap();
+        fs::write(host_entry, "console.log('host');").unwrap();
     }
 
     #[test]
@@ -545,5 +583,80 @@ mod tests {
 
         assert!(error.contains("Invalid webview resource suffix"));
         fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn root_resolution_uses_env_override_first() {
+        let env_root = temp_root();
+        let resource_root = temp_root();
+        let source_root = temp_root();
+        create_host_entry(&resource_root);
+        create_host_entry(&source_root);
+
+        let resolved = resolve_standalone_root_from_candidates(
+            Some(env_root.clone()),
+            &[resource_root.clone()],
+            Some(source_root.clone()),
+        )
+        .unwrap();
+
+        assert_eq!(resolved, env_root);
+        fs::remove_dir_all(env_root).unwrap();
+        fs::remove_dir_all(resource_root).unwrap();
+        fs::remove_dir_all(source_root).unwrap();
+    }
+
+    #[test]
+    fn root_resolution_prefers_packaged_resources_before_source_checkout() {
+        let resource_root = temp_root();
+        let source_root = temp_root();
+        create_host_entry(&resource_root);
+        create_host_entry(&source_root);
+
+        let resolved = resolve_standalone_root_from_candidates(
+            None,
+            &[resource_root.clone()],
+            Some(source_root.clone()),
+        )
+        .unwrap();
+
+        assert_eq!(resolved, resource_root);
+        fs::remove_dir_all(resource_root).unwrap();
+        fs::remove_dir_all(source_root).unwrap();
+    }
+
+    #[test]
+    fn root_resolution_falls_back_to_source_checkout_after_packaged_resources() {
+        let resource_root = temp_root();
+        let source_root = temp_root();
+        create_host_entry(&source_root);
+
+        let resolved = resolve_standalone_root_from_candidates(
+            None,
+            &[resource_root.clone()],
+            Some(source_root.clone()),
+        )
+        .unwrap();
+
+        assert_eq!(resolved, source_root);
+        fs::remove_dir_all(resource_root).unwrap();
+        fs::remove_dir_all(source_root).unwrap();
+    }
+
+    #[test]
+    fn extension_host_storage_uses_app_data_dir() {
+        let root = std::env::temp_dir().join(format!(
+            "airdb-storage-test-{}",
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("clock")
+                .as_nanos()
+        ));
+
+        let resolved = prepare_extension_host_storage_root(&root).unwrap();
+
+        assert_eq!(resolved, root);
+        assert!(resolved.exists());
+        fs::remove_dir_all(resolved).unwrap();
     }
 }

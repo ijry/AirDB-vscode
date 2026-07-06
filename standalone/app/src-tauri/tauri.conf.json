@@ -28,6 +28,7 @@
       "../../extension-host/dist": "extension-host/dist",
       "../../vscode-shim/dist": "vscode-shim/dist",
       "../../protocol/dist": "protocol/dist",
+      "../../.packaged-resources/node_modules": "node_modules",
       "../../extensions": "extensions"
     }
   }

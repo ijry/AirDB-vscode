@@ -1,4 +1,8 @@
 node_modules/
+.packaged-resources/*
+!.packaged-resources/node_modules/
+.packaged-resources/node_modules/*
+!.packaged-resources/node_modules/.gitkeep
 dist/
 app/dist/
 app/src-tauri/gen/

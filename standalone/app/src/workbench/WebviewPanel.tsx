@@ -8,6 +8,28 @@ interface WebviewPanelProps {
   state: WorkbenchState;
 }
 
+interface WebviewMessageEvent {
+  data: {
+    source?: string;
+    panelId?: string;
+    message?: unknown;
+  };
+  source: MessageEventSource | null;
+}
+
+export function isWebviewMessageFromPanel(
+  event: WebviewMessageEvent,
+  panelId: string,
+  iframeWindow: Window | null | undefined
+) {
+  return (
+    iframeWindow != null &&
+    event.source === iframeWindow &&
+    event.data?.source === "airdb-standalone-webview" &&
+    event.data.panelId === panelId
+  );
+}
+
 function WebviewFrame({ panel }: { panel: WebviewState }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const deliveredCount = useRef(0);
@@ -43,8 +65,14 @@ function WebviewFrame({ panel }: { panel: WebviewState }) {
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
-      const data = event.data as { source?: string; panelId?: string; message?: unknown };
-      if (data?.source !== "airdb-standalone-webview" || data.panelId !== panel.id) {
+      const data = event.data as WebviewMessageEvent["data"];
+      if (
+        !isWebviewMessageFromPanel(
+          { data, source: event.source },
+          panel.id,
+          iframeRef.current?.contentWindow
+        )
+      ) {
         return;
       }
       void sendHostRequest<{ delivered: boolean }>(
