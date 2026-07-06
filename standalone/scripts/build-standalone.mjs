@@ -2,6 +2,12 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  ensureNodeRuntimeStaged,
+  nodeExecutableName,
+  platformNodeRuntimeDirName,
+  validateNodeRuntime
+} from "./node-runtime.mjs";
 
 const standaloneRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const packagedResourcesRoot = path.join(standaloneRoot, ".packaged-resources");
@@ -116,6 +122,16 @@ run(["run", "build"]);
 run(["run", "build:airdb"]);
 run(["run", "prepare:extensions"]);
 createPackagedDependencyLayout();
+const packagedNodeRuntime = ensureNodeRuntimeStaged({
+  standaloneRoot,
+  env: process.env,
+  platform: process.platform,
+  arch: process.arch
+});
+const packagedNodeVersion = validateNodeRuntime(packagedNodeRuntime);
+console.log(
+  `Packaged Node runtime ${packagedNodeVersion} at ${path.relative(standaloneRoot, packagedNodeRuntime)}`
+);
 
 for (const resourcePath of [
   "extension-host/dist/main.js",
@@ -125,7 +141,8 @@ for (const resourcePath of [
   ".packaged-resources/node_modules/@airdb-standalone/vscode-shim/package.json",
   ".packaged-resources/node_modules/@airdb-standalone/vscode-shim/dist/index.js",
   ".packaged-resources/node_modules/@airdb-standalone/protocol/package.json",
-  ".packaged-resources/node_modules/@airdb-standalone/protocol/dist/index.js"
+  ".packaged-resources/node_modules/@airdb-standalone/protocol/dist/index.js",
+  `runtime/node/${platformNodeRuntimeDirName()}/${nodeExecutableName()}`
 ]) {
   assertExists(resourcePath);
 }

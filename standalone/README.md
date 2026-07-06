@@ -32,7 +32,15 @@ cd standalone
 npm run package
 ```
 
-Packaged builds include the compiled extension host, VS Code shim, protocol package, and prepared extensions as Tauri resources. They still shell out to `node`, so the installed application currently requires a Node.js runtime available on `PATH`. A future sidecar build can remove this runtime requirement by bundling a platform-specific Node binary.
+Packaged builds include the compiled extension host, VS Code shim, protocol package, prepared extensions, and a platform-specific Node runtime sidecar as Tauri resources. The packaging command does not download Node; provide a runtime explicitly:
+
+```powershell
+$env:AIRDB_STANDALONE_NODE_RUNTIME = (node -p "process.execPath")
+npm run package
+Remove-Item Env:\AIRDB_STANDALONE_NODE_RUNTIME
+```
+
+`AIRDB_STANDALONE_NODE_RUNTIME` may point to a Node executable, a directory containing `node.exe`, or a directory containing `<platform>/node.exe`. For Windows x64 packaging, the staged runtime path is `standalone/runtime/node/windows-x64/node.exe`. The application still falls back to system `node` during development.
 
 ## Tree IPC Smoke Test
 

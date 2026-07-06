@@ -32,6 +32,7 @@
       "../../vscode-shim/dist": "vscode-shim/dist",
       "../../protocol/dist": "protocol/dist",
       "../../.packaged-resources/node_modules": "node_modules",
+      "../../runtime/node": "runtime/node",
       "../../extensions": "extensions"
     }
   }
