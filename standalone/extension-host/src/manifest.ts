@@ -2,6 +2,7 @@ export interface ExtensionManifest {
   name: string;
   publisher?: string;
   displayName?: string;
+  version?: string;
   main?: string;
   activationEvents?: string[];
   contributes?: {
