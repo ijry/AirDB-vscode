@@ -247,4 +247,41 @@ describe("workbenchReducer", () => {
       events: []
     }]);
   });
+
+  it("stores extension diagnostics snapshots defensively", () => {
+    const extensions = [{
+      id: "acme.fixture",
+      extensionPath: "C:/extensions/fixture",
+      activationEvents: ["onStartupFinished"],
+      contributedViews: ["fixture.view"],
+      commandCount: 1,
+      status: "activated",
+      events: [{
+        id: "diagnostic-1",
+        extensionPath: "C:/extensions/fixture",
+        timestamp: "2026-07-08T00:00:00.000Z",
+        phase: "activation",
+        status: "activated",
+        message: "Activated extension",
+        details: { resolvedMain: "C:/extensions/fixture/extension.js" }
+      }]
+    }];
+
+    const state = workbenchReducer(initialWorkbenchState, {
+      type: "diagnostics/extensions",
+      extensions
+    });
+    extensions[0].activationEvents.push("tampered");
+    extensions[0].contributedViews.push("tampered.view");
+    extensions[0].events[0].message = "Tampered";
+    extensions[0].events[0].details.resolvedMain = "C:/tampered.js";
+
+    const extension = state.diagnostics.extensions[0];
+    expect(extension.activationEvents).toEqual(["onStartupFinished"]);
+    expect(extension.contributedViews).toEqual(["fixture.view"]);
+    expect(extension.events[0].message).toBe("Activated extension");
+    expect(extension.events[0].details).toEqual({
+      resolvedMain: "C:/extensions/fixture/extension.js"
+    });
+  });
 });

@@ -219,12 +219,24 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return {
         ...state,
         diagnostics: {
-          extensions: action.extensions
+          extensions: copyDiagnosticsExtensions(action.extensions)
         }
       };
     default:
       return state;
   }
+}
+
+function copyDiagnosticsExtensions(extensions: ExtensionDiagnosticState[]): ExtensionDiagnosticState[] {
+  return extensions.map((extension) => ({
+    ...extension,
+    ...(extension.activationEvents ? { activationEvents: [...extension.activationEvents] } : {}),
+    ...(extension.contributedViews ? { contributedViews: [...extension.contributedViews] } : {}),
+    events: extension.events.map((event) => ({
+      ...event,
+      ...(event.details ? { details: { ...event.details } } : {})
+    }))
+  }));
 }
 
 function upsertOutput(outputs: OutputChannelState[], output: OutputChannelState): OutputChannelState[] {
