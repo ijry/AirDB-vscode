@@ -167,4 +167,44 @@ describe("ExtensionLoader", () => {
       status: "failed"
     });
   });
+
+  it("records activation failures with the activation phase", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-activation-failure-"));
+    const extensionPath = path.join(root, "activation-broken");
+    await fs.mkdir(extensionPath, { recursive: true });
+    await fs.writeFile(
+      path.join(extensionPath, "package.json"),
+      JSON.stringify({
+        name: "activation-broken",
+        publisher: "acme",
+        version: "1.0.0",
+        main: "./extension.js"
+      })
+    );
+    await fs.writeFile(
+      path.join(extensionPath, "extension.js"),
+      "exports.activate = function activate() { throw new Error('activation exploded'); };\n"
+    );
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow("activation exploded");
+
+    const extension = diagnostics.snapshot().extensions[0];
+    expect(extension).toMatchObject({
+      id: "acme.activation-broken",
+      status: "failed",
+      lastError: "activation exploded"
+    });
+    expect(extension.events.at(-1)).toMatchObject({
+      phase: "activation",
+      status: "failed",
+      error: "activation exploded"
+    });
+  });
 });

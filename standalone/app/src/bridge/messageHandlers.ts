@@ -1,6 +1,6 @@
 import type { HostMessage } from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
-import type { ExtensionDiagnosticState, NotificationItem } from "../workbench/types";
+import type { ExtensionDiagnosticEventState, ExtensionDiagnosticState, NotificationItem } from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
@@ -213,7 +213,21 @@ function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticStat
       typeof (value as { extensionPath?: unknown }).extensionPath === "string" &&
       typeof (value as { commandCount?: unknown }).commandCount === "number" &&
       typeof (value as { status?: unknown }).status === "string" &&
-      Array.isArray((value as { events?: unknown }).events)
+      Array.isArray((value as { events?: unknown }).events) &&
+      (value as { events: unknown[] }).events.every(isDiagnosticEvent)
+  );
+}
+
+function isDiagnosticEvent(value: unknown): value is ExtensionDiagnosticEventState {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as { id?: unknown }).id === "string" &&
+      typeof (value as { extensionPath?: unknown }).extensionPath === "string" &&
+      typeof (value as { timestamp?: unknown }).timestamp === "string" &&
+      typeof (value as { phase?: unknown }).phase === "string" &&
+      typeof (value as { status?: unknown }).status === "string" &&
+      typeof (value as { message?: unknown }).message === "string"
   );
 }
 
