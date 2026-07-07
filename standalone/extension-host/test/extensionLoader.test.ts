@@ -168,6 +168,77 @@ describe("ExtensionLoader", () => {
     });
   });
 
+  it("records malformed manifest failures under the extension path", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-bad-manifest-"));
+    const extensionPath = path.join(root, "bad-manifest");
+    await fs.mkdir(extensionPath, { recursive: true });
+    await fs.writeFile(path.join(extensionPath, "package.json"), "{ bad json");
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow();
+
+    const extension = diagnostics.snapshot().extensions[0];
+    expect(extension).toMatchObject({
+      id: extensionPath,
+      extensionPath,
+      status: "failed"
+    });
+    expect(extension.events.at(-1)).toMatchObject({
+      phase: "manifest",
+      status: "failed"
+    });
+  });
+
+  it("records discovery for every extension directory before a later load failure stops loading", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-discover-all-"));
+    const brokenPath = path.join(root, "01-broken");
+    const pendingPath = path.join(root, "02-pending");
+    await fs.mkdir(brokenPath, { recursive: true });
+    await fs.mkdir(pendingPath, { recursive: true });
+    await fs.writeFile(
+      path.join(brokenPath, "package.json"),
+      JSON.stringify({
+        name: "broken",
+        publisher: "acme",
+        main: "./missing.js"
+      })
+    );
+    await fs.writeFile(
+      path.join(pendingPath, "package.json"),
+      JSON.stringify({
+        name: "pending",
+        publisher: "acme",
+        main: "./extension.js"
+      })
+    );
+    await fs.writeFile(
+      path.join(pendingPath, "extension.js"),
+      "exports.activate = function activate() { return { ok: true }; };\n"
+    );
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow();
+
+    expect(diagnostics.snapshot().extensions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "acme.broken", status: "failed" }),
+        expect.objectContaining({ id: pendingPath, status: "discovered" })
+      ])
+    );
+  });
+
   it("records activation failures with the activation phase", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-activation-failure-"));
     const extensionPath = path.join(root, "activation-broken");

@@ -12,6 +12,14 @@ npm install
 npm run check:workspace
 ```
 
+AirDB webview builds also use the root project webpack dependencies. If the repository root does not already have `node_modules`, install them before running `npm run build:airdb` or AirDB-backed smoke tests:
+
+```bash
+cd ..
+npm install --no-package-lock
+cd standalone
+```
+
 ## Running The Standalone Host
 
 ```bash
@@ -134,13 +142,14 @@ The smoke test starts the Node extension host with a temporary fixture extension
 
 ```bash
 cd standalone
+npm install
 npm run build
 npm run build:airdb
 npm run prepare:extensions
 npm run smoke:webview-ipc
 ```
 
-The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, verifies that a webview panel emits HTML containing standalone local resource URIs, sends a simulated webview `init` message, and verifies the extension replies with `syncState`.
+The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, verifies that a webview panel emits HTML containing standalone local resource URIs, sends a simulated webview `init` message, and verifies the extension replies with `syncState`. If `build:airdb` cannot find `webpack`, install the root project dependencies as described in Development.
 
 ## Extension Diagnostics IPC Smoke Test
 
