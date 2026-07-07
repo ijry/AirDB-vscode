@@ -19,9 +19,9 @@
 
 ## Current Completion
 
-Estimated completion: 96%.
+Estimated completion: 98%.
 
-The implementation is complete, merged into `main`, and verified locally. Remaining work is operational: push `main` if desired, decide whether to keep/apply/drop the preserved local stash, and optionally run a manual installer smoke test.
+The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. Remaining work is operational: decide whether to keep/apply/drop the preserved local stash, and optionally run a manual installer smoke test.
 
 ## Milestones
 
@@ -38,7 +38,7 @@ The implementation is complete, merged into `main`, and verified locally. Remain
 - [x] Removed the feature branch and cleaned the feature worktree.
 - [x] Added `standalone/extensions/.gitkeep` so fresh checkouts keep the resource root needed by Cargo/Tauri bundling.
 - [x] Inspected `stash@{0}`; it contains only `CHANGELOG.md` and root `package.json` edits.
-- [ ] Push `main` to the remote when approved.
+- [x] Pushed `main` to `origin/main`.
 - [ ] Decide whether to keep, apply, or drop `stash@{0}`.
 - [ ] Optional: install and launch the generated MSI/NSIS package for a manual desktop smoke test.
 
@@ -57,7 +57,7 @@ The implementation is complete, merged into `main`, and verified locally. Remain
 
 - Branch: `main`
 - Latest implementation commit: `4007bcb fix: keep standalone extensions resource root`
-- Remote state: `main` is ahead of `origin/main`; run `git status --short --branch` for the live count.
+- Remote state: `main` was pushed to `origin/main`; run `git status --short --branch` for the live count.
 - Preserved stash: `stash@{0}: On main: pre-merge main local changes before tauri vscode api host merge`
 - Stash contents: `CHANGELOG.md` and root `package.json`, with 11 insertions and 1 deletion.
 - Worktree cleanup: feature worktree removed; only `main` worktree remains.
