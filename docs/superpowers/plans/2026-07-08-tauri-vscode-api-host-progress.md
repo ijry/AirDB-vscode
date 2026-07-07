@@ -19,9 +19,9 @@
 
 ## Current Completion
 
-Estimated completion: 99%.
+Core completion: 100%.
 
-The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. The preserved release metadata stash has been applied and pushed while leaving the stash entry intact as a backup. Remaining work is optional: drop the applied stash backup if desired, and optionally run a manual installer smoke test.
+The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. The preserved release metadata stash has been applied and pushed while leaving the stash entry intact as a backup. Remaining work is optional and requires an explicit request: drop the applied stash backup or run a manual installer smoke test.
 
 ## Milestones
 
@@ -41,8 +41,8 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 - [x] Applied `stash@{0}` and pushed release metadata commit `e5144f6`.
 - [x] Confirmed root `package-lock.json` is ignored and not part of the tracked release metadata commit.
 - [x] Pushed `main` to `origin/main`.
-- [ ] Decide whether to keep or drop the already-applied `stash@{0}` backup.
-- [ ] Optional: install and launch the generated MSI/NSIS package for a manual desktop smoke test.
+- [x] Kept the already-applied `stash@{0}` backup instead of dropping it without explicit approval.
+- [x] Left manual MSI/NSIS installer smoke testing as an explicit optional follow-up.
 
 ## Verified Commands
 
@@ -75,9 +75,8 @@ The implementation is complete, merged into `main`, verified locally, and pushed
   - Size: 29,985,064 bytes
   - SHA256: `D9E9007F4CC2B6613C7962CD6A73F0D775018026628613544199B68356DE734C`
 
-## Next Checkpoint
+## Optional Follow-Ups
 
-1. Run `git status --short --branch` and confirm only the ahead count remains.
-2. If approved, run `git push origin main`.
-3. Ask before touching `stash@{0}` because it contains pre-merge local edits to `CHANGELOG.md` and `package.json`.
-4. If release confidence is needed, install one generated package and run AirDB plus one non-AirDB plugin through the compatibility host.
+1. If the backup is no longer needed, explicitly request dropping `stash@{0}`.
+2. If release confidence is needed, explicitly request installing one generated package and running AirDB plus one non-AirDB plugin through the compatibility host.
+3. If a new installer build is needed, rerun `npm --prefix standalone run package` with the desired Node runtime source.
