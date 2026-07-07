@@ -39,6 +39,7 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 - [x] Added `standalone/extensions/.gitkeep` so fresh checkouts keep the resource root needed by Cargo/Tauri bundling.
 - [x] Inspected `stash@{0}`; it contains only `CHANGELOG.md` and root `package.json` edits.
 - [x] Applied `stash@{0}` and pushed release metadata commit `e5144f6`.
+- [x] Confirmed root `package-lock.json` is ignored and not part of the tracked release metadata commit.
 - [x] Pushed `main` to `origin/main`.
 - [ ] Decide whether to keep or drop the already-applied `stash@{0}` backup.
 - [ ] Optional: install and launch the generated MSI/NSIS package for a manual desktop smoke test.
@@ -68,7 +69,11 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 ## Release Artifacts
 
 - `standalone/app/src-tauri/target/release/bundle/msi/AirDB Standalone_0.1.0_x64_en-US.msi`
+  - Size: 45,021,378 bytes
+  - SHA256: `67B56999E66BA09559043C412E59E7605301D67043750DB3B1745CF2AF17960D`
 - `standalone/app/src-tauri/target/release/bundle/nsis/AirDB Standalone_0.1.0_x64-setup.exe`
+  - Size: 29,985,064 bytes
+  - SHA256: `D9E9007F4CC2B6613C7962CD6A73F0D775018026628613544199B68356DE734C`
 
 ## Next Checkpoint
 
