@@ -96,6 +96,36 @@ export interface TerminalState {
   visible: boolean;
 }
 
+export interface ExtensionDiagnosticEventState {
+  id: string;
+  extensionId?: string;
+  extensionPath: string;
+  timestamp: string;
+  phase: string;
+  status: string;
+  message: string;
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface ExtensionDiagnosticState {
+  id: string;
+  extensionPath: string;
+  displayName?: string;
+  version?: string;
+  publisher?: string;
+  main?: string;
+  resolvedMain?: string;
+  activationEvents?: string[];
+  contributedViews?: string[];
+  commandCount: number;
+  status: string;
+  lastError?: string;
+  startedAt?: string;
+  activatedAt?: string;
+  events: ExtensionDiagnosticEventState[];
+}
+
 export interface WorkbenchState {
   containers: ActivityContainer[];
   activeContainerId?: string;
@@ -109,4 +139,7 @@ export interface WorkbenchState {
   activeOutputId?: string;
   statusBarItems: StatusBarItemState[];
   terminals: TerminalState[];
+  diagnostics: {
+    extensions: ExtensionDiagnosticState[];
+  };
 }

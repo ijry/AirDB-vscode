@@ -214,4 +214,37 @@ describe("workbenchReducer", () => {
     expect(hidden.terminals[0].visible).toBe(false);
     expect(disposed.terminals).toEqual([]);
   });
+
+  it("replaces extension diagnostics snapshots idempotently", () => {
+    const first = workbenchReducer(initialWorkbenchState, {
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 1,
+        status: "activated",
+        events: []
+      }]
+    });
+    const second = workbenchReducer(first, {
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 2,
+        status: "failed",
+        lastError: "boom",
+        events: []
+      }]
+    });
+
+    expect(second.diagnostics.extensions).toEqual([{
+      id: "acme.fixture",
+      extensionPath: "C:/extensions/fixture",
+      commandCount: 2,
+      status: "failed",
+      lastError: "boom",
+      events: []
+    }]);
+  });
 });

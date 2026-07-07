@@ -2,6 +2,7 @@ import type {
   ActivityContainer,
   DialogState,
   EditorTab,
+  ExtensionDiagnosticState,
   NotificationState,
   OutputChannelState,
   StatusBarItemState,
@@ -40,7 +41,8 @@ export type WorkbenchAction =
   | { type: "terminal/append"; id: string; name?: string; line: string }
   | { type: "terminal/show"; id: string }
   | { type: "terminal/hide"; id: string }
-  | { type: "terminal/dispose"; id: string };
+  | { type: "terminal/dispose"; id: string }
+  | { type: "diagnostics/extensions"; extensions: ExtensionDiagnosticState[] };
 
 export const initialWorkbenchState: WorkbenchState = {
   containers: [],
@@ -51,7 +53,10 @@ export const initialWorkbenchState: WorkbenchState = {
   notifications: [],
   outputs: [],
   statusBarItems: [],
-  terminals: []
+  terminals: [],
+  diagnostics: {
+    extensions: []
+  }
 };
 
 export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction): WorkbenchState {
@@ -209,6 +214,13 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
       return {
         ...state,
         terminals: state.terminals.filter((terminal) => terminal.id !== action.id)
+      };
+    case "diagnostics/extensions":
+      return {
+        ...state,
+        diagnostics: {
+          extensions: action.extensions
+        }
       };
     default:
       return state;

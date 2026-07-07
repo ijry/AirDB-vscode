@@ -1,6 +1,6 @@
 import type { HostMessage } from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
-import type { NotificationItem } from "../workbench/types";
+import type { ExtensionDiagnosticState, NotificationItem } from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
@@ -37,6 +37,10 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       });
       return [{ type: "containers/register", containers }];
     }
+    case "extension.diagnostics":
+      return isDiagnosticsPayload(message.payload)
+        ? [{ type: "diagnostics/extensions", extensions: message.payload.extensions }]
+        : [];
     case "tree.create":
       return [{
         type: "tree/register",
@@ -192,6 +196,25 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
 
 function isStringRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object");
+}
+
+function isDiagnosticsPayload(value: unknown): value is { extensions: ExtensionDiagnosticState[] } {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+  return Array.isArray(value.extensions) && value.extensions.every(isDiagnosticExtension);
+}
+
+function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticState {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as { id?: unknown }).id === "string" &&
+      typeof (value as { extensionPath?: unknown }).extensionPath === "string" &&
+      typeof (value as { commandCount?: unknown }).commandCount === "number" &&
+      typeof (value as { status?: unknown }).status === "string" &&
+      Array.isArray((value as { events?: unknown }).events)
+  );
 }
 
 function normalizeStringArray(value: unknown): string[] {
