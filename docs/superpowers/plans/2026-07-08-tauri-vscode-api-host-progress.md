@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Keep the standalone host generic for VS Code API compatibility; do not introduce an AirDB-only Host API unless explicitly requested later.
-- Preserve user changes; do not drop or pop `stash@{0}` without explicit approval.
+- Preserve user changes; do not drop or pop stashes without explicit approval.
 - Avoid destructive Git commands such as `git reset --hard` or broad checkout/restore operations.
 - Keep generated artifacts ignored: `standalone/node_modules/`, `standalone/app/src-tauri/target/`, `standalone/runtime/node/windows-x64/`, and bundled extension payloads.
 
@@ -21,7 +21,7 @@
 
 Core completion: 100%.
 
-The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. The preserved release metadata stash has been applied and pushed while leaving the stash entry intact as a backup. Remaining work is optional and requires an explicit request: drop the applied stash backup or run a manual installer smoke test.
+The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. The preserved release metadata stash was applied, pushed, and then dropped after explicit approval. Remaining work is optional and requires an explicit request: run a manual installer smoke test.
 
 ## Milestones
 
@@ -41,7 +41,7 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 - [x] Applied `stash@{0}` and pushed release metadata commit `e5144f6`.
 - [x] Confirmed root `package-lock.json` is ignored and not part of the tracked release metadata commit.
 - [x] Pushed `main` to `origin/main`.
-- [x] Kept the already-applied `stash@{0}` backup instead of dropping it without explicit approval.
+- [x] Dropped the already-applied `stash@{0}` backup after explicit approval.
 - [x] Left manual MSI/NSIS installer smoke testing as an explicit optional follow-up.
 
 ## Verified Commands
@@ -60,9 +60,7 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 - Branch: `main`
 - Latest implementation commit: `4007bcb fix: keep standalone extensions resource root`
 - Remote state: `main` was pushed to `origin/main`; run `git status --short --branch` for the live count.
-- Preserved stash: `stash@{0}: On main: pre-merge main local changes before tauri vscode api host merge`
-- Stash contents: `CHANGELOG.md` and root `package.json`, with 11 insertions and 1 deletion.
-- Stash status: applied and pushed in commit `e5144f6`, but the stash entry was intentionally not dropped.
+- Stash status: the release metadata stash was applied and pushed in commit `e5144f6`, then dropped after explicit approval.
 - Worktree cleanup: feature worktree removed; only `main` worktree remains.
 - Working tree: clean after status verification, aside from Git warnings about untracked cache being disabled on this location.
 
@@ -77,6 +75,5 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 
 ## Optional Follow-Ups
 
-1. If the backup is no longer needed, explicitly request dropping `stash@{0}`.
-2. If release confidence is needed, explicitly request installing one generated package and running AirDB plus one non-AirDB plugin through the compatibility host.
-3. If a new installer build is needed, rerun `npm --prefix standalone run package` with the desired Node runtime source.
+1. If release confidence is needed, explicitly request installing one generated package and running AirDB plus one non-AirDB plugin through the compatibility host.
+2. If a new installer build is needed, rerun `npm --prefix standalone run package` with the desired Node runtime source.
