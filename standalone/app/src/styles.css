@@ -59,7 +59,8 @@ body {
 
 .tree-view h2,
 .webview-panel h2,
-.terminal-panel h2 {
+.terminal-panel h2,
+.diagnostics-panel h2 {
   margin: 14px 16px 8px;
   font-size: 13px;
   letter-spacing: 0.08em;
@@ -97,7 +98,7 @@ body {
 
 .editor-area {
   display: grid;
-  grid-template-rows: minmax(240px, 1fr) auto auto;
+  grid-template-rows: minmax(240px, 1fr) auto auto auto auto;
   min-width: 0;
   overflow: hidden;
 }
@@ -159,6 +160,120 @@ body {
   padding: 12px 16px;
   color: #78c6a3;
   font: 13px/1.5 "Cascadia Code", "Consolas", monospace;
+}
+
+.diagnostics-panel {
+  border-top: 1px solid #29404f;
+  background: #0d151c;
+}
+
+.diagnostics-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px 6px;
+  color: #8fb4c6;
+}
+
+.diagnostics-header h2 {
+  margin: 0;
+}
+
+.diagnostics-list {
+  display: grid;
+  gap: 10px;
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px 16px 14px;
+}
+
+.diagnostics-card {
+  border: 1px solid #29404f;
+  border-radius: 12px;
+  padding: 12px;
+  background: #13212b;
+}
+
+.diagnostics-card.failed {
+  border-color: #e76f51;
+}
+
+.diagnostics-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.diagnostics-card-title h3 {
+  margin: 0;
+  color: #dbe7ef;
+  font-size: 14px;
+}
+
+.diagnostics-status {
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: #101820;
+  background: #8fb4c6;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.diagnostics-status.activated {
+  background: #78c6a3;
+}
+
+.diagnostics-status.failed {
+  background: #e76f51;
+}
+
+.diagnostics-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px 14px;
+  margin: 10px 0;
+}
+
+.diagnostics-meta div {
+  min-width: 0;
+}
+
+.diagnostics-meta dt {
+  color: #8fb4c6;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.diagnostics-meta dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  color: #dbe7ef;
+  font-size: 12px;
+}
+
+.diagnostics-events {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.diagnostics-events li {
+  color: #8fb4c6;
+}
+
+.diagnostics-events span,
+.diagnostics-events strong {
+  margin-right: 8px;
+  color: #78c6a3;
+  font-size: 12px;
+}
+
+.diagnostics-events p {
+  margin: 2px 0 0;
+  color: #dbe7ef;
+  font-size: 12px;
 }
 
 .output-panel {
