@@ -98,4 +98,60 @@ describe("ExtensionDiagnosticsRegistry", () => {
     expect(events[0].message).toBe("event 5");
     expect(events[199].message).toBe("event 204");
   });
+
+  it("records event details defensively", () => {
+    const registry = new ExtensionDiagnosticsRegistry();
+    const details: Record<string, unknown> = { resolvedMain: "C:/extensions/fixture/extension.js" };
+
+    registry.recordPhase({
+      extensionPath: "C:/extensions/fixture",
+      phase: "mainResolution",
+      status: "loaded",
+      message: "Resolved extension entry",
+      details
+    });
+    details.resolvedMain = "C:/tampered.js";
+
+    expect(registry.snapshot().extensions[0].events[0].details).toEqual({
+      resolvedMain: "C:/extensions/fixture/extension.js"
+    });
+  });
+
+  it("returns defensive snapshot copies", () => {
+    const registry = new ExtensionDiagnosticsRegistry();
+    const id = registry.recordManifest("C:/extensions/fixture", {
+      name: "fixture",
+      publisher: "acme",
+      activationEvents: ["onStartupFinished"],
+      contributes: {
+        views: {
+          explorer: [{ id: "fixture.view", name: "Fixture" }]
+        }
+      }
+    });
+    registry.recordPhase({
+      extensionPath: "C:/extensions/fixture",
+      extensionId: id,
+      phase: "mainResolution",
+      status: "loaded",
+      message: "Resolved extension entry",
+      details: { resolvedMain: "C:/extensions/fixture/extension.js" }
+    });
+
+    const snapshot = registry.snapshot();
+    snapshot.extensions[0].activationEvents?.push("tampered");
+    snapshot.extensions[0].contributedViews?.push("tampered.view");
+    snapshot.extensions[0].events[0].message = "Tampered event";
+    if (snapshot.extensions[0].events[1].details) {
+      snapshot.extensions[0].events[1].details.resolvedMain = "C:/tampered.js";
+    }
+
+    const extension = registry.snapshot().extensions[0];
+    expect(extension.activationEvents).toEqual(["onStartupFinished"]);
+    expect(extension.contributedViews).toEqual(["fixture.view"]);
+    expect(extension.events[0].message).toBe("Parsed extension manifest");
+    expect(extension.events[1].details).toEqual({
+      resolvedMain: "C:/extensions/fixture/extension.js"
+    });
+  });
 });

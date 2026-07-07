@@ -82,7 +82,7 @@ export class ExtensionDiagnosticsRegistry {
         phase: input.phase,
         status: input.status,
         message: input.message,
-        ...(input.details ? { details: input.details } : {})
+        ...(input.details ? { details: { ...input.details } } : {})
       };
       const next: ExtensionDiagnosticDto = {
         ...extension,
@@ -113,7 +113,7 @@ export class ExtensionDiagnosticsRegistry {
         status: "failed",
         message: input.message,
         error,
-        ...(input.details ? { details: input.details } : {})
+        ...(input.details ? { details: { ...input.details } } : {})
       };
       this.extensions.set(extension.id, {
         ...extension,
@@ -130,10 +130,7 @@ export class ExtensionDiagnosticsRegistry {
 
   snapshot(): ExtensionDiagnosticsPayload {
     return {
-      extensions: Array.from(this.extensions.values()).map((extension) => ({
-        ...extension,
-        events: [...extension.events]
-      }))
+      extensions: Array.from(this.extensions.values()).map(copyExtensionDiagnostic)
     };
   }
 
@@ -192,9 +189,21 @@ function extractManifestMetadata(manifest: ExtensionManifest): Partial<Extension
     version: manifest.version,
     publisher: manifest.publisher,
     main: manifest.main,
-    activationEvents: Array.isArray(manifest.activationEvents) ? manifest.activationEvents : [],
+    activationEvents: Array.isArray(manifest.activationEvents) ? [...manifest.activationEvents] : [],
     contributedViews: extractContributedViews(manifest),
     commandCount: Array.isArray(manifest.contributes?.commands) ? manifest.contributes.commands.length : 0
+  };
+}
+
+function copyExtensionDiagnostic(extension: ExtensionDiagnosticDto): ExtensionDiagnosticDto {
+  return {
+    ...extension,
+    ...(extension.activationEvents ? { activationEvents: [...extension.activationEvents] } : {}),
+    ...(extension.contributedViews ? { contributedViews: [...extension.contributedViews] } : {}),
+    events: extension.events.map((event) => ({
+      ...event,
+      ...(event.details ? { details: { ...event.details } } : {})
+    }))
   };
 }
 
