@@ -8,6 +8,20 @@
 
 **Tech Stack:** TypeScript, Vitest, React 18, Vite, Node.js child process smoke tests, existing standalone IPC protocol.
 
+## Current Completion
+
+Core diagnostics panel completion: 100%.
+
+The generic `extension.diagnostics` protocol, extension-host registry, loader/main IPC wiring, workbench state, React diagnostics panel, README section, and IPC smoke test have been implemented. Follow-up hardening is being handled as small commits on top of the completed feature.
+
+Latest hardening completed on 2026-07-08:
+
+- Tightened front-end `extension.diagnostics` IPC validation for optional string fields, optional string arrays, and event `details` records.
+- Added regression tests that reject invalid `activationEvents`, invalid `contributedViews`, and invalid event `details`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

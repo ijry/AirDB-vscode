@@ -195,7 +195,7 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
 }
 
 function isStringRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object");
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 function isDiagnosticsPayload(value: unknown): value is { extensions: ExtensionDiagnosticState[] } {
@@ -206,29 +206,58 @@ function isDiagnosticsPayload(value: unknown): value is { extensions: ExtensionD
 }
 
 function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticState {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+
   return Boolean(
-    value &&
-      typeof value === "object" &&
-      typeof (value as { id?: unknown }).id === "string" &&
-      typeof (value as { extensionPath?: unknown }).extensionPath === "string" &&
-      typeof (value as { commandCount?: unknown }).commandCount === "number" &&
-      typeof (value as { status?: unknown }).status === "string" &&
-      Array.isArray((value as { events?: unknown }).events) &&
-      (value as { events: unknown[] }).events.every(isDiagnosticEvent)
+    typeof value.id === "string" &&
+      typeof value.extensionPath === "string" &&
+      typeof value.commandCount === "number" &&
+      typeof value.status === "string" &&
+      isOptionalString(value.displayName) &&
+      isOptionalString(value.version) &&
+      isOptionalString(value.publisher) &&
+      isOptionalString(value.main) &&
+      isOptionalString(value.resolvedMain) &&
+      isOptionalString(value.lastError) &&
+      isOptionalString(value.startedAt) &&
+      isOptionalString(value.activatedAt) &&
+      isOptionalStringArray(value.activationEvents) &&
+      isOptionalStringArray(value.contributedViews) &&
+      Array.isArray(value.events) &&
+      value.events.every(isDiagnosticEvent)
   );
 }
 
 function isDiagnosticEvent(value: unknown): value is ExtensionDiagnosticEventState {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+
   return Boolean(
-    value &&
-      typeof value === "object" &&
-      typeof (value as { id?: unknown }).id === "string" &&
-      typeof (value as { extensionPath?: unknown }).extensionPath === "string" &&
-      typeof (value as { timestamp?: unknown }).timestamp === "string" &&
-      typeof (value as { phase?: unknown }).phase === "string" &&
-      typeof (value as { status?: unknown }).status === "string" &&
-      typeof (value as { message?: unknown }).message === "string"
+    typeof value.id === "string" &&
+      isOptionalString(value.extensionId) &&
+      typeof value.extensionPath === "string" &&
+      typeof value.timestamp === "string" &&
+      typeof value.phase === "string" &&
+      typeof value.status === "string" &&
+      typeof value.message === "string" &&
+      isOptionalString(value.error) &&
+      isOptionalRecord(value.details)
   );
+}
+
+function isOptionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
+}
+
+function isOptionalStringArray(value: unknown): boolean {
+  return value === undefined || (Array.isArray(value) && value.every((item) => typeof item === "string"));
+}
+
+function isOptionalRecord(value: unknown): boolean {
+  return value === undefined || isStringRecord(value);
 }
 
 function normalizeStringArray(value: unknown): string[] {

@@ -314,4 +314,56 @@ describe("mapHostMessageToActions", () => {
       }))
     ).toEqual([]);
   });
+
+  it("ignores extension diagnostics with invalid activation events", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          activationEvents: ["onStartupFinished", 123],
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid contributed views", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          contributedViews: ["fixture.view", {}],
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid event details", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension",
+            details: "invalid"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
 });
