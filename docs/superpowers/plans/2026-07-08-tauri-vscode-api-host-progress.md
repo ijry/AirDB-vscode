@@ -19,9 +19,9 @@
 
 ## Current Completion
 
-Estimated completion: 98%.
+Estimated completion: 99%.
 
-The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. Remaining work is operational: decide whether to keep/apply/drop the preserved local stash, and optionally run a manual installer smoke test.
+The implementation is complete, merged into `main`, verified locally, and pushed to `origin/main`. The preserved release metadata stash has been applied and pushed while leaving the stash entry intact as a backup. Remaining work is optional: drop the applied stash backup if desired, and optionally run a manual installer smoke test.
 
 ## Milestones
 
@@ -38,8 +38,9 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 - [x] Removed the feature branch and cleaned the feature worktree.
 - [x] Added `standalone/extensions/.gitkeep` so fresh checkouts keep the resource root needed by Cargo/Tauri bundling.
 - [x] Inspected `stash@{0}`; it contains only `CHANGELOG.md` and root `package.json` edits.
+- [x] Applied `stash@{0}` and pushed release metadata commit `e5144f6`.
 - [x] Pushed `main` to `origin/main`.
-- [ ] Decide whether to keep, apply, or drop `stash@{0}`.
+- [ ] Decide whether to keep or drop the already-applied `stash@{0}` backup.
 - [ ] Optional: install and launch the generated MSI/NSIS package for a manual desktop smoke test.
 
 ## Verified Commands
@@ -60,6 +61,7 @@ The implementation is complete, merged into `main`, verified locally, and pushed
 - Remote state: `main` was pushed to `origin/main`; run `git status --short --branch` for the live count.
 - Preserved stash: `stash@{0}: On main: pre-merge main local changes before tauri vscode api host merge`
 - Stash contents: `CHANGELOG.md` and root `package.json`, with 11 insertions and 1 deletion.
+- Stash status: applied and pushed in commit `e5144f6`, but the stash entry was intentionally not dropped.
 - Worktree cleanup: feature worktree removed; only `main` worktree remains.
 - Working tree: clean after status verification, aside from Git warnings about untracked cache being disabled on this location.
 
