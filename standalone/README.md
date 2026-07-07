@@ -142,6 +142,20 @@ npm run smoke:webview-ipc
 
 The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, verifies that a webview panel emits HTML containing standalone local resource URIs, sends a simulated webview `init` message, and verifies the extension replies with `syncState`.
 
+## Extension Diagnostics IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:extension-diagnostics-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension and verifies that `extension.diagnostics` reports the activated extension, contributed view, and command count.
+
+## Extension Diagnostics Troubleshooting
+
+The standalone workbench includes an extension diagnostics panel. Use it when a bundled VS Code-style extension does not appear or does not activate. The panel shows discovery, manifest parsing, contribution registration, main file resolution, module import, activation status, recent diagnostic events, command count, and contributed views. A failed extension should show the phase and error message that caused the failure.
+
 ## Packages
 
 - `protocol`: shared IPC message types and JSON-line utilities.
