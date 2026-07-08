@@ -3,11 +3,11 @@ import { Global } from "@/common/global";
 import * as path from "path";
 import * as vscode from "vscode";
 import { CodeCommand, ConfigKey, Constants, DatabaseType, ModelType } from "../../common/constants";
-import { FileManager } from "../../common/filesManager";
 import { Util } from "../../common/util";
 import { DbTreeDataProvider } from "../../provider/treeDataProvider";
 import { DatabaseCache } from "../../service/common/databaseCache";
 import { ConnectionManager } from "../../service/connectionManager";
+import { QueryWorkspacePage } from "../../service/result/queryWorkspace";
 import { CopyAble } from "../interface/copyAble";
 import { CommandKey, Node } from "../interface/node";
 import { TableGroup } from "../main/tableGroup";
@@ -120,7 +120,7 @@ Console.log('asdasd')
     // 新建查询
     public async newQuery() {
 
-        await FileManager.show(`${this.label}.sql`);
+        await QueryWorkspacePage.open(this);
         let childMap = {};
         const dbNameList = (await this.getChildren()).filter((databaseNode) => (databaseNode instanceof SchemaNode || databaseNode instanceof CatalogNode)).map((databaseNode) => {
             childMap[databaseNode.uid] = databaseNode

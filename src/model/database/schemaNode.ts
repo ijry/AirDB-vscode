@@ -1,4 +1,3 @@
-import { FileModel } from "@/common/filesManager";
 import { Global } from "@/common/global";
 import * as vscode from "vscode";
 import { DatabaseType, ModelType } from "../../common/constants";
@@ -7,6 +6,7 @@ import { DbTreeDataProvider } from '../../provider/treeDataProvider';
 import { DatabaseCache } from "../../service/common/databaseCache";
 import { ConnectionManager } from "../../service/connectionManager";
 import { QueryUnit } from "../../service/queryUnit";
+import { QueryWorkspacePage } from "../../service/result/queryWorkspace";
 import { CopyAble } from "../interface/copyAble";
 import { Node } from "../interface/node";
 import { FunctionGroup } from "../main/functionGroup";
@@ -116,7 +116,7 @@ export class SchemaNode extends Node implements CopyAble {
 
     public async newQuery() {
 
-        QueryUnit.showSQLTextDocument(this,'',`${this.schema}.sql`,FileModel.APPEND)
+        await QueryWorkspacePage.open(this);
 
     }
 

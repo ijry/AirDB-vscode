@@ -219,6 +219,7 @@ export interface QueryOption {
     viewId?: any;
     split?: boolean;
     recordHistory?: boolean;
+    viewMode?: 'result' | 'workspace';
     /**
      * runAll if get sql from editor.
      */

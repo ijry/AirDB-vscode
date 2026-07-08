@@ -1,7 +1,6 @@
-import { FileModel } from "@/common/filesManager";
 import { DbTreeDataProvider } from "@/provider/treeDataProvider";
 import { DatabaseCache } from "@/service/common/databaseCache";
-import { QueryUnit } from "@/service/queryUnit";
+import { QueryWorkspacePage } from "@/service/result/queryWorkspace";
 import * as vscode from "vscode";
 import { DatabaseType, ModelType } from "../../common/constants";
 import { Util } from '../../common/util';
@@ -38,7 +37,7 @@ export class CatalogNode extends Node implements CopyAble {
 
     public async newQuery() {
 
-        QueryUnit.showSQLTextDocument(this,'',`${this.database}.sql`,FileModel.APPEND)
+        await QueryWorkspacePage.open(this);
 
     }
 

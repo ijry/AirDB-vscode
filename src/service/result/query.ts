@@ -16,6 +16,7 @@ import { DataResponse } from "./queryResponse";
 import * as vscode from 'vscode';
 import { Console } from "@/common/Console";
 import { TableNode } from "@/model/main/tableNode";
+import { QueryWorkspacePage } from "./queryWorkspace";
 
 export class QueryParam<T> {
     public connection: Node;
@@ -32,6 +33,16 @@ export class QueryPage {
     public static async send(queryParam: QueryParam<any>) {
 
         const dbOption: Node = queryParam.connection;
+        if (queryParam.queryOption?.viewMode === "workspace") {
+            await QueryPage.adaptData(queryParam);
+            queryParam.res.transId = Trans.transId;
+            queryParam.res.viewId = queryParam.queryOption?.viewId;
+            await QueryWorkspacePage.open(dbOption, "", {
+                type: queryParam.type,
+                content: queryParam.res,
+            });
+            return;
+        }
         await QueryPage.adaptData(queryParam);
         const type = this.keepSingle(queryParam);
         // Console.log('&&&&'+ type)
