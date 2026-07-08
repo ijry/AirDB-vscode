@@ -57,7 +57,8 @@ module.exports = [
     {
         entry: {
             app: './src/vue/main.js',
-            query: './src/vue/result/main.js'
+            query: './src/vue/result/main.js',
+            queryWorkspace: './src/vue/queryWorkspace/main.js'
         },
         plugins: [
             new VueLoaderPlugin(),
@@ -66,6 +67,12 @@ module.exports = [
                 templateContent: `<head><script src="js/oldCompatible.js"></script></head><body> <div id="app"></div> </body>`,
                 chunks: ['query'],
                 filename: 'webview/result.html'
+            }),
+            new HtmlWebpackPlugin({
+                inject: true,
+                templateContent: `<head><script src="js/oldCompatible.js"></script></head><body><div id="app"></div></body>`,
+                chunks: ['queryWorkspace'],
+                filename: 'webview/queryWorkspace.html'
             }),
             new CopyWebpackPlugin({
                 patterns: [{ from: 'public', to: './webview' }]
