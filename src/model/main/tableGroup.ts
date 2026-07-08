@@ -143,6 +143,13 @@ export class TableGroup extends Node {
         this.provider.reload(this);
     }
 
+    private parseTableFilterKeywords(keyword: string): string[] {
+        if (!keyword) {
+            return [];
+        }
+        return keyword.split(/[,\s]+/).map(item => item.trim()).filter(item => item);
+    }
+
     // 表筛选
     public filterTable() {
         let tableFilterKeyword = GlobalState.get<any>(this.stateKey) || '';
@@ -157,6 +164,7 @@ export class TableGroup extends Node {
                 GlobalState.update(this.stateKey, '');
                 vscode.window.showErrorMessage(`Cancel`)
             }
+            this.setChildCache(null);
             this.reload();
         })
     }
@@ -182,12 +190,7 @@ export class TableGroup extends Node {
                 if (!this.pinedTables.includes(table.table)) {
                     table.pined = false;
                     // 支持多个字符搜索
-                    let tableFilterKeywordList = [];
-                    if (tableFilterKeyword) {
-                        tableFilterKeywordList = tableFilterKeyword.split(',');
-                    } else {
-                        tableFilterKeywordList = [];
-                    }
+                    let tableFilterKeywordList = this.parseTableFilterKeywords(tableFilterKeyword);
                     // Console.log(tableFilterKeywordList);
                     if (tableFilterKeywordList.length > 0) {
                         let hit = false;
@@ -230,12 +233,7 @@ export class TableGroup extends Node {
                     // 过滤置顶的表
                     if (!this.pinedTables.includes(table.name)) {
                         // 支持多个字符搜索
-                        let tableFilterKeywordList = [];
-                        if (tableFilterKeyword) {
-                            tableFilterKeywordList = tableFilterKeyword.split(',');
-                        } else {
-                            tableFilterKeywordList = [];
-                        }
+                        let tableFilterKeywordList = this.parseTableFilterKeywords(tableFilterKeyword);
                         if (tableFilterKeywordList.length > 0) {
                             let hit = false;
                             tableFilterKeywordList.forEach((eleKeyword) => {

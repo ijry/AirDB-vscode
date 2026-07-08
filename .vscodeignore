@@ -19,3 +19,7 @@ tailwind.config.js
 backlog.md
 i18n.js
 postcss.config.js
+.worktrees/**
+standalone/**
+docs/**
+*.vsix
