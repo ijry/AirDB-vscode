@@ -1,7 +1,29 @@
-import type { HostMessage } from "@airdb-standalone/protocol";
+import type {
+  ExtensionDiagnosticPhase,
+  ExtensionDiagnosticStatus,
+  HostMessage
+} from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
 import type { ExtensionDiagnosticEventState, ExtensionDiagnosticState, NotificationItem } from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
+
+const DIAGNOSTIC_STATUSES = [
+  "discovered",
+  "loading",
+  "loaded",
+  "activating",
+  "activated",
+  "failed"
+] as const satisfies readonly ExtensionDiagnosticStatus[];
+
+const DIAGNOSTIC_PHASES = [
+  "discover",
+  "manifest",
+  "contributions",
+  "mainResolution",
+  "moduleImport",
+  "activation"
+] as const satisfies readonly ExtensionDiagnosticPhase[];
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
   if (message.kind !== "notification" && message.kind !== "request") {
@@ -214,7 +236,7 @@ function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticStat
     typeof value.id === "string" &&
       typeof value.extensionPath === "string" &&
       typeof value.commandCount === "number" &&
-      typeof value.status === "string" &&
+      isDiagnosticStatus(value.status) &&
       isOptionalString(value.displayName) &&
       isOptionalString(value.version) &&
       isOptionalString(value.publisher) &&
@@ -240,12 +262,20 @@ function isDiagnosticEvent(value: unknown): value is ExtensionDiagnosticEventSta
       isOptionalString(value.extensionId) &&
       typeof value.extensionPath === "string" &&
       typeof value.timestamp === "string" &&
-      typeof value.phase === "string" &&
-      typeof value.status === "string" &&
+      isDiagnosticPhase(value.phase) &&
+      isDiagnosticStatus(value.status) &&
       typeof value.message === "string" &&
       isOptionalString(value.error) &&
       isOptionalRecord(value.details)
   );
+}
+
+function isDiagnosticStatus(value: unknown): value is ExtensionDiagnosticStatus {
+  return typeof value === "string" && DIAGNOSTIC_STATUSES.includes(value as ExtensionDiagnosticStatus);
+}
+
+function isDiagnosticPhase(value: unknown): value is ExtensionDiagnosticPhase {
+  return typeof value === "string" && DIAGNOSTIC_PHASES.includes(value as ExtensionDiagnosticPhase);
 }
 
 function isOptionalString(value: unknown): boolean {

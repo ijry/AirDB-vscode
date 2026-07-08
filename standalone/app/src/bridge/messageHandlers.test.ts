@@ -366,4 +366,60 @@ describe("mapHostMessageToActions", () => {
       }))
     ).toEqual([]);
   });
+
+  it("ignores extension diagnostics with unknown extension status", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "unknown",
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown event phase", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "unexpected",
+            status: "activated",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown event status", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "unexpected",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
 });

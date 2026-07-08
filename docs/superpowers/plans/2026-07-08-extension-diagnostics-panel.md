@@ -22,6 +22,14 @@ Latest hardening completed on 2026-07-08:
 - Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
 - Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
 
+Additional hardening completed on 2026-07-08:
+
+- Tightened app diagnostics state types to reuse protocol `ExtensionDiagnosticStatus` and `ExtensionDiagnosticPhase`.
+- Added regression tests that reject unknown extension status, unknown event phase, and unknown event status.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

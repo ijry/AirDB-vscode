@@ -1,4 +1,8 @@
-import type { HostCommandDto } from "@airdb-standalone/protocol";
+import type {
+  ExtensionDiagnosticPhase,
+  ExtensionDiagnosticStatus,
+  HostCommandDto
+} from "@airdb-standalone/protocol";
 
 export interface ActivityContainer {
   id: string;
@@ -101,8 +105,8 @@ export interface ExtensionDiagnosticEventState {
   extensionId?: string;
   extensionPath: string;
   timestamp: string;
-  phase: string;
-  status: string;
+  phase: ExtensionDiagnosticPhase;
+  status: ExtensionDiagnosticStatus;
   message: string;
   error?: string;
   details?: Record<string, unknown>;
@@ -119,7 +123,7 @@ export interface ExtensionDiagnosticState {
   activationEvents?: string[];
   contributedViews?: string[];
   commandCount: number;
-  status: string;
+  status: ExtensionDiagnosticStatus;
   lastError?: string;
   startedAt?: string;
   activatedAt?: string;

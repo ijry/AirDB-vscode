@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { initialWorkbenchState, workbenchReducer } from "./workbenchStore";
+import type { ExtensionDiagnosticState } from "./types";
 
 describe("workbenchReducer", () => {
   it("registers containers and selects the first one", () => {
@@ -249,7 +250,7 @@ describe("workbenchReducer", () => {
   });
 
   it("stores extension diagnostics snapshots defensively", () => {
-    const extensions = [{
+    const extensions: ExtensionDiagnosticState[] = [{
       id: "acme.fixture",
       extensionPath: "C:/extensions/fixture",
       activationEvents: ["onStartupFinished"],
@@ -271,10 +272,12 @@ describe("workbenchReducer", () => {
       type: "diagnostics/extensions",
       extensions
     });
-    extensions[0].activationEvents.push("tampered");
-    extensions[0].contributedViews.push("tampered.view");
-    extensions[0].events[0].message = "Tampered";
-    extensions[0].events[0].details.resolvedMain = "C:/tampered.js";
+    const fixture = extensions[0]!;
+    const event = fixture.events[0]!;
+    fixture.activationEvents!.push("tampered");
+    fixture.contributedViews!.push("tampered.view");
+    event.message = "Tampered";
+    event.details!.resolvedMain = "C:/tampered.js";
 
     const extension = state.diagnostics.extensions[0];
     expect(extension.activationEvents).toEqual(["onStartupFinished"]);
