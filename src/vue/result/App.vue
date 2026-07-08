@@ -19,13 +19,23 @@
 <template>
   <div id="app" style="padding: 0px 10px;">
     <div ref="hint" class="hint px-0" style="margin-bottom: 3px;padding-left: 0;padding-right: 0;">
-      <div class="relative" style="width:100%;margin-top: 0px;margin-bottom: 6px;position: relative;">
+      <ConditionFilter
+        v-if="isTableResult"
+        :fields="result.fields || []"
+        :columnList="result.columnList || []"
+        :filters.sync="toolbar.conditionFilters"
+        :generatedSql="generatedFilterSql"
+        @apply-row="applyConditionFilters"
+        @apply-all="applyConditionFilters"
+        @clear="clearConditionFilters"
+      />
+      <div v-else class="relative" style="width:100%;margin-top: 0px;margin-bottom: 6px;position: relative;">
         <el-input class="sql-pannel" type="textarea" :autosize="{ minRows:2, maxRows:8}"
           v-model="toolbar.sql" @keypress.native="panelInput" />
           <div style="position: absolute;bottom: 5px;right: 10px;">
           </div>
       </div>
-      <div class="toolbar-session" style="display: flex;align-items: center;"">
+      <div class="toolbar-session" style="display: flex;align-items: center;">
         <div class="excute-box" style="display:flex;align-items: center;padding-right: 15px;">
           <div style="display:inline-flex;align-items: center;font-size:14px;padding-left: 0px;" class="el-pagination__total">
             <span class="cursor-pointer" style="padding: 0px 5px 0px 0px; cursor: pointer;" v-if="info.message" @click="openResult">
@@ -43,7 +53,7 @@
           <el-button v-if="hasChanged" size="small" :title="$t('Save')" @click="save" type="warning">
             {{ $t('Save') }}{{ $t('Changes') }}
           </el-button>
-          <el-button size="small" :title="$t('Execute Sql')" @click="result.data=[];info.message = false;execute(toolbar.sql);">
+          <el-button v-if="!isTableResult" size="small" :title="$t('Execute Sql')" @click="result.data=[];info.message = false;execute(toolbar.sql);">
             {{ $t('Execute Sql') }}
           </el-button>
         </div>
@@ -97,8 +107,13 @@ import ExportDialog from "./component/ExportDialog.vue";
 import Toolbar from "./component/Toolbar";
 import Pagination from "./component/Pagination";
 import EditDialog from "./component/EditDialog";
+import ConditionFilter from "./component/ConditionFilter";
 import { util } from "./mixin/util";
 import { wrapByDb } from "@/common/wrapper";
+const {
+  createDefaultFilterRow,
+  buildTableFilterSql,
+} = require("./util/tableFilterSql");
 let vscodeEvent;
 
 export default {
@@ -111,12 +126,15 @@ export default {
     Controller,
     Row,
     Header,
+    ConditionFilter,
   },
   data() {
     return {
       hinHeight: 90,
       showFullBtn: false,
       remainHeight: 0,
+      baseTableSql: "",
+      conditionFilterApplying: false,
       connection: {},
       resultDialog: false,
       result: {
@@ -146,6 +164,7 @@ export default {
         // using to clear filter input value
         filter: {},
         showColumns: [],
+        conditionFilters: [],
       },
       exportOption: {
         visible: false,
@@ -178,13 +197,21 @@ export default {
       this.showFullBtn = window.outerWidth / window.innerWidth >= 2;
     });
     const handlerData = (data, sameTable) => {
+      const applyingConditionFilter = this.conditionFilterApplying;
+      const previousBaseSql = this.baseTableSql;
+      const previousFilters = (this.toolbar.conditionFilters || []).map((row) => ({ ...row }));
       this.result = data;
       this.toolbar.sql = data.sql;
 
-      if (sameTable) {
+      if (sameTable || applyingConditionFilter) {
         this.clear();
       } else {
         this.reset();
+      }
+      if (applyingConditionFilter) {
+        this.baseTableSql = previousBaseSql || this.baseTableSql || data.sql;
+        this.toolbar.conditionFilters = previousFilters;
+        this.conditionFilterApplying = false;
       }
       // only es have.
       if (data.total != null) {
@@ -195,10 +222,11 @@ export default {
       ) {
         this.count();
       } else {
-        this.page.total = this.result.data.length - 1;
+        this.page.total = this.result.data.length - (this.isTableResult ? 0 : 1);
       }
       this.update.editList = [];
       this.update.lock = false;
+      this.initConditionFilters();
     };
     const handlerCommon = (res) => {
       if (this.$refs.editor) {
@@ -265,7 +293,9 @@ export default {
           this.result.data = response.data;
           this.result.costTime=response.costTime;
           this.toolbar.sql = response.sql;
-          this.result.data.unshift({ isFilter: true, content: "" });
+          if (!this.isTableResult) {
+            this.result.data.unshift({ isFilter: true, content: "" });
+          }
           break;
         case "COUNT":
           this.page.total = parseInt(response.data);
@@ -284,6 +314,7 @@ export default {
           }
           break;
         case "ERROR":
+          this.conditionFilterApplying = false;
           handlerCommon(response);
           this.info.error = true;
           break;
@@ -366,6 +397,57 @@ export default {
       if(event.code=='Enter' && event.ctrlKey){
         this.execute(this.toolbar.sql)
         event.stopPropagation()
+      }
+    },
+    buildConditionRow(fieldName) {
+      const row = createDefaultFilterRow(fieldName ? [{ name: fieldName }] : (this.result.fields || []));
+      const column = (this.result.columnList || []).find((item) => item.name === row.field);
+      return {
+        id: `${Date.now()}-${Math.random()}`,
+        ...row,
+        type: column ? (column.simpleType || column.type) : undefined,
+      };
+    },
+    initConditionFilters() {
+      if (!this.isTableResult) {
+        this.toolbar.conditionFilters = [];
+        this.baseTableSql = "";
+        return;
+      }
+
+      if (!this.baseTableSql) {
+        this.baseTableSql = this.result.sql;
+      }
+
+      if (this.toolbar.conditionFilters.length === 0) {
+        this.toolbar.conditionFilters = [this.buildConditionRow()];
+      }
+    },
+    applyConditionFilters(rowIndex) {
+      let rows = this.toolbar.conditionFilters || [];
+      if (typeof rowIndex === "number") {
+        rows = rows.map((row, index) => ({ ...row, enabled: index === rowIndex ? row.enabled !== false : false }));
+      }
+
+      const sql = buildTableFilterSql(
+        this.baseTableSql || this.result.sql,
+        rows,
+        this.result.dbType,
+        wrapByDb,
+        (type, value) => this.wrapQuote(type, value === "EMPTY" ? "" : value)
+      );
+      if (!sql || sql === `${String(this.baseTableSql || this.result.sql || "").trim().replace(/;+\s*$/, "")};`) {
+        return;
+      }
+      this.conditionFilterApplying = true;
+      this.info.message = false;
+      this.execute(sql);
+    },
+    clearConditionFilters() {
+      this.conditionFilterApplying = false;
+      this.toolbar.conditionFilters = [this.buildConditionRow()];
+      if (this.baseTableSql || this.result.sql) {
+        this.execute(this.baseTableSql || this.result.sql);
       }
     },
     selectable({row}) {
@@ -607,9 +689,11 @@ export default {
       this.table.widthItem = {};
       this.initShowColumn();
       // add filter row
-      if (this.result.columnList) {
+      if (this.result.columnList && !this.isTableResult) {
         this.result.data.unshift({ isFilter: true, content: "" });
       }
+      this.baseTableSql = this.isTableResult ? this.result.sql : "";
+      this.toolbar.conditionFilters = [];
       // toolbar
       if (!this.result.sql.match(/\bwhere\b/gi)) {
         this.toolbar.filter = {};
@@ -620,6 +704,26 @@ export default {
   computed: {
     hasChanged() {
       return Object.keys(this.update.editList).length > 0;
+    },
+    isTableResult() {
+      return this.result.tableCount == 1 &&
+        this.result.table &&
+        this.result.columnList &&
+        this.result.columnList.length > 0 &&
+        this.result.dbType !== "MongoDB" &&
+        this.result.dbType !== "ElasticSearch";
+    },
+    generatedFilterSql() {
+      if (!this.isTableResult) {
+        return this.result.sql || "";
+      }
+      return buildTableFilterSql(
+        this.baseTableSql || this.result.sql,
+        this.toolbar.conditionFilters,
+        this.result.dbType,
+        wrapByDb,
+        (type, value) => this.wrapQuote(type, value === "EMPTY" ? "" : value)
+      );
     },
     filterData() {
       return this.result.data.filter(
