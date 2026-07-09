@@ -65,9 +65,13 @@ export class KingbaseConnection extends IConnection {
             if (err) {
                 if (callback) {
                     callback(err);
+                    if (event.listenerCount("error") > 0) {
+                        event.emit("error", err.message);
+                    }
+                } else {
+                    event.emit("error", err.message);
                 }
                 this.end();
-                event.emit("error", err.message);
                 return;
             }
 

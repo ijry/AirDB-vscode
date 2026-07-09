@@ -31,7 +31,13 @@ class FakeClient extends EventEmitter {
       this.results.length > 0
         ? this.results.shift()
         : { command: "SELECT", rows: [{ id: 1 }], fields: [{ name: "id" }] };
-    process.nextTick(() => callback(null, result));
+    process.nextTick(() => {
+      if (result instanceof Error) {
+        callback(result);
+        return;
+      }
+      callback(null, result);
+    });
   }
 
   end() {
@@ -128,6 +134,33 @@ function flush() {
   });
   await flush();
   assert.strictEqual(ended, true);
+
+  let uncaughtError = null;
+  const uncaughtHandler = (err) => {
+    uncaughtError = err;
+  };
+  process.once("uncaughtException", uncaughtHandler);
+
+  client.results.push(new Error("callback failure"));
+  const callbackError = await new Promise((resolve) => {
+    connection.query("SELECT * FROM broken_demo", (err) => {
+      resolve(err);
+    });
+  });
+  await flush();
+  process.removeListener("uncaughtException", uncaughtHandler);
+  assert(callbackError instanceof Error);
+  assert.strictEqual(callbackError.message, "callback failure");
+  assert.strictEqual(uncaughtError, null);
+
+  client.results.push(new Error("event failure"));
+  const errorEvent = connection.query("SELECT * FROM broken_event_demo");
+  let emittedError = null;
+  errorEvent.on("error", (err) => {
+    emittedError = err;
+  });
+  await flush();
+  assert.strictEqual(emittedError, "event failure");
 
   await new Promise((resolve) => connection.beginTransaction(resolve));
   await connection.rollback();
