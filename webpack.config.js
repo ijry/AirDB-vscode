@@ -93,6 +93,15 @@ module.exports = [
             rules: [
                 { test: /\.vue$/, loader: 'vue-loader', options: { loaders: { css: ["vue-style-loader", "css-loader"] } } },
                 { test: /(\.css|\.cssx)$/, use: ["vue-style-loader", "css-loader", { loader: "postcss-loader" }] },
+                {
+                    test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
+                    loader: 'file-loader',
+                    options: {
+                        name: 'webview/images/[name].[contenthash:8].[ext]',
+                        publicPath: '../',
+                        esModule: false,
+                    },
+                },
                 { test: /\.(woff2?|eot|ttf|otf)(\?.*)?$/, loader: 'url-loader', options: { limit: 80000 } }
             ]
         },
