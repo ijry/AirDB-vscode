@@ -1,6 +1,5 @@
 import { DbTreeDataProvider } from "@/provider/treeDataProvider";
 import { DatabaseCache } from "@/service/common/databaseCache";
-import { QueryWorkspacePage } from "@/service/result/queryWorkspace";
 import * as vscode from "vscode";
 import { DatabaseType, ModelType } from "../../common/constants";
 import { Util } from '../../common/util';
@@ -37,6 +36,7 @@ export class CatalogNode extends Node implements CopyAble {
 
     public async newQuery() {
 
+        const { QueryWorkspacePage } = await import("../../service/result/queryWorkspace");
         await QueryWorkspacePage.open(this);
 
     }

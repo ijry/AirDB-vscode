@@ -14,7 +14,14 @@ export interface QueryWorkspaceMessage {
 }
 
 export class QueryWorkspacePage {
-    private static exportService: ExportService = new ExportService();
+    private static exportService: ExportService;
+
+    private static getExportService(): ExportService {
+        if (!this.exportService) {
+            this.exportService = new ExportService();
+        }
+        return this.exportService;
+    }
 
     public static async open(connection: Node, initialSql: string = "", message?: QueryWorkspaceMessage): Promise<void> {
         const viewId = `QueryWorkspace:${connection.getConnectId({ withSchema: true })}`;
@@ -56,7 +63,7 @@ export class QueryWorkspacePage {
                         handler.emit(MessageType.NEXT_PAGE, { sql, data: rows, costTime });
                     });
                 }).on("export", (params) => {
-                    this.exportService.export({ ...params.option, dbOption: connection }).then(() => {
+                    this.getExportService().export({ ...params.option, dbOption: connection }).then(() => {
                         handler.emit("EXPORT_DONE");
                     });
                 }).on("changePageSize", (pageSize) => {

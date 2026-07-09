@@ -6,7 +6,6 @@ import { DbTreeDataProvider } from '../../provider/treeDataProvider';
 import { DatabaseCache } from "../../service/common/databaseCache";
 import { ConnectionManager } from "../../service/connectionManager";
 import { QueryUnit } from "../../service/queryUnit";
-import { QueryWorkspacePage } from "../../service/result/queryWorkspace";
 import { CopyAble } from "../interface/copyAble";
 import { Node } from "../interface/node";
 import { FunctionGroup } from "../main/functionGroup";
@@ -116,6 +115,7 @@ export class SchemaNode extends Node implements CopyAble {
 
     public async newQuery() {
 
+        const { QueryWorkspacePage } = await import("../../service/result/queryWorkspace");
         await QueryWorkspacePage.open(this);
 
     }

@@ -7,7 +7,6 @@ import { Util } from "../../common/util";
 import { DbTreeDataProvider } from "../../provider/treeDataProvider";
 import { DatabaseCache } from "../../service/common/databaseCache";
 import { ConnectionManager } from "../../service/connectionManager";
-import { QueryWorkspacePage } from "../../service/result/queryWorkspace";
 import { CopyAble } from "../interface/copyAble";
 import { CommandKey, Node } from "../interface/node";
 import { TableGroup } from "../main/tableGroup";
@@ -120,6 +119,7 @@ Console.log('asdasd')
     // 新建查询
     public async newQuery() {
 
+        const { QueryWorkspacePage } = await import("../../service/result/queryWorkspace");
         await QueryWorkspacePage.open(this);
         let childMap = {};
         const dbNameList = (await this.getChildren()).filter((databaseNode) => (databaseNode instanceof SchemaNode || databaseNode instanceof CatalogNode)).map((databaseNode) => {

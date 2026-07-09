@@ -16,7 +16,6 @@ import { DataResponse } from "./queryResponse";
 import * as vscode from 'vscode';
 import { Console } from "@/common/Console";
 import { TableNode } from "@/model/main/tableNode";
-import { QueryWorkspacePage } from "./queryWorkspace";
 
 export class QueryParam<T> {
     public connection: Node;
@@ -28,7 +27,14 @@ export class QueryParam<T> {
 
 export class QueryPage {
 
-    private static exportService: ExportService = new ExportService()
+    private static exportService: ExportService;
+
+    private static getExportService(): ExportService {
+        if (!this.exportService) {
+            this.exportService = new ExportService();
+        }
+        return this.exportService;
+    }
 
     public static async send(queryParam: QueryParam<any>) {
 
@@ -37,6 +43,7 @@ export class QueryPage {
             await QueryPage.adaptData(queryParam);
             queryParam.res.transId = Trans.transId;
             queryParam.res.viewId = queryParam.queryOption?.viewId;
+            const { QueryWorkspacePage } = await import("./queryWorkspace");
             await QueryWorkspacePage.open(dbOption, "", {
                 type: queryParam.type,
                 content: queryParam.res,
@@ -98,7 +105,7 @@ export class QueryPage {
                         })
                     }
                 }).on('export', (params) => {
-                    this.exportService.export({ ...params.option, request: queryParam.res.request, dbOption }).then(() => {
+                    this.getExportService().export({ ...params.option, request: queryParam.res.request, dbOption }).then(() => {
                         handler.emit('EXPORT_DONE')
                     })
                 }).on('changePageSize', (pageSize) => {
