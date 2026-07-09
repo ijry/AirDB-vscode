@@ -209,6 +209,7 @@
         v-if="
           connectionOption.dbType == 'MySQL' ||
           connectionOption.dbType == 'PostgreSQL' ||
+          connectionOption.dbType == 'KingbaseES' ||
           connectionOption.dbType == 'MongoDB' ||
           connectionOption.dbType == 'Redis'
         "
@@ -240,7 +241,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'ElasticSearch'].includes(connectionOption.dbType)
+        ['MySQL', 'PostgreSQL', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -293,6 +294,11 @@ const dbLogoMap = {
     text: "PG",
     bg: "#e8f0ff",
     color: "#2563eb",
+  },
+  KingbaseES: {
+    text: "KB",
+    bg: "#ecfeff",
+    color: "#0891b2",
   },
   Oracle: {
     text: "OR",
@@ -387,6 +393,7 @@ export default {
       supportDatabases: [
         "MySQL",
         "PostgreSQL",
+        "KingbaseES",
         "Oracle",
         "SqlServer",
         "SQLite",
@@ -527,6 +534,12 @@ export default {
           this.connectionOption.encrypt = false;
           this.connectionOption.port = 5432;
           this.connectionOption.database = "postgres";
+          break;
+        case "KingbaseES":
+          this.connectionOption.user = "system";
+          this.connectionOption.encrypt = false;
+          this.connectionOption.port = 54321;
+          this.connectionOption.database = "test";
           break;
         case "Oracle":
           this.connectionOption.user = "system";
