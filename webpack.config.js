@@ -95,10 +95,9 @@ module.exports = [
                 { test: /(\.css|\.cssx)$/, use: ["vue-style-loader", "css-loader", { loader: "postcss-loader" }] },
                 {
                     test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
-                    loader: 'file-loader',
+                    loader: 'url-loader',
                     options: {
-                        name: 'webview/images/[name].[contenthash:8].[ext]',
-                        publicPath: '../',
+                        limit: 80000,
                         esModule: false,
                     },
                 },
