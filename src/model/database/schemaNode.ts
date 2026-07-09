@@ -71,7 +71,9 @@ export class SchemaNode extends Node implements CopyAble {
 
     public dropDatatabase() {
 
-        const target = this.dbType == DatabaseType.MSSQL || this.dbType == DatabaseType.PG ? 'schema' : 'database';
+        const target = this.dbType == DatabaseType.ORACLE
+            ? 'user'
+            : (this.dbType == DatabaseType.MSSQL || this.dbType == DatabaseType.PG ? 'schema' : 'database');
         vscode.window.showInputBox({
             prompt: vscode.l10n.t(`Are you sure you want to drop {0} {1} ?`, target, this.schema),
             placeHolder: vscode.l10n.t(`Input {0} name to confirm.`, target)

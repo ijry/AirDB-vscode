@@ -7,6 +7,14 @@ export function wrapByDb(origin, databaseType) {
     if (databaseType == 'PostgreSQL') {
         return origin.split(".").map(text => `"${text}"`).join(".")
     }
+    if (databaseType == 'Oracle') {
+        return origin.split(".").map(text => {
+            if (text.match(/\b[-\s]+\b/ig) || text.match(/^( |if|key|desc|length|group|order)$/i)) {
+                return `"${text.replace(/"/g, '""')}"`;
+            }
+            return text;
+        }).join(".")
+    }
     if (databaseType == 'MongoDB') {
         return origin;
     }

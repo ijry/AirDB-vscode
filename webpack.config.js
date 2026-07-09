@@ -28,7 +28,8 @@ module.exports = [
         externals: {
             vscode: 'commonjs vscode',
             mockjs: 'mockjs vscode',
-            'mongodb-client-encryption':'mongodb-client-encryption'
+            'mongodb-client-encryption':'mongodb-client-encryption',
+            oracledb: 'commonjs oracledb'
         },
         resolve: {
             extensions: ['.ts', '.js'],

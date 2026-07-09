@@ -13,6 +13,7 @@ import { DatabaseType } from "@/common/constants";
 import { EsConnection } from "./connect/esConnection";
 import { MSSqlConnnection } from "./connect/mssqlConnection";
 import { MysqlConnection } from "./connect/mysqlConnection";
+import { OracleConnection } from "./connect/oracleConnection";
 import { PostgreSqlConnection } from "./connect/postgreSqlConnection";
 import { RedisConnection } from "./connect/redisConnection";
 import { FTPConnection } from "./connect/ftpConnection";
@@ -153,6 +154,8 @@ export class ConnectionManager {
                 return new MSSqlConnnection(opt)
             case DatabaseType.PG:
                 return new PostgreSqlConnection(opt)
+            case DatabaseType.ORACLE:
+                return new OracleConnection(opt);
             case DatabaseType.SQLITE:
                 return new SqliteConnection(opt);
             case DatabaseType.ES:

@@ -1114,6 +1114,7 @@
 		"mongodb": "^3.6.9",
 		"mysql2": "^2.2.5",
 		"officegen": "^0.6.5",
+		"oracledb": "^7.0.0",
 		"pg": "^8.5.1",
 		"portfinder": "^1.0.26",
 		"pretty-bytes": "^5.3.0",

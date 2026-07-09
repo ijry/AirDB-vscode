@@ -114,7 +114,7 @@
         </div>
       </section>
 
-      <SQLServer :connectionOption="connectionOption" v-if="connectionOption.dbType == 'SQL Server'" />
+      <SQLServer :connectionOption="connectionOption" v-if="connectionOption.dbType == 'SqlServer'" />
 
       <section>
         <div class="inline-block mb-2 mr-10" v-if="connectionOption.dbType != 'Redis'">
@@ -134,10 +134,12 @@
 
       <section v-if="connectionOption.dbType != 'FTP' && connectionOption.dbType != 'MongoDB'">
         <div class="inline-block mb-2 mr-10">
-          <label class="inline-block w-32 mr-5 font-bold">{{$t('Databases')}}</label>
+          <label class="inline-block w-32 mr-5 font-bold">
+            {{ connectionOption.dbType == 'Oracle' ? 'Service Name' : $t('Databases') }}
+          </label>
           <input
             class="w-64 field__input"
-            :placeholder="$t('Special connection database')"
+            :placeholder="connectionOption.dbType == 'Oracle' ? 'FREEPDB1 / ORCLPDB1' : $t('Special connection database')"
             v-model="connectionOption.database"
           />
         </div>
@@ -302,6 +304,7 @@ export default {
       supportDatabases: [
         "MySQL",
         "PostgreSQL",
+        "Oracle",
         "SqlServer",
         "SQLite",
         "MongoDB",
@@ -439,6 +442,7 @@ export default {
         case "Oracle":
           this.connectionOption.user = "system";
           this.connectionOption.port = 1521;
+          this.connectionOption.database = "FREEPDB1";
           break;
         case "SqlServer":
           this.connectionOption.user = "sa";
