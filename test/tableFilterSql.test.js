@@ -4,6 +4,7 @@ const {
   createDefaultFilterRow,
   buildConditionExpression,
   buildTableFilterSql,
+  selectRowsForConditionApply,
 } = require("../src/vue/result/util/tableFilterSql");
 
 const wrapColumn = (name) => `\`${name}\``;
@@ -95,6 +96,49 @@ assert.strictEqual(
     quoteValue
   ),
   "SELECT * FROM `demo` LIMIT 100;"
+);
+
+const mixedConditionRows = [
+  { enabled: true, field: "uid", operator: "=", value: "2", type: "int" },
+  { enabled: false, field: "name", operator: "=", value: "AirDB", type: "varchar" },
+  { field: "status", operator: "=", value: "1", type: "int" },
+];
+
+assert.deepStrictEqual(
+  selectRowsForConditionApply(mixedConditionRows),
+  [
+    { enabled: true, field: "uid", operator: "=", value: "2", type: "int" },
+    { field: "status", operator: "=", value: "1", type: "int" },
+  ]
+);
+
+assert.deepStrictEqual(
+  selectRowsForConditionApply(mixedConditionRows, 1),
+  [
+    { enabled: false, field: "uid", operator: "=", value: "2", type: "int" },
+    { enabled: false, field: "name", operator: "=", value: "AirDB", type: "varchar" },
+    { enabled: false, field: "status", operator: "=", value: "1", type: "int" },
+  ]
+);
+
+assert.deepStrictEqual(
+  selectRowsForConditionApply(mixedConditionRows, 2),
+  [
+    { enabled: false, field: "uid", operator: "=", value: "2", type: "int" },
+    { enabled: false, field: "name", operator: "=", value: "AirDB", type: "varchar" },
+    { enabled: true, field: "status", operator: "=", value: "1", type: "int" },
+  ]
+);
+
+assert.strictEqual(
+  buildTableFilterSql(
+    "SELECT * FROM `demo` LIMIT 100;",
+    selectRowsForConditionApply(mixedConditionRows),
+    "MySQL",
+    wrapColumn,
+    quoteValue
+  ),
+  "SELECT * FROM `demo` WHERE `uid` = 2 AND `status` = 1 LIMIT 100;"
 );
 
 console.log("tableFilterSql tests passed");

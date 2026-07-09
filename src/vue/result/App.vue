@@ -113,6 +113,7 @@ import { wrapByDb } from "@/common/wrapper";
 const {
   createDefaultFilterRow,
   buildTableFilterSql,
+  selectRowsForConditionApply,
 } = require("./util/tableFilterSql");
 let vscodeEvent;
 
@@ -424,10 +425,7 @@ export default {
       }
     },
     applyConditionFilters(rowIndex) {
-      let rows = this.toolbar.conditionFilters || [];
-      if (typeof rowIndex === "number") {
-        rows = rows.map((row, index) => ({ ...row, enabled: index === rowIndex ? row.enabled !== false : false }));
-      }
+      const rows = selectRowsForConditionApply(this.toolbar.conditionFilters, rowIndex);
 
       const sql = buildTableFilterSql(
         this.baseTableSql || this.result.sql,

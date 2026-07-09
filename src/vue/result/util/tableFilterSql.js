@@ -85,9 +85,25 @@ function buildTableFilterSql(baseSql, rows, dbType, wrapColumn, quoteValue) {
   return `${baseBody} WHERE ${expressions.join(" AND ")}${paging};`;
 }
 
+function selectRowsForConditionApply(rows, rowIndex) {
+  const sourceRows = Array.isArray(rows) ? rows : [];
+
+  if (typeof rowIndex === "number") {
+    return sourceRows.map((row, index) => ({
+      ...row,
+      enabled: index === rowIndex ? row.enabled !== false : false,
+    }));
+  }
+
+  return sourceRows
+    .filter((row) => row && row.enabled !== false)
+    .map((row) => ({ ...row }));
+}
+
 module.exports = {
   RAW_SQL_FIELD,
   createDefaultFilterRow,
   buildConditionExpression,
   buildTableFilterSql,
+  selectRowsForConditionApply,
 };
