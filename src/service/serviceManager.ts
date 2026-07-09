@@ -18,6 +18,7 @@ import { EsDialect } from "./dialect/esDialect";
 import { MongoDialect } from "./dialect/mongoDialect";
 import { MssqlDIalect } from "./dialect/mssqlDIalect";
 import { MysqlDialect } from "./dialect/mysqlDialect";
+import { OracleDialect } from "./dialect/oracleDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
@@ -28,6 +29,7 @@ import { MockRunner } from "./mock/mockRunner";
 import { EsPageService } from "./page/esPageService";
 import { MssqlPageService } from "./page/mssqlPageService";
 import { MysqlPageSerivce } from "./page/mysqlPageSerivce";
+import { OraclePageService } from "./page/oraclePageService";
 import { PageService } from "./page/pageService";
 import { PostgreSqlPageService } from "./page/postgreSqlPageService";
 import { MysqlSettingService } from "./setting/MysqlSettingService";
@@ -151,6 +153,8 @@ export class ServiceManager {
                 return new SqliTeDialect()
             case DatabaseType.PG:
                 return new PostgreSqlDialect();
+            case DatabaseType.ORACLE:
+                return new OracleDialect();
             case DatabaseType.ES:
                 return new EsDialect();
             case DatabaseType.MONGO_DB:
@@ -166,6 +170,8 @@ export class ServiceManager {
                 return new MssqlPageService();
             case DatabaseType.PG:
                 return new PostgreSqlPageService();
+            case DatabaseType.ORACLE:
+                return new OraclePageService();
             case DatabaseType.MONGO_DB:
                 return new MongoPageService();
             case DatabaseType.ES:
