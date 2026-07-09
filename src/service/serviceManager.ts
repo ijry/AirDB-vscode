@@ -19,6 +19,7 @@ import { MongoDialect } from "./dialect/mongoDialect";
 import { MssqlDIalect } from "./dialect/mssqlDIalect";
 import { MysqlDialect } from "./dialect/mysqlDialect";
 import { OracleDialect } from "./dialect/oracleDialect";
+import { KingbaseDialect } from "./dialect/kingbaseDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
@@ -153,6 +154,8 @@ export class ServiceManager {
                 return new SqliTeDialect()
             case DatabaseType.PG:
                 return new PostgreSqlDialect();
+            case DatabaseType.KINGBASE:
+                return new KingbaseDialect();
             case DatabaseType.ORACLE:
                 return new OracleDialect();
             case DatabaseType.ES:
@@ -169,6 +172,8 @@ export class ServiceManager {
             case DatabaseType.MSSQL:
                 return new MssqlPageService();
             case DatabaseType.PG:
+                return new PostgreSqlPageService();
+            case DatabaseType.KINGBASE:
                 return new PostgreSqlPageService();
             case DatabaseType.ORACLE:
                 return new OraclePageService();

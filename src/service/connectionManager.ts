@@ -20,6 +20,7 @@ import { FTPConnection } from "./connect/ftpConnection";
 import { SqliteConnection } from "./connect/sqliteConnection";
 import { Console } from "@/common/Console";
 import { MongoConnection } from "./connect/mongoConnection";
+import { KingbaseConnection } from "./connect/kingbaseConnection";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -154,6 +155,8 @@ export class ConnectionManager {
                 return new MSSqlConnnection(opt)
             case DatabaseType.PG:
                 return new PostgreSqlConnection(opt)
+            case DatabaseType.KINGBASE:
+                return new KingbaseConnection(opt)
             case DatabaseType.ORACLE:
                 return new OracleConnection(opt);
             case DatabaseType.SQLITE:

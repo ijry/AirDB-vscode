@@ -50,7 +50,7 @@ export enum Confirm {
 }
 
 export enum DatabaseType {
-    MYSQL = "MySQL", PG = "PostgreSQL",SQLITE = "SQLite",
+    MYSQL = "MySQL", PG = "PostgreSQL", KINGBASE = "KingbaseES", SQLITE = "SQLite",
     MSSQL = "SqlServer", ORACLE = "Oracle", MONGO_DB="MongoDB",
     ES = "ElasticSearch", REDIS = "Redis",SSH="SSH",FTP="FTP"
 }

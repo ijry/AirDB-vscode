@@ -318,7 +318,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             }
 
             let schemaList: Node[];
-            if (cNode.dbType == DatabaseType.MSSQL || cNode.dbType == DatabaseType.PG) {
+            if (cNode.dbType == DatabaseType.MSSQL || cNode.dbType == DatabaseType.PG || cNode.dbType == DatabaseType.KINGBASE) {
                 const tempList = DatabaseCache.getSchemaListOfConnection(cNode.uid);
                 schemaList = [];
                 for (const catalogNode of tempList) {
@@ -332,7 +332,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             for (const schemaNode of schemaList) {
                 if (schemaNode instanceof UserGroup || schemaNode instanceof CatalogNode) { continue }
                 let uid = `${cNode.label}#${schemaNode.schema}`
-                if (cNode.dbType == DatabaseType.PG || cNode.dbType == DatabaseType.MSSQL) {
+                if (cNode.dbType == DatabaseType.PG || cNode.dbType == DatabaseType.MSSQL || cNode.dbType == DatabaseType.KINGBASE) {
                     uid = `${cNode.label}#${schemaNode.database}#${schemaNode.schema}`
                 }
                 dbIdList.push(uid)
