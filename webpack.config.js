@@ -97,7 +97,7 @@ module.exports = [
                     test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
                     loader: 'url-loader',
                     options: {
-                        limit: 80000,
+                        limit: true,
                         esModule: false,
                     },
                 },
