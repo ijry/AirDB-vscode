@@ -50,7 +50,7 @@
 - [x] Phase 2 completed and verified.
 - [x] Phase 3 design committed as `ddb18e7 docs: design standalone vscode api compatibility phase 3`.
 - [x] Task 1: URI, RelativePattern, and glob matcher.
-- [ ] Task 2: webview view provider shim and extension-host registry.
+- [x] Task 2: webview view provider shim and extension-host registry.
 - [ ] Task 3: workbench sidebar rendering for webview views.
 - [ ] Task 4: progress callback compatibility.
 - [ ] Task 5: compat fixture, coverage docs, and final verification.
@@ -193,7 +193,7 @@ git commit -m "feat: add uri relative pattern and glob compatibility"
 - Produces: `HostMessageGroup` entries for `webviewView.create`, `webviewView.setHtml`, and `webviewView.postMessage`
 - Consumes: existing webview iframe message request group `webview.receiveMessage`
 
-- [ ] **Step 1: Add failing shim tests for webview view provider**
+- [x] **Step 1: Add failing shim tests for webview view provider**
 
 Add to `standalone/vscode-shim/test/window.test.ts`:
 
@@ -227,7 +227,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim
 
 Expected: FAIL because `registerWebviewViewProvider` is still unsupported and `HostBridge.registerWebviewView` is not defined.
 
-- [ ] **Step 2: Add failing registry tests**
+- [x] **Step 2: Add failing registry tests**
 
 Extend `standalone/extension-host/test/webviewRegistry.test.ts` with:
 
@@ -263,7 +263,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/extension-h
 
 Expected: FAIL because `registerView` does not exist.
 
-- [ ] **Step 3: Implement protocol and registry support**
+- [x] **Step 3: Implement protocol and registry support**
 
 In `standalone/protocol/src/messages.ts`, extend `HostMessageGroup` with:
 
@@ -283,17 +283,17 @@ export interface HostWebviewViewDto extends HostWebviewPanelDto {
 
 In `standalone/extension-host/src/webviewRegistry.ts`, keep one internal map keyed by `panelId`. Add `registerView(view, receiveMessage)` that stores the same record shape as panels plus `viewId`.
 
-- [ ] **Step 4: Implement shim webview view provider**
+- [x] **Step 4: Implement shim webview view provider**
 
 In `standalone/vscode-shim/src/window.ts`, add `HostBridge.registerWebviewView?`, `setWebviewViewHtml?`, and `postWebviewViewMessage?` optional methods. Implement `registerWebviewViewProvider` by creating a stable `panelId` of `${extensionId}:webviewView:${viewId}`, creating a webview object with the same methods as panels, calling the provider's `resolveWebviewView`, and returning a `Disposable` that clears the view.
 
 In `standalone/vscode-shim/src/createApi.ts`, remove the unsupported assignment for `window.registerWebviewViewProvider`.
 
-- [ ] **Step 5: Wire IpcBridge and controller**
+- [x] **Step 5: Wire IpcBridge and controller**
 
 In `standalone/extension-host/src/ipcBridge.ts`, implement `registerWebviewView`, `setWebviewViewHtml`, and `postWebviewViewMessage` by calling `WebviewRegistry` and notifying `webviewView.*` groups. Keep `webview.receiveMessage` delivery shared in `ExtensionHostController`.
 
-- [ ] **Step 6: Verify Task 2**
+- [x] **Step 6: Verify Task 2**
 
 Run:
 
@@ -304,7 +304,7 @@ npm --prefix standalone run test --workspace @airdb-standalone/extension-host --
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit Task 2**
+- [x] **Step 7: Commit Task 2**
 
 ```bash
 git add standalone/protocol/src/messages.ts standalone/vscode-shim/src/window.ts standalone/vscode-shim/src/createApi.ts standalone/vscode-shim/test/window.test.ts standalone/vscode-shim/test/unsupported.test.ts standalone/extension-host/src/webviewRegistry.ts standalone/extension-host/src/ipcBridge.ts standalone/extension-host/src/extensionHostController.ts standalone/extension-host/test/webviewRegistry.test.ts docs/superpowers/plans/2026-07-11-standalone-vscode-api-compat-phase3.md

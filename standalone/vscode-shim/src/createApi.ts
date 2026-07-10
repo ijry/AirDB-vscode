@@ -10,7 +10,6 @@ import { MemorySecretStorage } from "./secrets.js";
 import { MemoryMemento } from "./state.js";
 import * as types from "./types.js";
 import {
-  createUnsupportedApiFunction,
   createUnsupportedNamespace,
   type UnsupportedApiReporter
 } from "./unsupported.js";
@@ -37,15 +36,11 @@ export function createVscodeApi(options: VscodeApiOptions) {
   );
 
   const reportUnsupportedApi = options.unsupportedApiReporter;
-  const unsupportedApi = (api: string) => createUnsupportedApiFunction(api, reportUnsupportedApi);
   const windowApi = createWindowApi({
     extensionId: options.extensionId,
     extensionPath: options.extensionPath,
     bridge: options.bridge
-  }) as ReturnType<typeof createWindowApi> & {
-    registerWebviewViewProvider: ReturnType<typeof createUnsupportedApiFunction>;
-  };
-  windowApi.registerWebviewViewProvider = unsupportedApi("window.registerWebviewViewProvider");
+  });
   const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, {
     workspaceRoot: options.workspaceRoot,
     configurationStore: options.workspaceConfigurationStore

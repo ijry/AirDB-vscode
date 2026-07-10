@@ -67,6 +67,32 @@ describe("WebviewRegistry", () => {
     });
   });
 
+  it("registers webview views and delivers iframe messages", async () => {
+    const delivered: unknown[] = [];
+    const registry = new WebviewRegistry();
+
+    registry.registerView(
+      {
+        viewId: "fixture.sidebar",
+        panelId: "fixture.one:webviewView:fixture.sidebar",
+        viewType: "fixture.sidebar",
+        title: "Fixture Sidebar",
+        extensionId: "fixture.one",
+        extensionPath: "C:/fixture",
+        localResourceRoots: ["C:/fixture/media"]
+      },
+      (message) => delivered.push(message)
+    );
+
+    expect(registry.getDto("fixture.one:webviewView:fixture.sidebar")).toMatchObject({
+      panelId: "fixture.one:webviewView:fixture.sidebar",
+      viewType: "fixture.sidebar",
+      title: "Fixture Sidebar"
+    });
+    await expect(registry.receiveMessageFromIframe("fixture.one:webviewView:fixture.sidebar", { type: "ready" })).resolves.toBe(true);
+    expect(delivered).toEqual([{ type: "ready" }]);
+  });
+
   it("returns clear errors for unknown panels", async () => {
     const registry = new WebviewRegistry();
 

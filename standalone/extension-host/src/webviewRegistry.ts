@@ -1,5 +1,6 @@
 import type {
   HostWebviewPanelDto,
+  HostWebviewViewDto,
   WebviewPostMessagePayload
 } from "@airdb-standalone/protocol";
 
@@ -14,7 +15,12 @@ export interface WebviewPanelRegistration {
   localResourceRoots?: string[];
 }
 
+export interface WebviewViewRegistration extends WebviewPanelRegistration {
+  viewId: string;
+}
+
 interface WebviewPanelRecord extends WebviewPanelRegistration {
+  viewId?: string;
   html: string;
   receiveMessage: WebviewMessageReceiver;
 }
@@ -31,7 +37,16 @@ export class WebviewRegistry {
     });
   }
 
-  setHtml(panelId: string, html: string): HostWebviewPanelDto {
+  registerView(view: WebviewViewRegistration, receiveMessage: WebviewMessageReceiver): void {
+    this.panels.set(view.panelId, {
+      ...view,
+      localResourceRoots: view.localResourceRoots ?? [`${view.extensionPath.replace(/\\/g, "/")}/out/webview`],
+      html: "",
+      receiveMessage
+    });
+  }
+
+  setHtml(panelId: string, html: string): HostWebviewPanelDto | HostWebviewViewDto {
     const panel = this.getPanel(panelId);
     panel.html = html;
     return toDto(panel);
@@ -52,7 +67,7 @@ export class WebviewRegistry {
     return this.panels.delete(panelId);
   }
 
-  getDto(panelId: string): HostWebviewPanelDto {
+  getDto(panelId: string): HostWebviewPanelDto | HostWebviewViewDto {
     return toDto(this.getPanel(panelId));
   }
 
@@ -65,9 +80,10 @@ export class WebviewRegistry {
   }
 }
 
-function toDto(panel: WebviewPanelRecord): HostWebviewPanelDto {
+function toDto(panel: WebviewPanelRecord): HostWebviewPanelDto | HostWebviewViewDto {
   return {
     panelId: panel.panelId,
+    ...(panel.viewId ? { viewId: panel.viewId } : {}),
     viewType: panel.viewType,
     title: panel.title,
     extensionId: panel.extensionId,

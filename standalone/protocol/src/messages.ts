@@ -10,6 +10,9 @@ export type HostMessageGroup =
   | "webview.create"
   | "webview.setHtml"
   | "webview.postMessage"
+  | "webviewView.create"
+  | "webviewView.setHtml"
+  | "webviewView.postMessage"
   | "webview.receiveMessage"
   | "editor.openDocument"
   | "editor.showDocument"
@@ -257,6 +260,10 @@ export interface HostWebviewPanelDto {
   extensionId?: string;
   html: string;
   localResourceRoots?: string[];
+}
+
+export interface HostWebviewViewDto extends HostWebviewPanelDto {
+  viewId: string;
 }
 
 export interface WebviewSetHtmlPayload {

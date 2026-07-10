@@ -35,17 +35,12 @@ describe("unsupported VS Code API reporting", () => {
     }
   });
 
-  it("reports unsupported API calls before preserving thrown-error behavior", () => {
+  it("implements webview view provider without unsupported API reporting", () => {
     const events: UnsupportedApiEvent[] = [];
     const api = createApi(events);
 
-    expect(() => api.window.registerWebviewViewProvider("fixture.view", {})).toThrow(UnsupportedApiError);
-
-    expect(events).toEqual([{
-      api: "window.registerWebviewViewProvider",
-      code: UNSUPPORTED_VSCODE_API_ERROR_CODE,
-      message: "Not implemented in standalone host: window.registerWebviewViewProvider"
-    }]);
+    expect(() => api.window.registerWebviewViewProvider("fixture.view", { resolveWebviewView: () => undefined })).not.toThrow();
+    expect(events).toEqual([]);
   });
 
   it("swallows reporter failures and still throws the unsupported API error", () => {
