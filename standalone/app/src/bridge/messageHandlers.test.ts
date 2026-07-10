@@ -48,6 +48,65 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps webview view create notifications with local resource roots", () => {
+    const actions = mapHostMessageToActions(
+      createNotification("webviewView.create", {
+        panelId: "fixture.one:webviewView:fixture.sidebar",
+        viewId: "fixture.sidebar",
+        viewType: "fixture.sidebar",
+        title: "Fixture Sidebar",
+        html: "",
+        localResourceRoots: ["C:/fixture/media"]
+      }, "fixture.one")
+    );
+
+    expect(actions).toEqual([
+      {
+        type: "webviewView/open",
+        webview: {
+          id: "fixture.one:webviewView:fixture.sidebar",
+          title: "Fixture Sidebar",
+          viewType: "fixture.sidebar",
+          extensionId: "fixture.one",
+          html: "",
+          localResourceRoots: ["C:/fixture/media"]
+        }
+      }
+    ]);
+  });
+
+  it("maps webview view HTML and message notifications to workbench actions", () => {
+    expect(
+      mapHostMessageToActions(
+        createNotification("webviewView.setHtml", {
+          panelId: "fixture.one:webviewView:fixture.sidebar",
+          html: "<main>Sidebar</main>"
+        }, "fixture.one")
+      )
+    ).toEqual([
+      {
+        type: "webviewView/html",
+        id: "fixture.one:webviewView:fixture.sidebar",
+        html: "<main>Sidebar</main>"
+      }
+    ]);
+
+    expect(
+      mapHostMessageToActions(
+        createNotification("webviewView.postMessage", {
+          panelId: "fixture.one:webviewView:fixture.sidebar",
+          message: { type: "refresh" }
+        }, "fixture.one")
+      )
+    ).toEqual([
+      {
+        type: "webviewView/message",
+        id: "fixture.one:webviewView:fixture.sidebar",
+        message: { type: "refresh" }
+      }
+    ]);
+  });
+
   it("maps dialog requests to workbench dialog state", () => {
     expect(
       mapHostMessageToActions({

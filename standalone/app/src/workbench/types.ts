@@ -147,6 +147,7 @@ export interface WorkbenchState {
   editors: EditorTab[];
   activeEditorId?: string;
   webviews: WebviewState[];
+  webviewViews: WebviewState[];
   dialogs: DialogState[];
   notifications: NotificationState[];
   outputs: OutputChannelState[];

@@ -8,7 +8,8 @@ import type {
   ExtensionDiagnosticEventState,
   ExtensionDiagnosticState,
   MenuContributionState,
-  NotificationItem
+  NotificationItem,
+  WebviewState
 } from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
 
@@ -90,19 +91,21 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
     case "webview.create":
       return [{
         type: "webview/open",
-        webview: {
-          id: String(payload.panelId),
-          title: String(payload.title ?? payload.viewType ?? "Webview"),
-          viewType: typeof payload.viewType === "string" ? payload.viewType : undefined,
-          extensionId: message.extensionId,
-          html: typeof payload.html === "string" ? payload.html : "",
-          localResourceRoots: normalizeStringArray(payload.localResourceRoots)
-        }
+        webview: normalizeWebviewPayload(payload, message.extensionId)
       }];
     case "webview.postMessage":
       return [{ type: "webview/message", id: String(payload.panelId), message: payload.message }];
     case "webview.setHtml":
       return [{ type: "webview/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
+    case "webviewView.create":
+      return [{
+        type: "webviewView/open",
+        webview: normalizeWebviewPayload(payload, message.extensionId)
+      }];
+    case "webviewView.postMessage":
+      return [{ type: "webviewView/message", id: String(payload.panelId), message: payload.message }];
+    case "webviewView.setHtml":
+      return [{ type: "webviewView/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
     case "editor.showDocument": {
       const document = (payload.document ?? {}) as unknown;
       if (!isHostTextDocumentDto(document)) {
@@ -312,6 +315,17 @@ function isOptionalRecord(value: unknown): boolean {
 
 function normalizeStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function normalizeWebviewPayload(payload: Record<string, unknown>, extensionId?: string): WebviewState {
+  return {
+    id: String(payload.panelId),
+    title: String(payload.title ?? payload.viewType ?? payload.viewId ?? "Webview"),
+    viewType: typeof payload.viewType === "string" ? payload.viewType : undefined,
+    extensionId,
+    html: typeof payload.html === "string" ? payload.html : "",
+    localResourceRoots: normalizeStringArray(payload.localResourceRoots)
+  };
 }
 
 function normalizeContextKeys(value: unknown): Record<string, unknown> {

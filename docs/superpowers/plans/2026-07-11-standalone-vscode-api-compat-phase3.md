@@ -51,7 +51,7 @@
 - [x] Phase 3 design committed as `ddb18e7 docs: design standalone vscode api compatibility phase 3`.
 - [x] Task 1: URI, RelativePattern, and glob matcher.
 - [x] Task 2: webview view provider shim and extension-host registry.
-- [ ] Task 3: workbench sidebar rendering for webview views.
+- [x] Task 3: workbench sidebar rendering for webview views.
 - [ ] Task 4: progress callback compatibility.
 - [ ] Task 5: compat fixture, coverage docs, and final verification.
 
@@ -330,7 +330,7 @@ git commit -m "feat: add webview view provider compatibility"
 - Produces: `WorkbenchState.webviewViews: WebviewState[]`
 - Produces: reducer actions `webviewView/open`, `webviewView/html`, and `webviewView/message`
 
-- [ ] **Step 1: Add failing message handler and reducer tests**
+- [x] **Step 1: Add failing message handler and reducer tests**
 
 In `standalone/app/src/bridge/messageHandlers.test.ts`, add:
 
@@ -363,11 +363,11 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/app -- mess
 
 Expected: FAIL because these actions and state fields do not exist.
 
-- [ ] **Step 2: Add workbench state and reducer support**
+- [x] **Step 2: Add workbench state and reducer support**
 
 In `types.ts`, add `webviewViews: WebviewState[]` to `WorkbenchState`. In `workbenchStore.ts`, initialize it to `[]`, add the three actions, and reduce them with the same upsert and message append semantics as `webviews`.
 
-- [ ] **Step 3: Map protocol messages into webview view actions**
+- [x] **Step 3: Map protocol messages into webview view actions**
 
 In `messageHandlers.ts`, add cases:
 
@@ -382,17 +382,17 @@ case "webviewView.setHtml":
 
 Use a helper shared with `webview.create` so panel and view payload normalization cannot diverge.
 
-- [ ] **Step 4: Reuse WebviewFrame in SideBar**
+- [x] **Step 4: Reuse WebviewFrame in SideBar**
 
 In `WebviewPanel.tsx`, export `WebviewFrame`. In `SideBar.tsx`, render `state.webviewViews.map((view) => <WebviewFrame key={view.id} panel={view} />)` below tree views. Keep the existing empty state only when both `treeViews` and `webviewViews` are empty.
 
-- [ ] **Step 5: Verify Task 3**
+- [x] **Step 5: Verify Task 3**
 
 Run: `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts workbenchStore.test.ts WebviewPanel.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Task 3**
+- [x] **Step 6: Commit Task 3**
 
 ```bash
 git add standalone/app/src/bridge/messageHandlers.ts standalone/app/src/bridge/messageHandlers.test.ts standalone/app/src/workbench/types.ts standalone/app/src/workbench/workbenchStore.ts standalone/app/src/workbench/workbenchStore.test.ts standalone/app/src/workbench/SideBar.tsx standalone/app/src/workbench/WebviewPanel.tsx standalone/app/src/workbench/WebviewPanel.test.tsx docs/superpowers/plans/2026-07-11-standalone-vscode-api-compat-phase3.md

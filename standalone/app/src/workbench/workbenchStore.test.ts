@@ -101,6 +101,42 @@ describe("workbenchReducer", () => {
     expect(state.webviews[0].messages).toEqual([{ type: "syncState" }]);
   });
 
+  it("stores webview views and updates their HTML and queued messages", () => {
+    const opened = workbenchReducer(initialWorkbenchState, {
+      type: "webviewView/open",
+      webview: {
+        id: "fixture.one:webviewView:fixture.sidebar",
+        title: "Fixture Sidebar",
+        viewType: "fixture.sidebar",
+        extensionId: "fixture.one",
+        html: "",
+        localResourceRoots: ["C:/fixture/media"]
+      }
+    });
+    const withHtml = workbenchReducer(opened, {
+      type: "webviewView/html",
+      id: "fixture.one:webviewView:fixture.sidebar",
+      html: "<main>Sidebar</main>"
+    });
+    const withMessage = workbenchReducer(withHtml, {
+      type: "webviewView/message",
+      id: "fixture.one:webviewView:fixture.sidebar",
+      message: { type: "refresh" }
+    });
+
+    expect(withMessage.webviewViews).toEqual([
+      {
+        id: "fixture.one:webviewView:fixture.sidebar",
+        title: "Fixture Sidebar",
+        viewType: "fixture.sidebar",
+        extensionId: "fixture.one",
+        html: "<main>Sidebar</main>",
+        localResourceRoots: ["C:/fixture/media"],
+        messages: [{ type: "refresh" }]
+      }
+    ]);
+  });
+
   it("stores webview render errors", () => {
     const opened = workbenchReducer(initialWorkbenchState, {
       type: "webview/open",

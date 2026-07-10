@@ -26,6 +26,9 @@ export type WorkbenchAction =
   | { type: "webview/html"; id: string; html: string }
   | { type: "webview/message"; id: string; message: unknown }
   | { type: "webview/error"; id: string; error: string }
+  | { type: "webviewView/open"; webview: WebviewState }
+  | { type: "webviewView/html"; id: string; html: string }
+  | { type: "webviewView/message"; id: string; message: unknown }
   | { type: "dialog/open"; dialog: DialogState }
   | { type: "dialog/close"; requestId: string }
   | { type: "notification/show"; notification: NotificationState }
@@ -53,6 +56,7 @@ export const initialWorkbenchState: WorkbenchState = {
   treeViews: {},
   editors: [],
   webviews: [],
+  webviewViews: [],
   dialogs: [],
   notifications: [],
   outputs: [],
@@ -112,18 +116,16 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         activeEditorId: action.editor.id
       };
     case "webview/open":
-      return { ...state, webviews: [...state.webviews.filter((panel) => panel.id !== action.webview.id), action.webview] };
+      return { ...state, webviews: upsertWebview(state.webviews, action.webview) };
     case "webview/html":
       return {
         ...state,
-        webviews: state.webviews.map((panel) => panel.id === action.id ? { ...panel, html: action.html } : panel)
+        webviews: updateWebviewHtml(state.webviews, action.id, action.html)
       };
     case "webview/message":
       return {
         ...state,
-        webviews: state.webviews.map((panel) =>
-          panel.id === action.id ? { ...panel, messages: [...(panel.messages ?? []), action.message] } : panel
-        )
+        webviews: appendWebviewMessage(state.webviews, action.id, action.message)
       };
     case "webview/error":
       return {
@@ -131,6 +133,18 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         webviews: state.webviews.map((panel) =>
           panel.id === action.id ? { ...panel, loading: false, error: action.error } : panel
         )
+      };
+    case "webviewView/open":
+      return { ...state, webviewViews: upsertWebview(state.webviewViews, action.webview) };
+    case "webviewView/html":
+      return {
+        ...state,
+        webviewViews: updateWebviewHtml(state.webviewViews, action.id, action.html)
+      };
+    case "webviewView/message":
+      return {
+        ...state,
+        webviewViews: appendWebviewMessage(state.webviewViews, action.id, action.message)
       };
     case "dialog/open":
       return {
@@ -280,6 +294,20 @@ function copyStateValue(value: unknown): unknown {
   }
 
   return value;
+}
+
+function upsertWebview(webviews: WebviewState[], webview: WebviewState): WebviewState[] {
+  return [...webviews.filter((candidate) => candidate.id !== webview.id), webview];
+}
+
+function updateWebviewHtml(webviews: WebviewState[], id: string, html: string): WebviewState[] {
+  return webviews.map((webview) => webview.id === id ? { ...webview, html } : webview);
+}
+
+function appendWebviewMessage(webviews: WebviewState[], id: string, message: unknown): WebviewState[] {
+  return webviews.map((webview) =>
+    webview.id === id ? { ...webview, messages: [...(webview.messages ?? []), message] } : webview
+  );
 }
 
 function upsertOutput(outputs: OutputChannelState[], output: OutputChannelState): OutputChannelState[] {
