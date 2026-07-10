@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 1.2.12 20260711
+
+新增 Apache Doris、Amazon S3、Redshift、Snowflake、TDengine、Neo4j、ZooKeeper 支持
+
 # 1.2.11 20260711
 
 新增 ClickHouse、DuckDB、RabbitMQ 支持

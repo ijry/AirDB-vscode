@@ -238,4 +238,5 @@ postcss.config.js
 .worktrees/**
 standalone/**
 docs/**
+logs/**
 *.vsix
