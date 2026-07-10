@@ -115,6 +115,17 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
     public managementUseSSL?: boolean;
 
     /**
+     * s3 only
+     */
+    public region?: string;
+    public endpoint?: string;
+    public accessKeyId?: string;
+    public secretAccessKey?: string;
+    public sessionToken?: string;
+    public bucket?: string;
+    public forcePathStyle?: boolean;
+
+    /**
      * encoding, ftp only
      */
     public encoding: string;
@@ -155,6 +166,13 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         this.managementPort = source.managementPort
         this.managementUrl = source.managementUrl
         this.managementUseSSL = source.managementUseSSL
+        this.region = source.region
+        this.endpoint = source.endpoint
+        this.accessKeyId = source.accessKeyId
+        this.secretAccessKey = source.secretAccessKey
+        this.sessionToken = source.sessionToken
+        this.bucket = source.bucket
+        this.forcePathStyle = source.forcePathStyle
         this.encoding = source.encoding
         this.showHidden = source.showHidden
         this.connectionKey = source.connectionKey
@@ -182,7 +200,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         if (!this.context) this.context = source.context
         // init dialect
         // redis/kafka不需要dialect，其它类型需要。
-        if (!this.dialect && this.dbType != DatabaseType.REDIS && this.dbType != DatabaseType.KAFKA && this.dbType != DatabaseType.RABBITMQ) {
+        if (!this.dialect && this.dbType != DatabaseType.REDIS && this.dbType != DatabaseType.KAFKA && this.dbType != DatabaseType.RABBITMQ && this.dbType != DatabaseType.S3) {
             this.dialect = ServiceManager.getDialect(this.dbType)
         }
         if (this.disable) {
@@ -274,7 +292,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     public static nodeCache = {};
     public cacheSelf() {
-        if (this.contextValue == ModelType.CONNECTION || this.contextValue == ModelType.ES_CONNECTION || this.contextValue == ModelType.KAFKA_CONNECTION || this.contextValue == ModelType.RABBITMQ_CONNECTION) {
+        if (this.contextValue == ModelType.CONNECTION || this.contextValue == ModelType.ES_CONNECTION || this.contextValue == ModelType.KAFKA_CONNECTION || this.contextValue == ModelType.RABBITMQ_CONNECTION || this.contextValue == ModelType.S3_CONNECTION) {
             Node.nodeCache[`${this.getConnectId()}`] = this;
         } else if (this.contextValue == ModelType.SCHEMA) {
             Node.nodeCache[`${this.getConnectId({ withSchema: true })}`] = this;
@@ -302,7 +320,7 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
     public initUid() {
         if (this.uid) return;
-        if (this.contextValue == ModelType.CONNECTION || this.contextValue == ModelType.CATALOG || this.contextValue == ModelType.KAFKA_CONNECTION || this.contextValue == ModelType.RABBITMQ_CONNECTION) {
+        if (this.contextValue == ModelType.CONNECTION || this.contextValue == ModelType.CATALOG || this.contextValue == ModelType.KAFKA_CONNECTION || this.contextValue == ModelType.RABBITMQ_CONNECTION || this.contextValue == ModelType.S3_CONNECTION) {
             this.uid = this.getConnectId();
         } else if (this.contextValue == ModelType.SCHEMA || this.contextValue == ModelType.REDIS_CONNECTION) {
             this.uid = `${this.getConnectId({ withSchema: true })}`;

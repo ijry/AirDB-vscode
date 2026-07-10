@@ -32,7 +32,9 @@ module.exports = [
             oracledb: 'commonjs oracledb',
             '@clickhouse/client': 'commonjs @clickhouse/client',
             duckdb: 'commonjs duckdb',
-            amqplib: 'commonjs amqplib'
+            amqplib: 'commonjs amqplib',
+            '@aws-sdk/client-s3': 'commonjs @aws-sdk/client-s3',
+            '@aws-sdk/s3-request-presigner': 'commonjs @aws-sdk/s3-request-presigner'
         },
         resolve: {
             extensions: ['.ts', '.js'],

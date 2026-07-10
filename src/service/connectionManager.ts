@@ -27,6 +27,7 @@ import { ClickHouseConnection } from "./connect/clickHouseConnection";
 import { DorisConnection } from "./connect/dorisConnection";
 import { DuckDBConnection } from "./connect/duckdbConnection";
 import { RabbitMQConnection } from "./connect/rabbitmqConnection";
+import { S3Connection } from "./connect/s3Connection";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -186,6 +187,8 @@ export class ConnectionManager {
                 return new KafkaConnection(opt);
             case DatabaseType.RABBITMQ:
                 return new RabbitMQConnection(opt);
+            case DatabaseType.S3:
+                return new S3Connection(opt);
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
             default:

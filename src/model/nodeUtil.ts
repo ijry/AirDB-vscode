@@ -2,6 +2,7 @@ import { Node } from "./interface/node";
 import { ConnectionManager } from "../service/connectionManager";
 import { SqlDialect } from "@/service/dialect/sqlDialect";
 import { ServiceManager } from "@/service/serviceManager";
+import { DatabaseType } from "@/common/constants";
 
 export abstract class NodeUtil {
     public static of(node: any): Node {
@@ -14,7 +15,7 @@ export abstract class NodeUtil {
         if (node && !(node instanceof Node)) {
             node.__proto__ = Node.prototype
         }
-        if (node.dialect && !(node.dialect instanceof SqlDialect)) {
+        if (node.dialect && !(node.dialect instanceof SqlDialect) && node.dbType != DatabaseType.S3) {
             node.dialect = ServiceManager.getDialect(node.dbType)
         }
         return node;

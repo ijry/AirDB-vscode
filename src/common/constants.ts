@@ -53,7 +53,7 @@ export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", KINGBASE = "KingbaseES", DAMENG = "Dameng", SQLITE = "SQLite",
     MSSQL = "SqlServer", ORACLE = "Oracle", MONGO_DB="MongoDB",
     CLICKHOUSE = "ClickHouse", DORIS = "Doris", DUCKDB = "DuckDB",
-    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", RABBITMQ = "RabbitMQ", SSH="SSH",FTP="FTP"
+    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", RABBITMQ = "RabbitMQ", S3 = "S3", SSH="SSH",FTP="FTP"
 }
 
 export enum ModelType {
@@ -86,6 +86,11 @@ export enum ModelType {
     RABBITMQ_CONNECTION = "rabbitmqConnection", RABBITMQ_QUEUE_GROUP = "rabbitmqQueueGroup",
     RABBITMQ_QUEUE = "rabbitmqQueue", RABBITMQ_EXCHANGE_GROUP = "rabbitmqExchangeGroup",
     RABBITMQ_EXCHANGE = "rabbitmqExchange",
+    /**
+     * S3 object storage
+     */
+    S3_CONNECTION = "s3Connection", S3_BUCKET = "s3Bucket",
+    S3_FOLDER = "s3Folder", S3_OBJECT = "s3Object",
     /**
      * database
      */
