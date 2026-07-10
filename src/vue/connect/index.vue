@@ -89,6 +89,7 @@
     </section>
 
     <ElasticSearch v-if="connectionOption.dbType == 'ElasticSearch'" :connectionOption="connectionOption" />
+    <Kafka v-else-if="connectionOption.dbType == 'Kafka'" :connectionOption="connectionOption" />
     <SQLite
       v-else-if="connectionOption.dbType == 'SQLite'"
       :connectionOption="connectionOption"
@@ -211,7 +212,8 @@
           connectionOption.dbType == 'PostgreSQL' ||
           connectionOption.dbType == 'KingbaseES' ||
           connectionOption.dbType == 'MongoDB' ||
-          connectionOption.dbType == 'Redis'
+          connectionOption.dbType == 'Redis' ||
+          connectionOption.dbType == 'Kafka'
         "
       >
         <label class="inline-block mr-5 font-bold w-18">Use SSL</label>
@@ -241,7 +243,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'PostgreSQL', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch'].includes(connectionOption.dbType)
+        ['MySQL', 'PostgreSQL', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -268,6 +270,7 @@
 <script>
 import LingyunUser from './lingyun-user/LingyunUser.vue';
 import ElasticSearch from "./component/ElasticSearch.vue";
+import Kafka from "./component/Kafka.vue";
 import SQLite from "./component/SQLite.vue";
 import SQLServer from "./component/SQLServer.vue";
 import SSH from "./component/SSH.vue";
@@ -339,6 +342,11 @@ const dbLogoMap = {
     bg: "#ecfccb",
     color: "#65a30d",
   },
+  Kafka: {
+    text: "KA",
+    bg: "#f8fafc",
+    color: "#111827",
+  },
   SSH: {
     icon: require("@/../resources/icon/ssh.svg"),
     text: "SH",
@@ -354,7 +362,7 @@ const dbLogoMap = {
 
 export default {
   name: "Connect",
-  components: { ElasticSearch, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
+  components: { ElasticSearch, Kafka, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
   data() {
     return {
       dialogVisible: false,
@@ -377,6 +385,9 @@ export default {
         connectionUrl: "",
         srv: false,
         esAuth: "none",
+        brokers: "",
+        clientId: "airdb",
+        kafkaAuth: "none",
         global: true,
         key: null,
         // scheme: "http",
@@ -406,6 +417,7 @@ export default {
         "MongoDB",
         "Redis",
         "ElasticSearch",
+        "Kafka",
         "SSH",
         "FTP",
       ],
@@ -569,6 +581,17 @@ export default {
           this.connectionOption.user = null;
           this.connectionOption.port = null;
           this.connectionOption.database = null;
+          break;
+        case "Kafka":
+          this.connectionOption.host = "127.0.0.1:9092";
+          this.connectionOption.brokers = "127.0.0.1:9092";
+          this.connectionOption.clientId = "airdb";
+          this.connectionOption.kafkaAuth = "none";
+          this.connectionOption.port = null;
+          this.connectionOption.user = null;
+          this.connectionOption.password = null;
+          this.connectionOption.database = null;
+          this.connectionOption.useSSL = false;
           break;
         case "Redis":
           this.connectionOption.port = 6379;
