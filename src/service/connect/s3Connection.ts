@@ -107,9 +107,14 @@ async function streamToBuffer(body: any): Promise<Buffer> {
         });
     }
 
-    if (body[Symbol.asyncIterator]) {
-        for await (const chunk of body) {
+    const asyncIteratorFactory = body[Symbol.asyncIterator];
+    if (typeof asyncIteratorFactory === "function") {
+        const iterator = asyncIteratorFactory.call(body);
+        let next = await iterator.next();
+        while (!next.done) {
+            const chunk = next.value;
             chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+            next = await iterator.next();
         }
         return Buffer.concat(chunks);
     }
