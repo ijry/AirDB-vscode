@@ -29,7 +29,10 @@ module.exports = [
             vscode: 'commonjs vscode',
             mockjs: 'mockjs vscode',
             'mongodb-client-encryption':'mongodb-client-encryption',
-            oracledb: 'commonjs oracledb'
+            oracledb: 'commonjs oracledb',
+            '@clickhouse/client': 'commonjs @clickhouse/client',
+            duckdb: 'commonjs duckdb',
+            amqplib: 'commonjs amqplib'
         },
         resolve: {
             extensions: ['.ts', '.js'],

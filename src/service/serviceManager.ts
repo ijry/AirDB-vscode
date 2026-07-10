@@ -21,6 +21,8 @@ import { MysqlDialect } from "./dialect/mysqlDialect";
 import { OracleDialect } from "./dialect/oracleDialect";
 import { KingbaseDialect } from "./dialect/kingbaseDialect";
 import { DamengDialect } from "./dialect/damengDialect";
+import { ClickHouseDialect } from "./dialect/clickHouseDialect";
+import { DuckDBDialect } from "./dialect/duckdbDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
@@ -166,6 +168,10 @@ export class ServiceManager {
                 return new MssqlDIalect()
             case DatabaseType.SQLITE:
                 return new SqliTeDialect()
+            case DatabaseType.CLICKHOUSE:
+                return new ClickHouseDialect();
+            case DatabaseType.DUCKDB:
+                return new DuckDBDialect();
             case DatabaseType.PG:
                 return new PostgreSqlDialect();
             case DatabaseType.KINGBASE:
@@ -188,6 +194,10 @@ export class ServiceManager {
             case DatabaseType.MSSQL:
                 return new MssqlPageService();
             case DatabaseType.PG:
+                return new PostgreSqlPageService();
+            case DatabaseType.CLICKHOUSE:
+                return new PostgreSqlPageService();
+            case DatabaseType.DUCKDB:
                 return new PostgreSqlPageService();
             case DatabaseType.KINGBASE:
                 return new PostgreSqlPageService();

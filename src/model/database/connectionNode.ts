@@ -30,6 +30,8 @@ export class ConnectionNode extends Node implements CopyAble {
         this.label = (this.usingSSH) ? `${this.ssh.host}@${this.ssh.port}` : `${this.host}@${this.instanceName ? this.instanceName : this.port}`;
         if (this.dbType == DatabaseType.SQLITE) {
             this.label = this.dbPath;
+        } else if (this.dbType == DatabaseType.DUCKDB) {
+            this.label = this.dbPath;
         }
         this.cacheSelf()
         if (parent.name) {
@@ -48,6 +50,10 @@ export class ConnectionNode extends Node implements CopyAble {
             this.iconPath = path.join(Constants.RES_PATH, "icon/mssql_server.png");
         } else if (this.dbType == DatabaseType.SQLITE) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/sqlite-icon.svg");
+        } else if (this.dbType == DatabaseType.DUCKDB) {
+            this.iconPath = path.join(Constants.RES_PATH, "icon/duckdb.svg");
+        } else if (this.dbType == DatabaseType.CLICKHOUSE) {
+            this.iconPath = path.join(Constants.RES_PATH, "icon/clickhouse.svg");
         } else if (this.dbType == DatabaseType.ORACLE) {
             this.iconPath = new vscode.ThemeIcon("database");
         } else if (this.dbType == DatabaseType.MONGO_DB) {
@@ -74,7 +80,7 @@ export class ConnectionNode extends Node implements CopyAble {
     public async getChildren(isRresh: boolean = false): Promise<Node[]> {
 Console.log('asdasd')
 
-        if (this.dbType == DatabaseType.SQLITE) {
+        if (this.dbType == DatabaseType.SQLITE || this.dbType == DatabaseType.DUCKDB) {
             return [new TableGroup(this), new ViewGroup(this)];
         }
 
@@ -94,6 +100,7 @@ Console.log('asdasd')
         const hasCatalog = this.dbType != DatabaseType.MYSQL
             && this.dbType != DatabaseType.ORACLE
             && this.dbType != DatabaseType.DAMENG
+            && this.dbType != DatabaseType.CLICKHOUSE
             && this.contextValue == ModelType.CONNECTION;
         // pg/mssql与mysql相比多一层Catalog
         const sql = hasCatalog ? this.dialect.showDatabases() : this.dialect.showSchemas();
@@ -133,7 +140,7 @@ Console.log('asdasd')
         let childMap = {};
         const dbNameList = (await this.getChildren()).filter((databaseNode) => (databaseNode instanceof SchemaNode || databaseNode instanceof CatalogNode)).map((databaseNode) => {
             childMap[databaseNode.uid] = databaseNode
-            return (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG)
+            return (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG || this.dbType == DatabaseType.CLICKHOUSE)
                 ? databaseNode.schema
                 : databaseNode.database;
         });

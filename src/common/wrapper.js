@@ -4,7 +4,7 @@
  */
 export function wrapByDb(origin, databaseType) {
     if (origin == null) { return origin; }
-    if (databaseType == 'PostgreSQL') {
+    if (databaseType == 'PostgreSQL' || databaseType == 'DuckDB') {
         return origin.split(".").map(text => `"${text}"`).join(".")
     }
     if (databaseType == 'Oracle') {

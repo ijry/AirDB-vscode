@@ -25,7 +25,7 @@ export class TableGroup extends Node {
         super(vscode.l10n.t("Table"));
         this.init(parent);
 
-        if (parent.dbType == DatabaseType.MYSQL || parent.dbType == DatabaseType.ORACLE || parent.dbType == DatabaseType.DAMENG) {
+        if (parent.dbType == DatabaseType.MYSQL || parent.dbType == DatabaseType.ORACLE || parent.dbType == DatabaseType.DAMENG || parent.dbType == DatabaseType.CLICKHOUSE) {
             this.stateKey = this.key + '-default-' + this.parent.label + '-TableFilterKeyword'
             // @ts-ignore
             if (parent.pinedTablesMap != null && parent.pinedTablesMap['default-' + this.parent.label] != null) {
@@ -64,7 +64,7 @@ export class TableGroup extends Node {
             };
             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/updatePinedTables`;
             let pinedTablesMap = {}
-            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG) {
+            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG || this.dbType == DatabaseType.CLICKHOUSE) {
                 // @ts-ignore
                 pinedTablesMap['default-' + this.parent.label] = this.pinedTables
             } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.KINGBASE) {
@@ -93,7 +93,7 @@ export class TableGroup extends Node {
             const connectionKey = this.connectionKey;
             const key = this.key
             const connections = this.context.get<{ [key: string]: Node }>(connectionKey, {});
-            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG) {
+            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG || this.dbType == DatabaseType.CLICKHOUSE) {
                 Console.log(this.pinedTables)
                 // @ts-ignore
                 if (this.pinedTables != null) {

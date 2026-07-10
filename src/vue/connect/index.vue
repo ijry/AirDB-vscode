@@ -90,6 +90,12 @@
 
     <ElasticSearch v-if="connectionOption.dbType == 'ElasticSearch'" :connectionOption="connectionOption" />
     <Kafka v-else-if="connectionOption.dbType == 'Kafka'" :connectionOption="connectionOption" />
+    <RabbitMQ v-else-if="connectionOption.dbType == 'RabbitMQ'" :connectionOption="connectionOption" />
+    <DuckDB
+      v-else-if="connectionOption.dbType == 'DuckDB'"
+      :connectionOption="connectionOption"
+      @choose="choose('duckdb')"
+    />
     <SQLite
       v-else-if="connectionOption.dbType == 'SQLite'"
       :connectionOption="connectionOption"
@@ -200,7 +206,7 @@
     <section class="flex items-center">
       <div
         class="inline-block mb-2 mr-10"
-        v-if="connectionOption.dbType != 'SSH' && connectionOption.dbType != 'SQLite'"
+        v-if="connectionOption.dbType != 'SSH' && connectionOption.dbType != 'SQLite' && connectionOption.dbType != 'DuckDB'"
       >
         <label class="mr-2 font-bold">{{$t('SSH Tunnel')}}</label>
         <el-switch v-model="connectionOption.usingSSH"></el-switch>
@@ -210,10 +216,12 @@
         v-if="
           connectionOption.dbType == 'MySQL' ||
           connectionOption.dbType == 'PostgreSQL' ||
+          connectionOption.dbType == 'ClickHouse' ||
           connectionOption.dbType == 'KingbaseES' ||
           connectionOption.dbType == 'MongoDB' ||
           connectionOption.dbType == 'Redis' ||
-          connectionOption.dbType == 'Kafka'
+          connectionOption.dbType == 'Kafka' ||
+          connectionOption.dbType == 'RabbitMQ'
         "
       >
         <label class="inline-block mr-5 font-bold w-18">Use SSL</label>
@@ -243,7 +251,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'PostgreSQL', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka'].includes(connectionOption.dbType)
+        ['MySQL', 'PostgreSQL', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -271,6 +279,8 @@
 import LingyunUser from './lingyun-user/LingyunUser.vue';
 import ElasticSearch from "./component/ElasticSearch.vue";
 import Kafka from "./component/Kafka.vue";
+import DuckDB from "./component/DuckDB.vue";
+import RabbitMQ from "./component/RabbitMQ.vue";
 import SQLite from "./component/SQLite.vue";
 import SQLServer from "./component/SQLServer.vue";
 import SSH from "./component/SSH.vue";
@@ -297,6 +307,18 @@ const dbLogoMap = {
     text: "PG",
     bg: "#e8f0ff",
     color: "#2563eb",
+  },
+  ClickHouse: {
+    icon: require("@/../resources/icon/clickhouse.svg"),
+    text: "CH",
+    bg: "#fef9c3",
+    color: "#ca8a04",
+  },
+  DuckDB: {
+    icon: require("@/../resources/icon/duckdb.svg"),
+    text: "DK",
+    bg: "#fff7ed",
+    color: "#f59e0b",
   },
   KingbaseES: {
     icon: require("@/../resources/icon/kingbase.svg"),
@@ -352,6 +374,12 @@ const dbLogoMap = {
     bg: "#f8fafc",
     color: "#111827",
   },
+  RabbitMQ: {
+    icon: require("@/../resources/icon/rabbitmq.svg"),
+    text: "MQ",
+    bg: "#fff7ed",
+    color: "#f97316",
+  },
   SSH: {
     icon: require("@/../resources/icon/ssh.svg"),
     text: "SH",
@@ -368,7 +396,7 @@ const dbLogoMap = {
 
 export default {
   name: "Connect",
-  components: { ElasticSearch, Kafka, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
+  components: { ElasticSearch, Kafka, DuckDB, RabbitMQ, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
   data() {
     return {
       dialogVisible: false,
@@ -394,6 +422,8 @@ export default {
         brokers: "",
         clientId: "airdb",
         kafkaAuth: "none",
+        vhost: "/",
+        managementPort: 15672,
         global: true,
         key: null,
         // scheme: "http",
@@ -415,6 +445,8 @@ export default {
       supportDatabases: [
         "MySQL",
         "PostgreSQL",
+        "ClickHouse",
+        "DuckDB",
         "KingbaseES",
         "Dameng",
         "Oracle",
@@ -424,6 +456,7 @@ export default {
         "Redis",
         "ElasticSearch",
         "Kafka",
+        "RabbitMQ",
         "SSH",
         "FTP",
       ],
@@ -510,6 +543,9 @@ export default {
         case "sqlite":
           filters["SQLiteDb"] = ["db"];
           break;
+        case "duckdb":
+          filters["DuckDB"] = ["duckdb", "db"];
+          break;
         case "privateKey":
           filters["PrivateKey"] = ["key", "cer", "crt", "der", "pub", "pem", "pk"];
           break;
@@ -559,6 +595,21 @@ export default {
           this.connectionOption.port = 5432;
           this.connectionOption.database = "postgres";
           break;
+        case "ClickHouse":
+          this.connectionOption.user = "default";
+          this.connectionOption.password = "";
+          this.connectionOption.port = 8123;
+          this.connectionOption.database = "default";
+          this.connectionOption.useSSL = false;
+          break;
+        case "DuckDB":
+          this.connectionOption.user = null;
+          this.connectionOption.password = null;
+          this.connectionOption.port = null;
+          this.connectionOption.database = null;
+          this.connectionOption.dbPath = "";
+          this.connectionOption.useSSL = false;
+          break;
         case "KingbaseES":
           this.connectionOption.user = "system";
           this.connectionOption.encrypt = false;
@@ -597,6 +648,15 @@ export default {
           this.connectionOption.user = null;
           this.connectionOption.password = null;
           this.connectionOption.database = null;
+          this.connectionOption.useSSL = false;
+          break;
+        case "RabbitMQ":
+          this.connectionOption.user = "guest";
+          this.connectionOption.password = "guest";
+          this.connectionOption.port = 5672;
+          this.connectionOption.database = "/";
+          this.connectionOption.vhost = "/";
+          this.connectionOption.managementPort = 15672;
           this.connectionOption.useSSL = false;
           break;
         case "Redis":

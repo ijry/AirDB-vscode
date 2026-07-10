@@ -35,6 +35,8 @@ import terminal from "./redis/terminal";
 import redisStatus from "./redis/redisStatus";
 import kafkaMessageViewer from "./kafka/messageViewer.vue";
 import kafkaMessageProducer from "./kafka/messageProducer.vue";
+import rabbitmqMessageViewer from "./rabbitmq/messageViewer.vue";
+import rabbitmqMessageProducer from "./rabbitmq/messageProducer.vue";
 import forward from "./forward";
 import sshTerminal from "./xterm";
 import userCenter from "./user/userCenter.vue";
@@ -52,6 +54,8 @@ const router = new VueRouter({
     // kafka
     { path: '/kafkaMessageViewer', component: kafkaMessageViewer, name: 'kafkaMessageViewer' },
     { path: '/kafkaMessageProducer', component: kafkaMessageProducer, name: 'kafkaMessageProducer' },
+    { path: '/rabbitmqMessageViewer', component: rabbitmqMessageViewer, name: 'rabbitmqMessageViewer' },
+    { path: '/rabbitmqMessageProducer', component: rabbitmqMessageProducer, name: 'rabbitmqMessageProducer' },
     // ssh
     { path: '/forward', component: forward, name: 'forward' },
     { path: '/sshTerminal', component: sshTerminal, name: 'sshTerminal' },

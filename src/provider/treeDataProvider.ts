@@ -7,6 +7,7 @@ import { InfoNode } from "@/model/other/infoNode";
 import { RedisConnectionNode } from "@/model/redis/redisConnectionNode";
 import { SSHConnectionNode } from "@/model/ssh/sshConnectionNode";
 import { KafkaConnectionNode } from "@/model/kafka/kafkaConnectionNode";
+import { RabbitMQConnectionNode } from "@/model/rabbitmq/rabbitmqConnectionNode";
 import { CacheKey, DatabaseType } from "../common/constants";
 import { ConnectionNode } from "../model/database/connectionNode";
 import { RootNode } from "../model/database/rootNode";
@@ -134,7 +135,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
     private getKeyByNode(connectionNode: Node): string {
         const dbType = connectionNode.dbType;
-        if (dbType == DatabaseType.ES || dbType == DatabaseType.REDIS || dbType == DatabaseType.KAFKA || dbType == DatabaseType.SSH || dbType == DatabaseType.FTP || dbType == DatabaseType.MONGO_DB) {
+        if (dbType == DatabaseType.ES || dbType == DatabaseType.REDIS || dbType == DatabaseType.KAFKA || dbType == DatabaseType.RABBITMQ || dbType == DatabaseType.SSH || dbType == DatabaseType.FTP || dbType == DatabaseType.MONGO_DB) {
             return CacheKey.NOSQL_CONNECTION;
         }
         return CacheKey.DATBASE_CONECTIONS;
@@ -275,6 +276,8 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             node = new RedisConnectionNode(key, connectInfo)
         } else if (connectInfo.dbType == DatabaseType.KAFKA) {
             node = new KafkaConnectionNode(key, connectInfo)
+        } else if (connectInfo.dbType == DatabaseType.RABBITMQ) {
+            node = new RabbitMQConnectionNode(key, connectInfo)
         } else if (connectInfo.dbType == DatabaseType.SSH) {
             connectInfo.ssh.key = connectInfo.key
             node = new SSHConnectionNode(key, connectInfo, connectInfo.ssh, connectInfo.name)
@@ -313,7 +316,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
         const dbIdMap = new Map<string, Node>();
         const connectionNodes = await this.getConnectionNodes()
         for (const cNode of connectionNodes) {
-            if (cNode.dbType == DatabaseType.SQLITE) {
+            if (cNode.dbType == DatabaseType.SQLITE || cNode.dbType == DatabaseType.DUCKDB) {
                 const uid = cNode.label;
                 dbIdList.push(uid)
                 dbIdMap.set(uid, cNode)

@@ -23,6 +23,9 @@ import { MongoConnection } from "./connect/mongoConnection";
 import { KingbaseConnection } from "./connect/kingbaseConnection";
 import { DamengConnection } from "./connect/damengConnection";
 import { KafkaConnection } from "./connect/kafkaConnection";
+import { ClickHouseConnection } from "./connect/clickHouseConnection";
+import { DuckDBConnection } from "./connect/duckdbConnection";
+import { RabbitMQConnection } from "./connect/rabbitmqConnection";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -165,6 +168,10 @@ export class ConnectionManager {
                 return new OracleConnection(opt);
             case DatabaseType.SQLITE:
                 return new SqliteConnection(opt);
+            case DatabaseType.CLICKHOUSE:
+                return new ClickHouseConnection(opt);
+            case DatabaseType.DUCKDB:
+                return new DuckDBConnection(opt);
             case DatabaseType.ES:
                 return new EsConnection(opt);
             case DatabaseType.MONGO_DB:
@@ -174,6 +181,8 @@ export class ConnectionManager {
                 return new RedisConnection(opt);
             case DatabaseType.KAFKA:
                 return new KafkaConnection(opt);
+            case DatabaseType.RABBITMQ:
+                return new RabbitMQConnection(opt);
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
             default:

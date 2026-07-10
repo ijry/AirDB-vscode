@@ -52,7 +52,8 @@ export enum Confirm {
 export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", KINGBASE = "KingbaseES", DAMENG = "Dameng", SQLITE = "SQLite",
     MSSQL = "SqlServer", ORACLE = "Oracle", MONGO_DB="MongoDB",
-    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", SSH="SSH",FTP="FTP"
+    CLICKHOUSE = "ClickHouse", DUCKDB = "DuckDB",
+    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", RABBITMQ = "RabbitMQ", SSH="SSH",FTP="FTP"
 }
 
 export enum ModelType {
@@ -79,6 +80,12 @@ export enum ModelType {
     KAFKA_CONNECTION = "kafkaConnection", KAFKA_TOPIC_GROUP = "kafkaTopicGroup", KAFKA_TOPIC = "kafkaTopic",
     KAFKA_PARTITION = "kafkaPartition", KAFKA_CONSUMER_GROUP = "kafkaConsumerGroup",
     KAFKA_CONSUMER_GROUP_ITEM = "kafkaConsumerGroupItem",
+    /**
+     * RabbitMQ
+     */
+    RABBITMQ_CONNECTION = "rabbitmqConnection", RABBITMQ_QUEUE_GROUP = "rabbitmqQueueGroup",
+    RABBITMQ_QUEUE = "rabbitmqQueue", RABBITMQ_EXCHANGE_GROUP = "rabbitmqExchangeGroup",
+    RABBITMQ_EXCHANGE = "rabbitmqExchange",
     /**
      * database
      */

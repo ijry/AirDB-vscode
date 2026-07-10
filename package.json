@@ -461,6 +461,18 @@
 				"icon": "$(send)"
 			},
 			{
+				"command": "airdb.rabbitmq.queue.view",
+				"title": "View RabbitMQ Messages",
+				"category": "AirDB",
+				"icon": "$(eye)"
+			},
+			{
+				"command": "airdb.rabbitmq.queue.send",
+				"title": "Send RabbitMQ Message",
+				"category": "AirDB",
+				"icon": "$(send)"
+			},
+			{
 				"command": "airdb.ssh.terminal.hear",
 				"title": "Open Terminal in hear"
 			},
@@ -609,27 +621,27 @@
 			"view/item/context": [
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|kafkaConnection|kafkaTopicGroup|kafkaTopic|kafkaConsumerGroup|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|kafkaConnection|kafkaTopicGroup|kafkaTopic|kafkaConsumerGroup|rabbitmqConnection|rabbitmqQueueGroup|rabbitmqQueue|rabbitmqExchangeGroup|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
 					"group": "inline@-2"
 				},
 				{
 					"command": "airdb.connection.edit",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|rabbitmqConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.connection.open",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|rabbitmqConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@3"
 				},
 				{
 					"command": "airdb.connection.disable",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|rabbitmqConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@4"
 				},
 				{
 					"command": "airdb.host.copy",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|rabbitmqConnection)$/",
 					"group": "1_mysql@6"
 				},
 				{
@@ -654,7 +666,7 @@
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(esConnection|kafkaConnection|kafkaTopicGroup|kafkaTopic|kafkaConsumerGroup|ftpConnection|ftpFolder)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(esConnection|kafkaConnection|kafkaTopicGroup|kafkaTopic|kafkaConsumerGroup|rabbitmqConnection|rabbitmqQueueGroup|rabbitmqQueue|rabbitmqExchangeGroup|ftpConnection|ftpFolder)$/",
 					"group": "2_mysql@1"
 				},
 				{
@@ -669,7 +681,7 @@
 				},
 				{
 					"command": "airdb.connection.delete",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|rabbitmqConnection|ftpConnection|sshConnection)$/",
 					"group": "10mysql@2"
 				},
 				{
@@ -943,6 +955,16 @@
 					"group": "inline@1"
 				},
 				{
+					"command": "airdb.rabbitmq.queue.view",
+					"when": "view == activitybar.airdb.nosql && viewItem == rabbitmqQueue",
+					"group": "inline@0"
+				},
+				{
+					"command": "airdb.rabbitmq.queue.send",
+					"when": "view == activitybar.airdb.nosql && viewItem == rabbitmqQueue",
+					"group": "inline@1"
+				},
+				{
 					"command": "airdb.connection.delete",
 					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "inline@0"
@@ -1119,7 +1141,10 @@
 		"webpack-cli": "^3.3.11"
 	},
 	"dependencies": {
+		"@clickhouse/client": "^1.20.0",
+		"@types/amqplib": "^0.10.8",
 		"@vscode/l10n": "^0.0.18",
+		"amqplib": "^2.0.1",
 		"axios": "^0.21.1",
 		"command-exists": "^1.2.9",
 		"comment-json": "^4.1.0",
@@ -1127,6 +1152,7 @@
 		"date-format": "^3.0.0",
 		"deepmerge": "^3.2.0",
 		"dmdb": "1.0.49630",
+		"duckdb": "^1.4.4",
 		"element-ui": "^2.13.2",
 		"esbuild": "^0.12.16",
 		"g2": "^2.3.13",

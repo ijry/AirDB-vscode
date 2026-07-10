@@ -13,7 +13,7 @@ assert.match(connect, /components: \{[\s\S]*Kafka/);
 assert.match(connect, /Kafka:\s*\{[\s\S]*icon: require\("@\/\.\.\/resources\/icon\/kafka\.svg"\)/);
 assert.match(connect, /supportDatabases:\s*\[[\s\S]*"Kafka"/);
 assert.match(connect, /<Kafka\s+v-else-if="connectionOption\.dbType == 'Kafka'"/);
-assert.match(connect, /\['MySQL', 'PostgreSQL', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka'\]/);
+assert.match(connect, /\[[^\]]*'Kafka'[^\]]*\]\.includes\(connectionOption\.dbType\)/);
 assert.match(connect, /case "Kafka":[\s\S]*this\.connectionOption\.host = "127\.0\.0\.1:9092";[\s\S]*this\.connectionOption\.brokers = "127\.0\.0\.1:9092";[\s\S]*this\.connectionOption\.clientId = "airdb";[\s\S]*this\.connectionOption\.kafkaAuth = "none";[\s\S]*this\.connectionOption\.port = null;/);
 
 assert.match(kafka, /Brokers/);

@@ -34,6 +34,7 @@ import { activeEs } from "./model/es/provider/main";
 import { RedisConnectionNode } from "./model/redis/redisConnectionNode";
 import KeyNode from "./model/redis/keyNode";
 import { KafkaTopicNode } from "./model/kafka/kafkaTopicNode";
+import { RabbitMQQueueNode } from "./model/rabbitmq/rabbitmqQueueNode";
 import { DiffService } from "./service/diff/diffService";
 import { DatabaseCache } from "./service/common/databaseCache";
 import { FileNode } from "./model/ssh/fileNode";
@@ -234,6 +235,11 @@ export function activate(context: vscode.ExtensionContext) {
             ...{
                 "airdb.kafka.topic.view": (topicNode: KafkaTopicNode) => topicNode.viewMessages(),
                 "airdb.kafka.topic.send": (topicNode: KafkaTopicNode) => topicNode.sendMessage(),
+            },
+            // rabbitmq
+            ...{
+                "airdb.rabbitmq.queue.view": (queueNode: RabbitMQQueueNode) => queueNode.viewMessages(),
+                "airdb.rabbitmq.queue.send": (queueNode: RabbitMQQueueNode) => queueNode.sendMessage(),
             },
             // table node
             ...{
