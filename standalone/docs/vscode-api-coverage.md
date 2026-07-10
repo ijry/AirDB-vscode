@@ -6,7 +6,7 @@ This matrix tracks the generic VS Code API surface implemented by the Tauri stan
 
 | Area | APIs | Notes |
 | --- | --- | --- |
-| Commands | `commands.registerCommand`, `commands.executeCommand`, built-in `vscode.open` | Extension command handlers and selected built-ins are routed through the Node extension host. |
+| Commands | `commands.registerCommand`, `commands.executeCommand`, `commands.getCommands`, built-in `setContext`, built-in `vscode.open` | Extension command handlers and selected built-ins are routed through the Node extension host. |
 | Notifications and dialogs | `window.showInformationMessage`, `showWarningMessage`, `showErrorMessage`, `showInputBox`, `showQuickPick`, `showOpenDialog`, `showSaveDialog` | Routed through the host bridge to the Tauri workbench. |
 | Tree views | `window.createTreeView` | Supports provider registration, child resolution, refresh, reveal, and item command invocation. |
 | Webview panels | `window.createWebviewPanel`, `webview.html`, `webview.postMessage`, `webview.onDidReceiveMessage`, `webview.asWebviewUri` | Panel lifecycle and local resource roots are handled by standalone IPC. |
@@ -33,6 +33,7 @@ This matrix tracks the generic VS Code API surface implemented by the Tauri stan
 | Progress | `window.withProgress` | Executes the task directly without cancellable progress UI. |
 | URI behavior | `Uri.file`, `Uri.parse`, `toString`, `fsPath` | Needs `Uri.joinPath`, `Uri.with`, and more robust encoding and file URI edge cases. |
 | Watcher glob parity | `workspace.createFileSystemWatcher` patterns | Uses a limited in-shim glob matcher; full VS Code glob semantics and a `RelativePattern` class are still missing. |
+| Context keys and menus | `setContext`, menu `when` filtering | Context keys are stored in the extension host and menu contributions are filtered before IPC, but only truthy checks, `!key`, equality/inequality, and `&&` clauses are supported. No menu UI is rendered yet. |
 
 ## Explicitly Unsupported With Diagnostics
 
@@ -49,7 +50,6 @@ Calls or property access on these surfaces throw `UnsupportedApiError` with code
 
 | Area | Notes |
 | --- | --- |
-| Context keys and menus | `setContext`, menu `when` filtering, and command discovery are planned for phase 2. |
 | Secrets | `ExtensionContext.secrets` is not implemented yet. |
 | Authentication providers | Local provider registry and unsupported cloud account flows are planned. |
 | Relative patterns and globbing | `RelativePattern` and richer glob handling are missing. |

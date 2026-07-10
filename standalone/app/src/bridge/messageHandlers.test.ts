@@ -156,6 +156,39 @@ describe("mapHostMessageToActions", () => {
     });
   });
 
+  it("maps extension contribution menus and context keys", () => {
+    const actions = mapHostMessageToActions(
+      createNotification("extension.registerContributions", {
+        context: { "fixture.enabled": true },
+        menus: {
+          commandPalette: [
+            { command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }
+          ]
+        },
+        extensions: [{
+          extensionId: "fixture.one",
+          manifest: {
+            contributes: {
+              viewsContainers: {
+                activitybar: [{ id: "activitybar.fixture", title: "Fixture" }]
+              }
+            }
+          }
+        }]
+      })
+    );
+
+    expect(actions).toContainEqual({
+      type: "menus/register",
+      contextKeys: { "fixture.enabled": true },
+      menus: {
+        commandPalette: [
+          { command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }
+        ]
+      }
+    });
+  });
+
   it("maps workbench output notifications to output actions", () => {
     expect(
       mapHostMessageToActions(createNotification("workbench.output.create", {

@@ -4,7 +4,12 @@ import type {
   HostMessage
 } from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
-import type { ExtensionDiagnosticEventState, ExtensionDiagnosticState, NotificationItem } from "../workbench/types";
+import type {
+  ExtensionDiagnosticEventState,
+  ExtensionDiagnosticState,
+  MenuContributionState,
+  NotificationItem
+} from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
 
 const DIAGNOSTIC_STATUSES = [
@@ -60,7 +65,14 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
           contributes?.viewsContainers as Record<string, Array<{ id: string; title: string; icon?: string }>> | undefined;
         return Object.values(viewsContainers ?? {}).flat();
       });
-      return [{ type: "containers/register", containers }];
+      return [
+        { type: "containers/register", containers },
+        {
+          type: "menus/register",
+          menus: normalizeMenus(payload.menus, extensions),
+          contextKeys: normalizeContextKeys(payload.context)
+        }
+      ];
     }
     case "extension.diagnostics":
       return isDiagnosticsPayload(message.payload)
@@ -300,6 +312,61 @@ function isOptionalRecord(value: unknown): boolean {
 
 function normalizeStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function normalizeContextKeys(value: unknown): Record<string, unknown> {
+  return isStringRecord(value) ? { ...value } : {};
+}
+
+function normalizeMenus(
+  value: unknown,
+  extensions: Array<Record<string, unknown>>
+): Record<string, MenuContributionState[]> {
+  if (isStringRecord(value)) {
+    return normalizeMenusRecord(value);
+  }
+  return collectManifestMenus(extensions);
+}
+
+function normalizeMenusRecord(value: Record<string, unknown>): Record<string, MenuContributionState[]> {
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([location, items]) =>
+      Array.isArray(items) ? [[location, normalizeMenuItems(items)]] : []
+    )
+  );
+}
+
+function normalizeMenuItems(items: unknown[]): MenuContributionState[] {
+  return items
+    .filter(isStringRecord)
+    .map((item) => ({ ...item }) as MenuContributionState);
+}
+
+function collectManifestMenus(extensions: Array<Record<string, unknown>>): Record<string, MenuContributionState[]> {
+  return extensions.reduce<Record<string, MenuContributionState[]>>((acc, extension) => {
+    const extensionId = typeof extension.extensionId === "string" ? extension.extensionId : undefined;
+    const manifest = isStringRecord(extension.manifest) ? extension.manifest : undefined;
+    const contributes = isStringRecord(manifest?.contributes) ? manifest.contributes : undefined;
+    const menus = isStringRecord(contributes?.menus) ? contributes.menus : undefined;
+    if (!menus) {
+      return acc;
+    }
+
+    for (const [location, items] of Object.entries(menus)) {
+      if (!Array.isArray(items)) {
+        continue;
+      }
+      acc[location] = [
+        ...(acc[location] ?? []),
+        ...normalizeMenuItems(items).map((item) => ({
+          ...item,
+          ...(extensionId ? { extensionId } : {})
+        }))
+      ];
+    }
+
+    return acc;
+  }, {});
 }
 
 function outputActions(payload: Record<string, unknown>, extensionId?: string): WorkbenchAction[] {

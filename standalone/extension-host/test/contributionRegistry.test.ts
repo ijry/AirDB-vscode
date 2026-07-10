@@ -13,4 +13,44 @@ describe("ContributionRegistry", () => {
       group: "extension.registerContributions"
     });
   });
+
+  it("filters contributed menus with simple when expressions", () => {
+    const registry = new ContributionRegistry();
+    registry.register({
+      name: "hello-extension",
+      publisher: "fixture",
+      contributes: {
+        menus: {
+          "view/item/context": [
+            { command: "fixture.open", when: "fixture.connected" },
+            { command: "fixture.disconnect", when: "!fixture.connected" },
+            { command: "fixture.mysql", when: "fixture.kind == mysql" },
+            { command: "fixture.postgres", when: "fixture.kind == 'postgres'" },
+            { command: "fixture.admin", when: "fixture.connected && fixture.role == admin" }
+          ]
+        }
+      }
+    });
+
+    expect(menuCommands(registry.toPayload().menus["view/item/context"])).toEqual(["fixture.disconnect"]);
+
+    registry.setContext("fixture.connected", true);
+    registry.setContext("fixture.kind", "mysql");
+    registry.setContext("fixture.role", "admin");
+
+    expect(menuCommands(registry.toPayload().menus["view/item/context"])).toEqual([
+      "fixture.open",
+      "fixture.mysql",
+      "fixture.admin"
+    ]);
+    expect(registry.toPayload().context).toEqual({
+      "fixture.connected": true,
+      "fixture.kind": "mysql",
+      "fixture.role": "admin"
+    });
+  });
 });
+
+function menuCommands(items: Array<Record<string, unknown>> | undefined): unknown[] {
+  return (items ?? []).map((item) => item.command);
+}

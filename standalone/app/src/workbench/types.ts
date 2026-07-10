@@ -10,6 +10,14 @@ export interface ActivityContainer {
   icon?: string;
 }
 
+export interface MenuContributionState {
+  command?: string;
+  when?: string;
+  group?: string;
+  extensionId?: string;
+  [key: string]: unknown;
+}
+
 export interface TreeNode {
   id: string;
   label: string;
@@ -133,6 +141,8 @@ export interface ExtensionDiagnosticState {
 export interface WorkbenchState {
   containers: ActivityContainer[];
   activeContainerId?: string;
+  contextKeys: Record<string, unknown>;
+  menus: Record<string, MenuContributionState[]>;
   treeViews: Record<string, TreeViewState>;
   editors: EditorTab[];
   activeEditorId?: string;

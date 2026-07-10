@@ -31,6 +31,7 @@
 - [x] Task 1 added the coverage matrix and unsupported API diagnostics path.
 - [x] Task 2 added the shared extension registry and activated export visibility.
 - [x] Task 3 added in-memory workspace configuration and local file-system watchers.
+- [x] Task 4 added built-in context keys, simple menu `when` filtering, and command discovery.
 
 ## Verified Baseline
 
@@ -45,7 +46,7 @@
 
 Implemented or heavily exercised:
 
-- [x] `commands.registerCommand`, `commands.executeCommand`, and built-in `vscode.open`.
+- [x] `commands.registerCommand`, `commands.executeCommand`, `commands.getCommands`, built-in `setContext`, and built-in `vscode.open`.
 - [x] `window.showInformationMessage`, `showWarningMessage`, `showErrorMessage`.
 - [x] `window.showInputBox`, `showQuickPick`, `showOpenDialog`, `showSaveDialog`.
 - [x] `window.createTreeView` with root/child resolution and item command invocation.
@@ -61,19 +62,19 @@ Implemented or heavily exercised:
 - [x] Core value types including `Disposable`, `EventEmitter`, `Uri`, `Position`, `Range`, `Selection`, `TreeItem`, `ThemeIcon`, `ThemeColor`, `MarkdownString`, `Hover`, `TextEdit`.
 - [x] Extension diagnostics for discovery, manifest parsing, contribution registration, main resolution, module import, activation, command count, contributed views, failures.
 - [x] `extensions.getExtension` and `extensions.all` expose live registry metadata, active state, and activated exports for loaded extensions.
+- [x] Context keys through built-in `setContext` and simple menu `when` filtering for truthy checks, negation, equality/inequality, and `&&`.
 
 Partial or stubbed:
 
 - [ ] `workspace.getConfiguration` is in-memory only and does not persist scoped settings.
 - [ ] `workspace.createFileSystemWatcher` uses a limited glob matcher and does not provide full VS Code watcher parity.
+- [ ] Menu `when` evaluation does not implement the full VS Code expression grammar and the workbench does not render menu UI yet.
 - [ ] Language provider registrations are stored but not invoked by the workbench.
 - [ ] Text editor events exist only as shim hooks; the workbench does not provide full editor lifecycle parity.
 - [ ] Activation events are not semantically evaluated like VS Code; bundled extensions are loaded directly.
 
 Missing high-priority surfaces:
 
-- [ ] `commands.getCommands`.
-- [ ] Context keys through `setContext` and menu `when` evaluation.
 - [ ] `ExtensionContext.secrets` and `vscode.authentication`.
 - [ ] `window.registerWebviewViewProvider`.
 - [ ] `window.withProgress` cancellation/progress reporting beyond direct task execution.
@@ -148,12 +149,12 @@ Missing high-priority surfaces:
 
 **Deliverable:** Extensions can call `setContext`, menus can be filtered by simple `when` expressions, and command discovery works for registered commands.
 
-- [ ] Add built-in `setContext` handling in the command registry.
-- [ ] Store context keys in extension-host state and publish menu updates through existing contribution IPC.
-- [ ] Implement simple `when` expression support for equality, negation, and truthy checks.
-- [ ] Add `commands.getCommands(filterInternal?: boolean)` for registered extension commands.
-- [ ] Add tests for context state, menu filtering, and command discovery.
-- [ ] Verify with `npm --prefix standalone run test`.
+- [x] Add built-in `setContext` handling in the command registry.
+- [x] Store context keys in extension-host state and publish menu updates through existing contribution IPC.
+- [x] Implement simple `when` expression support for equality, negation, and truthy checks.
+- [x] Add `commands.getCommands(filterInternal?: boolean)` for registered extension commands.
+- [x] Add tests for context state, menu filtering, and command discovery.
+- [x] Verify with `npm --prefix standalone run test`.
 
 ### Task 5: Secrets And Authentication Compatibility
 

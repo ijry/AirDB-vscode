@@ -28,6 +28,10 @@ const bridge = new IpcBridge((line) => {
 const diagnostics = new ExtensionDiagnosticsRegistry((payload) => {
   bridge.notify("extension.diagnostics", payload);
 });
+commandRegistry.onDidChangeContext((change) => {
+  contributionRegistry.setContext(change.key, change.value);
+  bridge.notify("extension.registerContributions", contributionRegistry.toPayload());
+});
 
 const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry, webviewRegistry });
 startStdinMessageLoop(process.stdin, controller, (line) => {
@@ -45,7 +49,7 @@ try {
     diagnostics
   });
   const loaded = await loader.loadAll();
-  bridge.notify("extension.registerContributions", { extensions: contributionRegistry.all() });
+  bridge.notify("extension.registerContributions", contributionRegistry.toPayload());
   bridge.notify("extension.activated", { loaded: loaded.map((extension) => extension.id) });
   logger.info(`Loaded ${loaded.length} extension(s).`);
 } catch (error) {

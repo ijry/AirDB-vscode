@@ -3,6 +3,7 @@ import type {
   DialogState,
   EditorTab,
   ExtensionDiagnosticState,
+  MenuContributionState,
   NotificationState,
   OutputChannelState,
   StatusBarItemState,
@@ -14,6 +15,7 @@ import type {
 
 export type WorkbenchAction =
   | { type: "containers/register"; containers: ActivityContainer[] }
+  | { type: "menus/register"; menus: Record<string, MenuContributionState[]>; contextKeys: Record<string, unknown> }
   | { type: "container/select"; id: string }
   | { type: "tree/register"; tree: TreeViewState }
   | { type: "tree/update"; id: string; nodes: TreeViewState["nodes"] }
@@ -46,6 +48,8 @@ export type WorkbenchAction =
 
 export const initialWorkbenchState: WorkbenchState = {
   containers: [],
+  contextKeys: {},
+  menus: {},
   treeViews: {},
   editors: [],
   webviews: [],
@@ -66,6 +70,12 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         ...state,
         containers: action.containers,
         activeContainerId: state.activeContainerId ?? action.containers[0]?.id
+      };
+    case "menus/register":
+      return {
+        ...state,
+        contextKeys: copyContextKeys(action.contextKeys),
+        menus: copyMenus(action.menus)
       };
     case "container/select":
       return { ...state, activeContainerId: action.id };
@@ -239,15 +249,30 @@ function copyDiagnosticsExtensions(extensions: ExtensionDiagnosticState[]): Exte
   }));
 }
 
-function copyDiagnosticDetails(details: Record<string, unknown>): Record<string, unknown> {
+function copyContextKeys(contextKeys: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(
-    Object.entries(details).map(([key, value]) => [key, copyDiagnosticDetailValue(value)])
+    Object.entries(contextKeys).map(([key, value]) => [key, copyStateValue(value)])
   );
 }
 
-function copyDiagnosticDetailValue(value: unknown): unknown {
+function copyMenus(menus: Record<string, MenuContributionState[]>): Record<string, MenuContributionState[]> {
+  return Object.fromEntries(
+    Object.entries(menus).map(([location, items]) => [
+      location,
+      items.map((item) => copyStateValue(item) as MenuContributionState)
+    ])
+  );
+}
+
+function copyDiagnosticDetails(details: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(details).map(([key, value]) => [key, copyStateValue(value)])
+  );
+}
+
+function copyStateValue(value: unknown): unknown {
   if (Array.isArray(value)) {
-    return value.map(copyDiagnosticDetailValue);
+    return value.map(copyStateValue);
   }
 
   if (value && typeof value === "object") {

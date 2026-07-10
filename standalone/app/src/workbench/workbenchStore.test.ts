@@ -12,6 +12,26 @@ describe("workbenchReducer", () => {
     expect(state.activeContainerId).toBe("activitybar.airdb.sql");
   });
 
+  it("stores context keys and filtered menu contributions defensively", () => {
+    const menus = {
+      commandPalette: [{ command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }]
+    };
+    const contextKeys = { "fixture.enabled": true };
+    const state = workbenchReducer(initialWorkbenchState, {
+      type: "menus/register",
+      menus,
+      contextKeys
+    });
+
+    menus.commandPalette[0]!.command = "fixture.tampered";
+    contextKeys["fixture.enabled"] = false;
+
+    expect(state.contextKeys).toEqual({ "fixture.enabled": true });
+    expect(state.menus.commandPalette).toEqual([
+      { command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }
+    ]);
+  });
+
   it("opens editors and updates active editor", () => {
     const state = workbenchReducer(initialWorkbenchState, {
       type: "editor/open",
