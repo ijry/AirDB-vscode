@@ -52,7 +52,7 @@ export enum Confirm {
 export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", KINGBASE = "KingbaseES", DAMENG = "Dameng", SQLITE = "SQLite",
     MSSQL = "SqlServer", ORACLE = "Oracle", MONGO_DB="MongoDB",
-    ES = "ElasticSearch", REDIS = "Redis",SSH="SSH",FTP="FTP"
+    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", SSH="SSH",FTP="FTP"
 }
 
 export enum ModelType {
@@ -73,6 +73,12 @@ export enum ModelType {
      * ElasticSearch
      */
     ES_CONNECTION = "esConnection", ES_INDEX = "esIndex", ES_COLUMN = "esColumn",
+    /**
+     * Kafka
+     */
+    KAFKA_CONNECTION = "kafkaConnection", KAFKA_TOPIC_GROUP = "kafkaTopicGroup", KAFKA_TOPIC = "kafkaTopic",
+    KAFKA_PARTITION = "kafkaPartition", KAFKA_CONSUMER_GROUP = "kafkaConsumerGroup",
+    KAFKA_CONSUMER_GROUP_ITEM = "kafkaConsumerGroupItem",
     /**
      * database
      */

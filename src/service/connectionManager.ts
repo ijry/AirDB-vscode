@@ -22,6 +22,7 @@ import { Console } from "@/common/Console";
 import { MongoConnection } from "./connect/mongoConnection";
 import { KingbaseConnection } from "./connect/kingbaseConnection";
 import { DamengConnection } from "./connect/damengConnection";
+import { KafkaConnection } from "./connect/kafkaConnection";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -171,6 +172,8 @@ export class ConnectionManager {
             case DatabaseType.REDIS:
                 // Console.log('redisredis')
                 return new RedisConnection(opt);
+            case DatabaseType.KAFKA:
+                return new KafkaConnection(opt);
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
             default:
