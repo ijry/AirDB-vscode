@@ -251,6 +251,39 @@ describe("workbenchReducer", () => {
     expect(disposed.statusBarItems).toEqual([]);
   });
 
+  it("stores progress lifecycle state", () => {
+    const started = workbenchReducer(initialWorkbenchState, {
+      type: "progress/start",
+      progress: {
+        id: "progress-1",
+        extensionId: "fixture.one",
+        title: "Loading",
+        location: 15,
+        cancellable: true
+      }
+    });
+    const reported = workbenchReducer(started, {
+      type: "progress/report",
+      id: "progress-1",
+      message: "Half",
+      increment: 50
+    });
+    const ended = workbenchReducer(reported, { type: "progress/end", id: "progress-1" });
+
+    expect(reported.progresses).toEqual([
+      {
+        id: "progress-1",
+        extensionId: "fixture.one",
+        title: "Loading",
+        location: 15,
+        cancellable: true,
+        message: "Half",
+        increment: 50
+      }
+    ]);
+    expect(ended.progresses).toEqual([]);
+  });
+
   it("handles virtual terminal show, hide, append, and dispose", () => {
     const created = workbenchReducer(initialWorkbenchState, {
       type: "terminal/open",

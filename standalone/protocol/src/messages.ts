@@ -34,6 +34,9 @@ export type HostMessageGroup =
   | "workbench.terminal.show"
   | "workbench.terminal.hide"
   | "workbench.terminal.dispose"
+  | "workbench.progress.start"
+  | "workbench.progress.report"
+  | "workbench.progress.end"
   | "dialog.showInputBox"
   | "dialog.showQuickPick"
   | "dialog.showOpenDialog"
@@ -147,6 +150,15 @@ export interface HostTerminalDto {
   id: string;
   name: string;
   visible: boolean;
+}
+
+export interface HostProgressDto {
+  id: string;
+  title?: string;
+  location?: number;
+  cancellable?: boolean;
+  message?: string;
+  increment?: number;
 }
 
 export type ExtensionDiagnosticStatus =

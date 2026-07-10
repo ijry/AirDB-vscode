@@ -328,6 +328,46 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps progress notifications to workbench actions", () => {
+    expect(
+      mapHostMessageToActions(createNotification("workbench.progress.start", {
+        id: "progress-1",
+        title: "Loading",
+        location: 15,
+        cancellable: true
+      }, "fixture.one"))
+    ).toEqual([
+      {
+        type: "progress/start",
+        progress: {
+          id: "progress-1",
+          extensionId: "fixture.one",
+          title: "Loading",
+          location: 15,
+          cancellable: true
+        }
+      }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("workbench.progress.report", {
+        id: "progress-1",
+        message: "Half",
+        increment: 50
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "progress/report", id: "progress-1", message: "Half", increment: 50 }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("workbench.progress.end", {
+        id: "progress-1"
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "progress/end", id: "progress-1" }
+    ]);
+  });
+
   it("maps workbench terminal notifications to terminal actions", () => {
     expect(
       mapHostMessageToActions(createNotification("workbench.terminal.create", {

@@ -2,6 +2,7 @@ import {
   createRequest,
   type HostFileUriDto,
   type HostMessageGroup,
+  type HostProgressDto,
   type HostRequest,
   type HostTextEditorDto,
   type ShowTextDocumentPayload
@@ -133,6 +134,25 @@ function createCancellationToken() {
   };
 }
 
+function normalizeProgressOptions(id: string, options: unknown): HostProgressDto {
+  const value = options && typeof options === "object" ? options as Record<string, unknown> : {};
+  return {
+    id,
+    ...(typeof value.title === "string" ? { title: value.title } : {}),
+    ...(typeof value.location === "number" ? { location: value.location } : {}),
+    ...(typeof value.cancellable === "boolean" ? { cancellable: value.cancellable } : {})
+  };
+}
+
+function normalizeProgressReport(id: string, report: unknown): HostProgressDto {
+  const value = report && typeof report === "object" ? report as Record<string, unknown> : {};
+  return {
+    id,
+    ...(typeof value.message === "string" ? { message: value.message } : {}),
+    ...(typeof value.increment === "number" ? { increment: value.increment } : {})
+  };
+}
+
 function normalizeFsPath(value: string): string {
   const normalized = value.replace(/\\/g, "/");
   if (normalized === "/" || /^[A-Za-z]:\/?$/.test(normalized)) {
@@ -176,6 +196,7 @@ export function createWindowApi(options: WindowApiOptions) {
   let activeTerminal: unknown;
   let activeTextEditor: StandaloneTextEditor | undefined;
   let nextDecorationTypeId = 1;
+  let nextProgressId = 1;
 
   return {
     get activeTextEditor() {
@@ -444,8 +465,22 @@ export function createWindowApi(options: WindowApiOptions) {
       return terminal;
     },
 
-    withProgress(_options: unknown, task: () => Promise<unknown>) {
-      return task();
+    async withProgress(optionsValue: unknown, task: (progress: { report(value: unknown): void }, token: unknown) => unknown) {
+      const progressId = `${options.extensionId}:progress:${nextProgressId++}`;
+      const cancellation = createCancellationToken();
+      const progress = {
+        report(value: unknown) {
+          options.bridge.notify("workbench.progress.report", normalizeProgressReport(progressId, value), options.extensionId);
+        }
+      };
+
+      options.bridge.notify("workbench.progress.start", normalizeProgressOptions(progressId, optionsValue), options.extensionId);
+      try {
+        return await Promise.resolve(task(progress, cancellation.token));
+      } finally {
+        options.bridge.notify("workbench.progress.end", { id: progressId }, options.extensionId);
+        cancellation.dispose();
+      }
     },
 
     __fireActiveTextEditor(editor: unknown) {

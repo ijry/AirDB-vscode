@@ -108,6 +108,16 @@ export interface TerminalState {
   visible: boolean;
 }
 
+export interface ProgressState {
+  id: string;
+  extensionId?: string;
+  title?: string;
+  location?: number;
+  cancellable?: boolean;
+  message?: string;
+  increment?: number;
+}
+
 export interface ExtensionDiagnosticEventState {
   id: string;
   extensionId?: string;
@@ -154,6 +164,7 @@ export interface WorkbenchState {
   activeOutputId?: string;
   statusBarItems: StatusBarItemState[];
   terminals: TerminalState[];
+  progresses: ProgressState[];
   diagnostics: {
     extensions: ExtensionDiagnosticState[];
   };

@@ -52,7 +52,7 @@
 - [x] Task 1: URI, RelativePattern, and glob matcher.
 - [x] Task 2: webview view provider shim and extension-host registry.
 - [x] Task 3: workbench sidebar rendering for webview views.
-- [ ] Task 4: progress callback compatibility.
+- [x] Task 4: progress callback compatibility.
 - [ ] Task 5: compat fixture, coverage docs, and final verification.
 
 ---
@@ -419,7 +419,7 @@ git commit -m "feat: render webview views in standalone sidebar"
 - Produces: cancellation token shape `{ isCancellationRequested: false, onCancellationRequested: Event<unknown> }`
 - Produces: optional progress notification groups `workbench.progress.start`, `workbench.progress.report`, and `workbench.progress.end`
 
-- [ ] **Step 1: Add failing shim progress test**
+- [x] **Step 1: Add failing shim progress test**
 
 Add to `standalone/vscode-shim/test/window.test.ts`:
 
@@ -451,7 +451,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim
 
 Expected: FAIL because `withProgress` currently calls the task with no arguments.
 
-- [ ] **Step 2: Add failing app progress tests**
+- [x] **Step 2: Add failing app progress tests**
 
 In `messageHandlers.test.ts`, assert `workbench.progress.start`, `workbench.progress.report`, and `workbench.progress.end` map to reducer actions. In `workbenchStore.test.ts`, assert progress state is upserted, updated, and removed when ended.
 
@@ -459,7 +459,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/app -- mess
 
 Expected: FAIL because progress state and actions do not exist.
 
-- [ ] **Step 3: Implement protocol and shim progress notifications**
+- [x] **Step 3: Implement protocol and shim progress notifications**
 
 In `messages.ts`, add progress groups to `HostMessageGroup` and a payload:
 
@@ -476,11 +476,11 @@ export interface HostProgressDto {
 
 In `window.ts`, implement `withProgress` with a generated progress id, an `EventEmitter` cancellation token, and `progress.report`. Notify start before running the task, notify report on every `report`, notify end in `finally`, and return the task result.
 
-- [ ] **Step 4: Implement app progress state**
+- [x] **Step 4: Implement app progress state**
 
 Add `ProgressState` to `types.ts`, `progresses: ProgressState[]` to `WorkbenchState`, and reducer actions for start/report/end. No visual component is required in this task; storing normalized state is enough for IPC verification and future UI.
 
-- [ ] **Step 5: Verify Task 4**
+- [x] **Step 5: Verify Task 4**
 
 Run:
 
@@ -491,7 +491,7 @@ npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHan
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Task 4**
+- [x] **Step 6: Commit Task 4**
 
 ```bash
 git add standalone/protocol/src/messages.ts standalone/vscode-shim/src/window.ts standalone/vscode-shim/test/window.test.ts standalone/app/src/bridge/messageHandlers.ts standalone/app/src/bridge/messageHandlers.test.ts standalone/app/src/workbench/types.ts standalone/app/src/workbench/workbenchStore.ts standalone/app/src/workbench/workbenchStore.test.ts docs/superpowers/plans/2026-07-11-standalone-vscode-api-compat-phase3.md

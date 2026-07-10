@@ -9,6 +9,7 @@ import type {
   ExtensionDiagnosticState,
   MenuContributionState,
   NotificationItem,
+  ProgressState,
   WebviewState
 } from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
@@ -195,6 +196,19 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       return typeof payload.id === "string" ? [{ type: "terminal/hide", id: payload.id }] : [];
     case "workbench.terminal.dispose":
       return typeof payload.id === "string" ? [{ type: "terminal/dispose", id: payload.id }] : [];
+    case "workbench.progress.start": {
+      const progress = normalizeProgressStartPayload(payload, message.extensionId);
+      return progress ? [{ type: "progress/start", progress }] : [];
+    }
+    case "workbench.progress.report":
+      return typeof payload.id === "string" ? [{
+        type: "progress/report",
+        id: payload.id,
+        ...(typeof payload.message === "string" ? { message: payload.message } : {}),
+        ...(typeof payload.increment === "number" ? { increment: payload.increment } : {})
+      }] : [];
+    case "workbench.progress.end":
+      return typeof payload.id === "string" ? [{ type: "progress/end", id: payload.id }] : [];
     case "log": {
       const channel = typeof payload.channel === "string" ? payload.channel : "Log";
       const id = `legacy-log:${channel}`;
@@ -325,6 +339,19 @@ function normalizeWebviewPayload(payload: Record<string, unknown>, extensionId?:
     extensionId,
     html: typeof payload.html === "string" ? payload.html : "",
     localResourceRoots: normalizeStringArray(payload.localResourceRoots)
+  };
+}
+
+function normalizeProgressStartPayload(payload: Record<string, unknown>, extensionId?: string): ProgressState | undefined {
+  if (typeof payload.id !== "string") {
+    return undefined;
+  }
+  return {
+    id: payload.id,
+    extensionId,
+    ...(typeof payload.title === "string" ? { title: payload.title } : {}),
+    ...(typeof payload.location === "number" ? { location: payload.location } : {}),
+    ...(typeof payload.cancellable === "boolean" ? { cancellable: payload.cancellable } : {})
   };
 }
 

@@ -6,6 +6,7 @@ import type {
   MenuContributionState,
   NotificationState,
   OutputChannelState,
+  ProgressState,
   StatusBarItemState,
   TerminalState,
   TreeViewState,
@@ -47,6 +48,9 @@ export type WorkbenchAction =
   | { type: "terminal/show"; id: string }
   | { type: "terminal/hide"; id: string }
   | { type: "terminal/dispose"; id: string }
+  | { type: "progress/start"; progress: ProgressState }
+  | { type: "progress/report"; id: string; message?: string; increment?: number }
+  | { type: "progress/end"; id: string }
   | { type: "diagnostics/extensions"; extensions: ExtensionDiagnosticState[] };
 
 export const initialWorkbenchState: WorkbenchState = {
@@ -62,6 +66,7 @@ export const initialWorkbenchState: WorkbenchState = {
   outputs: [],
   statusBarItems: [],
   terminals: [],
+  progresses: [],
   diagnostics: {
     extensions: []
   }
@@ -239,6 +244,21 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         ...state,
         terminals: state.terminals.filter((terminal) => terminal.id !== action.id)
       };
+    case "progress/start":
+      return {
+        ...state,
+        progresses: upsertProgress(state.progresses, action.progress)
+      };
+    case "progress/report":
+      return {
+        ...state,
+        progresses: reportProgress(state.progresses, action)
+      };
+    case "progress/end":
+      return {
+        ...state,
+        progresses: state.progresses.filter((progress) => progress.id !== action.id)
+      };
     case "diagnostics/extensions":
       return {
         ...state,
@@ -377,6 +397,25 @@ function appendTerminal(
   }
   return terminals.map((terminal) =>
     terminal.id === id ? { ...terminal, lines: [...terminal.lines, line] } : terminal
+  );
+}
+
+function upsertProgress(progresses: ProgressState[], progress: ProgressState): ProgressState[] {
+  return [...progresses.filter((candidate) => candidate.id !== progress.id), progress];
+}
+
+function reportProgress(
+  progresses: ProgressState[],
+  report: { id: string; message?: string; increment?: number }
+): ProgressState[] {
+  return progresses.map((progress) =>
+    progress.id === report.id
+      ? {
+          ...progress,
+          ...(report.message !== undefined ? { message: report.message } : {}),
+          ...(report.increment !== undefined ? { increment: report.increment } : {})
+        }
+      : progress
   );
 }
 

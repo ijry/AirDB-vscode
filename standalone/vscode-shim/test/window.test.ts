@@ -589,4 +589,34 @@ describe("window IPC API", () => {
       { group: "workbench.terminal.dispose", extensionId: "fixture.one", payload: { id } }
     ]);
   });
+
+  it("passes progress and cancellation token objects to withProgress tasks", async () => {
+    const notify = vi.fn();
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify
+      }
+    });
+
+    const result = await api.window.withProgress({ title: "Loading", cancellable: true }, async (progress, token) => {
+      expect(token.isCancellationRequested).toBe(false);
+      expect(typeof token.onCancellationRequested).toBe("function");
+      progress.report({ message: "Half", increment: 50 });
+      return "done";
+    });
+
+    expect(result).toBe("done");
+    expect(notify).toHaveBeenCalledWith("workbench.progress.start", expect.objectContaining({
+      title: "Loading",
+      cancellable: true
+    }), "fixture.one");
+    expect(notify).toHaveBeenCalledWith("workbench.progress.report", expect.objectContaining({
+      message: "Half",
+      increment: 50
+    }), "fixture.one");
+    expect(notify).toHaveBeenCalledWith("workbench.progress.end", expect.objectContaining({}), "fixture.one");
+  });
 });
