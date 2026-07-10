@@ -53,7 +53,7 @@
 
 - [x] Phase 4 design committed as `01bff40 docs: design standalone language provider invocation`.
 - [x] Task 1: `vscode-shim` registry, selector matching, and language value types.
-- [ ] Task 2: protocol DTOs and extension-host invocation dispatch.
+- [x] Task 2: protocol DTOs and extension-host invocation dispatch.
 - [ ] Task 3: app bridge helper for language provider requests.
 - [ ] Task 4: compat fixture, smoke coverage, docs, final verification.
 
@@ -557,7 +557,7 @@ git commit -m "feat: add standalone language provider registry"
 - Consumes: `textDocumentFromDto`, `Position`, and `Range` from `@airdb-standalone/vscode-shim`
 - Produces: JSON-safe normalized provider response DTOs
 
-- [ ] **Step 1: Add failing protocol DTO tests**
+- [x] **Step 1: Add failing protocol DTO tests**
 
 Append this case to `standalone/protocol/test/messages.test.ts`:
 
@@ -654,7 +654,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/protocol --
 
 Expected: FAIL because the `language.*` groups and DTOs are not defined.
 
-- [ ] **Step 2: Add failing extension-host normalization and dispatch tests**
+- [x] **Step 2: Add failing extension-host normalization and dispatch tests**
 
 Create `standalone/extension-host/test/languageProviderProtocol.test.ts`:
 
@@ -863,7 +863,7 @@ npm --prefix standalone run test --workspace @airdb-standalone/extension-host --
 
 Expected: FAIL because `languageProviderProtocol.ts` and controller dispatch do not exist.
 
-- [ ] **Step 3: Add protocol DTOs**
+- [x] **Step 3: Add protocol DTOs**
 
 In `standalone/protocol/src/messages.ts`, extend `HostMessageGroup` with:
 
@@ -968,7 +968,7 @@ export interface ProvideDocumentRangeFormattingEditsResponse {
 }
 ```
 
-- [ ] **Step 4: Implement extension-host language protocol helpers**
+- [x] **Step 4: Implement extension-host language protocol helpers**
 
 Create `standalone/extension-host/src/languageProviderProtocol.ts` with exported conversion and normalization functions:
 
@@ -1156,7 +1156,7 @@ function omitUndefined<T extends Record<string, unknown>>(value: T): T {
 }
 ```
 
-- [ ] **Step 5: Dispatch language requests in the controller**
+- [x] **Step 5: Dispatch language requests in the controller**
 
 In `standalone/extension-host/src/extensionHostController.ts`, import language types and helpers:
 
@@ -1237,7 +1237,7 @@ private requireLanguageProviderRegistry(): LanguageProviderRegistry {
 
 Update existing controller tests that instantiate `ExtensionHostController` only when needed. They may omit `languageProviderRegistry`; only `language.*` requests require it.
 
-- [ ] **Step 6: Share the registry through loader and main**
+- [x] **Step 6: Share the registry through loader and main**
 
 In `standalone/extension-host/src/extensionLoader.ts`, import and carry the registry:
 
@@ -1303,7 +1303,7 @@ const controller = new ExtensionHostController({
 languageProviderRegistry,
 ```
 
-- [ ] **Step 7: Add loader shared-registry test**
+- [x] **Step 7: Add loader shared-registry test**
 
 Append this case to `standalone/extension-host/test/extensionLoader.test.ts`:
 
@@ -1357,7 +1357,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/extension-h
 
 Expected before implementation is complete: FAIL because `ExtensionLoaderOptions.languageProviderRegistry` is not wired. Expected after Step 6: PASS.
 
-- [ ] **Step 8: Verify Task 2**
+- [x] **Step 8: Verify Task 2**
 
 Run:
 
@@ -1369,7 +1369,7 @@ npm --prefix standalone run typecheck --workspace @airdb-standalone/extension-ho
 
 Expected: PASS.
 
-- [ ] **Step 9: Commit Task 2**
+- [x] **Step 9: Commit Task 2**
 
 ```bash
 git add standalone/protocol/src/messages.ts standalone/protocol/test/messages.test.ts standalone/extension-host/src/languageProviderProtocol.ts standalone/extension-host/src/extensionHostController.ts standalone/extension-host/src/extensionLoader.ts standalone/extension-host/src/main.ts standalone/extension-host/test/languageProviderProtocol.test.ts standalone/extension-host/test/extensionHostController.test.ts standalone/extension-host/test/extensionLoader.test.ts docs/superpowers/plans/2026-07-11-standalone-language-provider-invocation.md

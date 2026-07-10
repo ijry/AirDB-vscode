@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { AuthenticationRegistry, CommandRegistry, ExtensionRegistry, WorkspaceConfigurationStore, createVscodeApi } from "@airdb-standalone/vscode-shim";
+import { AuthenticationRegistry, CommandRegistry, ExtensionRegistry, LanguageProviderRegistry, WorkspaceConfigurationStore, createVscodeApi } from "@airdb-standalone/vscode-shim";
 import type { HostBridge } from "@airdb-standalone/vscode-shim";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { createExtensionContext } from "./extensionContext.js";
@@ -26,6 +26,7 @@ export interface ExtensionLoaderOptions {
   authenticationRegistry?: AuthenticationRegistry;
   extensionRegistry?: ExtensionRegistry;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
+  languageProviderRegistry?: LanguageProviderRegistry;
   contributionRegistry?: ContributionRegistry;
   diagnostics?: ExtensionDiagnosticsRegistry;
   workspaceRoot?: string;
@@ -39,6 +40,7 @@ export class ExtensionLoader {
   readonly authenticationRegistry: AuthenticationRegistry;
   readonly extensionRegistry: ExtensionRegistry;
   readonly workspaceConfigurationStore: WorkspaceConfigurationStore;
+  readonly languageProviderRegistry: LanguageProviderRegistry;
   readonly contributionRegistry: ContributionRegistry;
 
   constructor(private readonly options: ExtensionLoaderOptions) {
@@ -46,6 +48,7 @@ export class ExtensionLoader {
     this.authenticationRegistry = options.authenticationRegistry ?? new AuthenticationRegistry();
     this.extensionRegistry = options.extensionRegistry ?? new ExtensionRegistry();
     this.workspaceConfigurationStore = options.workspaceConfigurationStore ?? new WorkspaceConfigurationStore();
+    this.languageProviderRegistry = options.languageProviderRegistry ?? new LanguageProviderRegistry();
     this.contributionRegistry = options.contributionRegistry ?? new ContributionRegistry();
   }
 
@@ -107,6 +110,7 @@ export class ExtensionLoader {
         bridge: this.options.bridge,
         commandRegistry: this.commandRegistry,
         authenticationRegistry: this.authenticationRegistry,
+        languageProviderRegistry: this.languageProviderRegistry,
         extensions: this.extensionRegistry,
         workspaceRoot: this.options.workspaceRoot,
         workspaceConfigurationStore: this.workspaceConfigurationStore,

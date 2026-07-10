@@ -14,6 +14,10 @@ export type HostMessageGroup =
   | "webviewView.setHtml"
   | "webviewView.postMessage"
   | "webview.receiveMessage"
+  | "language.provideCompletionItems"
+  | "language.provideHover"
+  | "language.provideDocumentSymbols"
+  | "language.provideDocumentRangeFormattingEdits"
   | "editor.openDocument"
   | "editor.showDocument"
   | "external.openUri"
@@ -90,6 +94,96 @@ export interface HostTextDocumentDto {
   content: string;
   isUntitled: boolean;
   version: number;
+}
+
+export interface LanguagePositionDto {
+  line: number;
+  character: number;
+}
+
+export interface LanguageRangeDto {
+  start: LanguagePositionDto;
+  end: LanguagePositionDto;
+}
+
+export interface ProvideCompletionItemsPayload {
+  document: HostTextDocumentDto;
+  position: LanguagePositionDto;
+  context?: {
+    triggerKind?: number;
+    triggerCharacter?: string;
+  };
+}
+
+export interface LanguageMarkdownDto {
+  value: string;
+}
+
+export interface LanguageCompletionItemDto {
+  label: string;
+  kind?: number;
+  detail?: string;
+  documentation?: string | LanguageMarkdownDto;
+  insertText?: string;
+  sortText?: string;
+  filterText?: string;
+}
+
+export interface ProvideCompletionItemsResponse {
+  items: LanguageCompletionItemDto[];
+  isIncomplete: boolean;
+}
+
+export interface ProvideHoverPayload {
+  document: HostTextDocumentDto;
+  position: LanguagePositionDto;
+}
+
+export interface LanguageHoverDto {
+  contents: Array<string | LanguageMarkdownDto>;
+  range?: LanguageRangeDto;
+}
+
+export interface ProvideHoverResponse {
+  hovers: LanguageHoverDto[];
+}
+
+export interface ProvideDocumentSymbolsPayload {
+  document: HostTextDocumentDto;
+}
+
+export interface LanguageDocumentSymbolDto {
+  name: string;
+  detail?: string;
+  kind: number;
+  range: LanguageRangeDto;
+  selectionRange: LanguageRangeDto;
+  children: LanguageDocumentSymbolDto[];
+}
+
+export interface ProvideDocumentSymbolsResponse {
+  symbols: LanguageDocumentSymbolDto[];
+}
+
+export interface ProvideDocumentRangeFormattingEditsPayload {
+  document: HostTextDocumentDto;
+  range: LanguageRangeDto;
+  options: {
+    tabSize: number;
+    insertSpaces: boolean;
+    trimTrailingWhitespace?: boolean;
+    insertFinalNewline?: boolean;
+    trimFinalNewlines?: boolean;
+  };
+}
+
+export interface LanguageTextEditDto {
+  range: LanguageRangeDto;
+  newText: string;
+}
+
+export interface ProvideDocumentRangeFormattingEditsResponse {
+  edits: LanguageTextEditDto[];
 }
 
 export interface HostTextEditorDto {

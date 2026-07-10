@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { CommandRegistry, createExtensionsApi } from "@airdb-standalone/vscode-shim";
+import { CommandRegistry, LanguageProviderRegistry, createExtensionsApi } from "@airdb-standalone/vscode-shim";
 import { ExtensionDiagnosticsRegistry } from "../src/extensionDiagnostics";
 import { ExtensionLoader, resolveExtensionActivate } from "../src/extensionLoader";
 
@@ -298,6 +298,48 @@ describe("ExtensionLoader", () => {
         account: { id: "account-1", label: "Fixture Account" },
         scopes: ["repo"]
       });
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("shares language providers registered during activation", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-language-providers-"));
+    const extensionPath = path.join(root, "language-provider");
+    const languageProviderRegistry = new LanguageProviderRegistry();
+
+    try {
+      await fs.mkdir(extensionPath, { recursive: true });
+      await fs.writeFile(
+        path.join(extensionPath, "package.json"),
+        JSON.stringify({
+          name: "language-provider",
+          publisher: "fixture",
+          main: "./extension.js"
+        })
+      );
+      await fs.writeFile(
+        path.join(extensionPath, "extension.js"),
+        [
+          "const vscode = require('vscode');",
+          "exports.activate = function activate(context) {",
+          "  context.subscriptions.push(vscode.languages.registerHoverProvider('sql', {",
+          "    provideHover() { return new vscode.Hover('loaded hover'); }",
+          "  }));",
+          "};",
+          ""
+        ].join("\n")
+      );
+      const loader = new ExtensionLoader({
+        extensionsDir: root,
+        storageRoot: path.join(root, ".data"),
+        bridge: { notify: () => undefined, request: async () => null },
+        languageProviderRegistry
+      });
+
+      await loader.loadAll();
+
+      expect(languageProviderRegistry.providers).toHaveLength(1);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

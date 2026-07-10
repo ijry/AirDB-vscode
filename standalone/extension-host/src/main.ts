@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { AuthenticationRegistry, CommandRegistry } from "@airdb-standalone/vscode-shim";
+import { AuthenticationRegistry, CommandRegistry, LanguageProviderRegistry } from "@airdb-standalone/vscode-shim";
 import { IpcBridge } from "./ipcBridge.js";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { ExtensionDiagnosticsRegistry } from "./extensionDiagnostics.js";
@@ -19,6 +19,7 @@ const workspaceRoot = process.env.AIRDB_STANDALONE_WORKSPACE ?? standaloneRoot;
 const logger = new Logger();
 const commandRegistry = new CommandRegistry();
 const authenticationRegistry = new AuthenticationRegistry();
+const languageProviderRegistry = new LanguageProviderRegistry();
 const contributionRegistry = new ContributionRegistry();
 const treeViewRegistry = new TreeViewRegistry();
 const webviewRegistry = new WebviewRegistry();
@@ -34,7 +35,12 @@ commandRegistry.onDidChangeContext((change) => {
   bridge.notify("extension.registerContributions", contributionRegistry.toPayload());
 });
 
-const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry, webviewRegistry });
+const controller = new ExtensionHostController({
+  commandRegistry,
+  treeViewRegistry,
+  webviewRegistry,
+  languageProviderRegistry
+});
 startStdinMessageLoop(process.stdin, controller, (line) => {
   process.stdout.write(`${line}\n`);
 }, (response) => bridge.handleResponse(response));
@@ -48,6 +54,7 @@ try {
     contributionRegistry,
     commandRegistry,
     authenticationRegistry,
+    languageProviderRegistry,
     diagnostics
   });
   const loaded = await loader.loadAll();
