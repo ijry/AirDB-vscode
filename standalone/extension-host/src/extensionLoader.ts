@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CommandRegistry, ExtensionRegistry, WorkspaceConfigurationStore, createVscodeApi } from "@airdb-standalone/vscode-shim";
+import { AuthenticationRegistry, CommandRegistry, ExtensionRegistry, WorkspaceConfigurationStore, createVscodeApi } from "@airdb-standalone/vscode-shim";
 import type { HostBridge } from "@airdb-standalone/vscode-shim";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { createExtensionContext } from "./extensionContext.js";
@@ -23,6 +23,7 @@ export interface ExtensionLoaderOptions {
   storageRoot: string;
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
+  authenticationRegistry?: AuthenticationRegistry;
   extensionRegistry?: ExtensionRegistry;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
   contributionRegistry?: ContributionRegistry;
@@ -35,12 +36,14 @@ let extensionImportNonce = 0;
 
 export class ExtensionLoader {
   readonly commandRegistry: CommandRegistry;
+  readonly authenticationRegistry: AuthenticationRegistry;
   readonly extensionRegistry: ExtensionRegistry;
   readonly workspaceConfigurationStore: WorkspaceConfigurationStore;
   readonly contributionRegistry: ContributionRegistry;
 
   constructor(private readonly options: ExtensionLoaderOptions) {
     this.commandRegistry = options.commandRegistry ?? new CommandRegistry();
+    this.authenticationRegistry = options.authenticationRegistry ?? new AuthenticationRegistry();
     this.extensionRegistry = options.extensionRegistry ?? new ExtensionRegistry();
     this.workspaceConfigurationStore = options.workspaceConfigurationStore ?? new WorkspaceConfigurationStore();
     this.contributionRegistry = options.contributionRegistry ?? new ContributionRegistry();
@@ -103,6 +106,7 @@ export class ExtensionLoader {
         extensionPath,
         bridge: this.options.bridge,
         commandRegistry: this.commandRegistry,
+        authenticationRegistry: this.authenticationRegistry,
         extensions: this.extensionRegistry,
         workspaceRoot: this.options.workspaceRoot,
         workspaceConfigurationStore: this.workspaceConfigurationStore,

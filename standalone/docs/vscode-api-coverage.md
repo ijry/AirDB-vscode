@@ -15,7 +15,7 @@ This matrix tracks the generic VS Code API surface implemented by the Tauri stan
 | Workspace watchers | `workspace.createFileSystemWatcher` | Supports local `file:` workspace roots through Node `fs.watch` with basic glob and RelativePattern-like inputs. |
 | Text documents | `workspace.openTextDocument`, `window.showTextDocument` | Supports local files, untitled content, and standalone editor DTOs. |
 | Workspace metadata | `workspace.workspaceFolders`, `workspace.name`, `workspace.rootPath` | Exposes a single synthetic workspace root. |
-| Extension context | `subscriptions`, storage URIs, storage path aliases, `logUri`, `globalState`, `workspaceState` | Storage is scoped per extension under standalone data roots. |
+| Extension context | `subscriptions`, storage URIs, storage path aliases, `logUri`, `globalState`, `workspaceState`, `secrets` | Storage is scoped per extension under standalone data roots. Secrets use local JSON file storage under the extension global storage root, not OS keychain storage. |
 | Extensions | `extensions.getExtension`, `extensions.all` | Exposes live registry metadata, active state, and activated exports for loaded extensions. |
 | Workbench feedback | `window.createOutputChannel`, `window.createStatusBarItem`, `window.createTerminal` | Provides frontend-visible virtual output/status/terminal surfaces. |
 | Languages | Basic provider registration for completions, code lens, hover, range formatting, and document symbols | Registrations are stored, but providers are not yet invoked by a full editor lifecycle. |
@@ -34,6 +34,7 @@ This matrix tracks the generic VS Code API surface implemented by the Tauri stan
 | URI behavior | `Uri.file`, `Uri.parse`, `toString`, `fsPath` | Needs `Uri.joinPath`, `Uri.with`, and more robust encoding and file URI edge cases. |
 | Watcher glob parity | `workspace.createFileSystemWatcher` patterns | Uses a limited in-shim glob matcher; full VS Code glob semantics and a `RelativePattern` class are still missing. |
 | Context keys and menus | `setContext`, menu `when` filtering | Context keys are stored in the extension host and menu contributions are filtered before IPC, but only truthy checks, `!key`, equality/inequality, and `&&` clauses are supported. No menu UI is rendered yet. |
+| Authentication | `authentication.registerAuthenticationProvider`, `authentication.getSession`, `authentication.getAccounts`, `authentication.onDidChangeSessions` | Supports local providers registered by extensions in the standalone host. VS Code account/cloud-backed sign-in flows are not implemented. |
 
 ## Explicitly Unsupported With Diagnostics
 
@@ -42,7 +43,7 @@ Calls or property access on these surfaces throw `UnsupportedApiError` with code
 | Area | APIs |
 | --- | --- |
 | Webview views | `window.registerWebviewViewProvider` |
-| Authentication | `authentication.*` |
+| Authentication cloud flows | Interactive `authentication.getSession` calls that require VS Code account services, and forced/session-creation flows when a local provider cannot create sessions |
 | Tasks | `tasks.*` |
 | Debug | `debug.*` |
 
@@ -50,8 +51,6 @@ Calls or property access on these surfaces throw `UnsupportedApiError` with code
 
 | Area | Notes |
 | --- | --- |
-| Secrets | `ExtensionContext.secrets` is not implemented yet. |
-| Authentication providers | Local provider registry and unsupported cloud account flows are planned. |
 | Relative patterns and globbing | `RelativePattern` and richer glob handling are missing. |
 | Terminal/process parity | The terminal is virtual and does not spawn real shells. |
 | Debug adapters and tasks | No debug session or task execution engine exists yet. |

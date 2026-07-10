@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { CommandRegistry } from "@airdb-standalone/vscode-shim";
+import { AuthenticationRegistry, CommandRegistry } from "@airdb-standalone/vscode-shim";
 import { IpcBridge } from "./ipcBridge.js";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { ExtensionDiagnosticsRegistry } from "./extensionDiagnostics.js";
@@ -18,6 +18,7 @@ const storageRoot = process.env.AIRDB_STANDALONE_STORAGE ?? path.join(standalone
 const workspaceRoot = process.env.AIRDB_STANDALONE_WORKSPACE ?? standaloneRoot;
 const logger = new Logger();
 const commandRegistry = new CommandRegistry();
+const authenticationRegistry = new AuthenticationRegistry();
 const contributionRegistry = new ContributionRegistry();
 const treeViewRegistry = new TreeViewRegistry();
 const webviewRegistry = new WebviewRegistry();
@@ -46,6 +47,7 @@ try {
     bridge,
     contributionRegistry,
     commandRegistry,
+    authenticationRegistry,
     diagnostics
   });
   const loaded = await loader.loadAll();

@@ -32,6 +32,7 @@
 - [x] Task 2 added the shared extension registry and activated export visibility.
 - [x] Task 3 added in-memory workspace configuration and local file-system watchers.
 - [x] Task 4 added built-in context keys, simple menu `when` filtering, and command discovery.
+- [x] Task 5 added file-backed extension secrets and a minimal local authentication provider registry.
 
 ## Verified Baseline
 
@@ -56,7 +57,7 @@ Implemented or heavily exercised:
 - [x] `workspace.createFileSystemWatcher` for local `file:` workspace roots with basic glob support.
 - [x] `workspace.openTextDocument` and `window.showTextDocument` for supported document inputs.
 - [x] `workspace.workspaceFolders`, `workspace.name`, `workspace.rootPath`.
-- [x] `ExtensionContext` storage URIs, storage path aliases, `logUri`, `globalState`, `workspaceState`.
+- [x] `ExtensionContext` storage URIs, storage path aliases, `logUri`, `globalState`, `workspaceState`, `secrets`.
 - [x] `window.createOutputChannel`, `createStatusBarItem`, and virtual `createTerminal`.
 - [x] Basic `languages.registerCompletionItemProvider`, `registerCodeLensProvider`, `registerHoverProvider`, `registerDocumentRangeFormattingEditProvider`, `registerDocumentSymbolProvider`.
 - [x] Core value types including `Disposable`, `EventEmitter`, `Uri`, `Position`, `Range`, `Selection`, `TreeItem`, `ThemeIcon`, `ThemeColor`, `MarkdownString`, `Hover`, `TextEdit`.
@@ -69,13 +70,13 @@ Partial or stubbed:
 - [ ] `workspace.getConfiguration` is in-memory only and does not persist scoped settings.
 - [ ] `workspace.createFileSystemWatcher` uses a limited glob matcher and does not provide full VS Code watcher parity.
 - [ ] Menu `when` evaluation does not implement the full VS Code expression grammar and the workbench does not render menu UI yet.
+- [ ] `vscode.authentication` supports local provider registration, session lookup, and provider events, but not VS Code account/cloud services.
 - [ ] Language provider registrations are stored but not invoked by the workbench.
 - [ ] Text editor events exist only as shim hooks; the workbench does not provide full editor lifecycle parity.
 - [ ] Activation events are not semantically evaluated like VS Code; bundled extensions are loaded directly.
 
 Missing high-priority surfaces:
 
-- [ ] `ExtensionContext.secrets` and `vscode.authentication`.
 - [ ] `window.registerWebviewViewProvider`.
 - [ ] `window.withProgress` cancellation/progress reporting beyond direct task execution.
 - [ ] More complete `Uri` behavior: `joinPath`, `with`, robust encoding, file URI edge cases.
@@ -169,12 +170,12 @@ Missing high-priority surfaces:
 
 **Deliverable:** Extensions get a file-backed secret store scoped by extension and a minimal authentication provider registry for local providers.
 
-- [ ] Add `context.secrets` with `get`, `store`, `delete`, and `onDidChange`.
-- [ ] Persist secrets under the existing extension storage root with JSON file storage.
-- [ ] Add a minimal `authentication.registerAuthenticationProvider` and `getSession` registry.
-- [ ] Return clear unsupported errors for account/session flows that require VS Code cloud services.
-- [ ] Add persistence, change-event, and provider lookup tests.
-- [ ] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/extension-host` and `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim`.
+- [x] Add `context.secrets` with `get`, `store`, `delete`, and `onDidChange`.
+- [x] Persist secrets under the existing extension storage root with JSON file storage.
+- [x] Add a minimal `authentication.registerAuthenticationProvider` and `getSession` registry.
+- [x] Return clear unsupported errors for account/session flows that require VS Code cloud services.
+- [x] Add persistence, change-event, and provider lookup tests.
+- [x] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/extension-host` and `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim`.
 
 ### Task 6: Compatibility Fixture Suite
 

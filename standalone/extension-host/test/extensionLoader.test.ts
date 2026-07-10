@@ -223,6 +223,86 @@ describe("ExtensionLoader", () => {
     }
   });
 
+  it("shares authentication providers across loaded extension API instances", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-authentication-"));
+    const providerPath = path.join(root, "01-provider");
+    const consumerPath = path.join(root, "02-consumer");
+    const commandRegistry = new CommandRegistry();
+
+    try {
+      await fs.mkdir(providerPath, { recursive: true });
+      await fs.writeFile(
+        path.join(providerPath, "package.json"),
+        JSON.stringify({
+          name: "auth-provider",
+          publisher: "fixture",
+          main: "./extension.js"
+        })
+      );
+      await fs.writeFile(
+        path.join(providerPath, "extension.js"),
+        [
+          "const vscode = require('vscode');",
+          "exports.activate = function activate(context) {",
+          "  const session = {",
+          "    id: 'session-1',",
+          "    accessToken: 'token-1',",
+          "    account: { id: 'account-1', label: 'Fixture Account' },",
+          "    scopes: ['repo']",
+          "  };",
+          "  context.subscriptions.push(vscode.authentication.registerAuthenticationProvider('fixture-auth', 'Fixture Auth', {",
+          "    getSessions: () => [session]",
+          "  }));",
+          "};",
+          ""
+        ].join("\n")
+      );
+      await fs.mkdir(consumerPath, { recursive: true });
+      await fs.writeFile(
+        path.join(consumerPath, "package.json"),
+        JSON.stringify({
+          name: "auth-consumer",
+          publisher: "fixture",
+          main: "./extension.js"
+        })
+      );
+      await fs.writeFile(
+        path.join(consumerPath, "extension.js"),
+        [
+          "const vscode = require('vscode');",
+          "exports.activate = function activate(context) {",
+          "  context.subscriptions.push(vscode.commands.registerCommand('fixture.readAuthSession', () =>",
+          "    vscode.authentication.getSession('fixture-auth', ['repo'])",
+          "  ));",
+          "};",
+          ""
+        ].join("\n")
+      );
+
+      const loader = new ExtensionLoader({
+        extensionsDir: root,
+        storageRoot: path.join(root, ".data"),
+        commandRegistry,
+        bridge: {
+          request: async () => undefined as never,
+          notify: () => undefined
+        }
+      });
+
+      await loader.loadExtension(providerPath);
+      await loader.loadExtension(consumerPath);
+
+      await expect(commandRegistry.executeCommand("fixture.readAuthSession")).resolves.toMatchObject({
+        id: "session-1",
+        accessToken: "token-1",
+        account: { id: "account-1", label: "Fixture Account" },
+        scopes: ["repo"]
+      });
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("passes workspace root and context paths into loaded extensions", async () => {
     const commandRegistry = new CommandRegistry();
     const workspaceRoot = path.join(testDir, "fixtures", "workspace-root");

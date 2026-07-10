@@ -12,3 +12,5 @@ export * from "./languages.js";
 export * from "./env.js";
 export * from "./extensions.js";
 export * from "./l10n.js";
+export * from "./secrets.js";
+export * from "./authentication.js";

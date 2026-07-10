@@ -1,10 +1,12 @@
 import { CommandRegistry, createCommandsApi } from "./commands.js";
+import { AuthenticationRegistry, createAuthenticationApi } from "./authentication.js";
 import { WorkspaceConfigurationStore } from "./configuration.js";
 import { createEnvApi } from "./env.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
 import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
 import { createLanguagesApi } from "./languages.js";
 import { createL10nApi } from "./l10n.js";
+import { MemorySecretStorage } from "./secrets.js";
 import { MemoryMemento } from "./state.js";
 import * as types from "./types.js";
 import {
@@ -20,6 +22,7 @@ export interface VscodeApiOptions {
   extensionPath: string;
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
+  authenticationRegistry?: AuthenticationRegistry;
   extensions?: ExtensionRegistry | ExtensionRegistryRecordInput[];
   workspaceRoot?: string;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
@@ -56,7 +59,7 @@ export function createVscodeApi(options: VscodeApiOptions) {
     languages: createLanguagesApi(),
     env: createEnvApi(options.extensionId, options.bridge),
     extensions: createExtensionsApi(options.extensions ?? []),
-    authentication: createUnsupportedNamespace("authentication", reportUnsupportedApi),
+    authentication: createAuthenticationApi(options.authenticationRegistry, reportUnsupportedApi),
     tasks: createUnsupportedNamespace("tasks", reportUnsupportedApi),
     debug: createUnsupportedNamespace("debug", reportUnsupportedApi),
     l10n: createL10nApi(),
@@ -68,7 +71,8 @@ export function createVscodeApi(options: VscodeApiOptions) {
         globalStorageUri: types.Uri.file(`${options.extensionPath}/.standalone/global`),
         storageUri: types.Uri.file(`${options.extensionPath}/.standalone/workspace`),
         globalState: new MemoryMemento(),
-        workspaceState: new MemoryMemento()
+        workspaceState: new MemoryMemento(),
+        secrets: new MemorySecretStorage()
       };
     }
   };

@@ -61,11 +61,25 @@ describe("unsupported VS Code API reporting", () => {
     const api = createApi(events);
 
     expect(() => {
-      void api.authentication.getSession;
+      void api.tasks.fetchTasks;
     }).toThrow(UnsupportedApiError);
 
     expect(events[0]).toMatchObject({
-      api: "authentication.getSession",
+      api: "tasks.fetchTasks",
+      code: UNSUPPORTED_VSCODE_API_ERROR_CODE
+    });
+  });
+
+  it("reports unsupported authentication flows that need an interactive account service", async () => {
+    const events: UnsupportedApiEvent[] = [];
+    const api = createApi(events);
+
+    await expect(api.authentication.getSession("missing-auth", [], { createIfNone: true })).rejects.toBeInstanceOf(
+      UnsupportedApiError
+    );
+
+    expect(events[0]).toMatchObject({
+      api: "authentication.getSession.interactive",
       code: UNSUPPORTED_VSCODE_API_ERROR_CODE
     });
   });
