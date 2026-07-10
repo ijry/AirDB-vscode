@@ -23,9 +23,11 @@ import { KingbaseDialect } from "./dialect/kingbaseDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
+import { KingbaseDumpService } from "./dump/kingbaseDumpService";
 import { MysqlImportService } from "./import/mysqlImportService";
 import { PostgresqlImortService } from "./import/postgresqlImortService";
 import { SqlServerImportService } from "./import/sqlServerImportService";
+import { KingbaseImportService } from "./import/kingbaseImportService";
 import { MockRunner } from "./mock/mockRunner";
 import { EsPageService } from "./page/esPageService";
 import { MssqlPageService } from "./page/mssqlPageService";
@@ -130,6 +132,8 @@ export class ServiceManager {
         switch (dbType) {
             case DatabaseType.MYSQL:
                 return new MysqlDumpService()
+            case DatabaseType.KINGBASE:
+                return new KingbaseDumpService()
         }
         return new DumpService()
     }
@@ -141,6 +145,8 @@ export class ServiceManager {
                 return new SqlServerImportService()
             case DatabaseType.PG:
                 return new PostgresqlImortService();
+            case DatabaseType.KINGBASE:
+                return new KingbaseImportService();
         }
         return new MysqlImportService()
     }
