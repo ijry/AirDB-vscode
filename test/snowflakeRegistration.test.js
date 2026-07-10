@@ -9,6 +9,22 @@ function read(relativePath) {
 const constants = read("src/common/constants.ts");
 assert.match(constants, /SNOWFLAKE\s*=\s*"Snowflake"/);
 
+const pkg = JSON.parse(read("package.json"));
+assert.strictEqual(pkg.dependencies["snowflake-sdk"], "^1.15.0");
+
+const webpackConfig = read("webpack.config.js");
+assert.match(webpackConfig, /'snowflake-sdk':\s*'commonjs snowflake-sdk'/);
+
+const vscodeIgnore = read(".vscodeignore");
+assert.match(vscodeIgnore, /!node_modules\/snowflake-sdk\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/@azure\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/@google-cloud\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/@techteamer\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/axios\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/glob\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/jsonwebtoken\/\*\*/);
+assert.match(vscodeIgnore, /!node_modules\/winston\/\*\*/);
+
 const node = read("src/model/interface/node.ts");
 assert.match(node, /public account\?: string/);
 assert.match(node, /public warehouse\?: string/);

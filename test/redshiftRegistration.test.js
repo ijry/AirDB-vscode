@@ -40,10 +40,10 @@ assert.match(connectionNode, /icon\/redshift\.svg/);
 assert.match(connectionNode, /this\.dbType == DatabaseType\.REDSHIFT[\s\S]*this\.iconPath/);
 
 const schemaNode = read("src/model/database/schemaNode.ts");
-assert.match(schemaNode, /DatabaseType\.MSSQL \|\| this\.dbType == DatabaseType\.PG \|\| this\.dbType == DatabaseType\.REDSHIFT \|\| this\.dbType == DatabaseType\.KINGBASE/);
+assert.match(schemaNode, /DatabaseType\.MSSQL \|\| this\.dbType == DatabaseType\.PG \|\| this\.dbType == DatabaseType\.REDSHIFT \|\| this\.dbType == DatabaseType\.SNOWFLAKE \|\| this\.dbType == DatabaseType\.KINGBASE/);
 
 const tableGroup = read("src/model/main/tableGroup.ts");
-assert.match(tableGroup, /DatabaseType\.MSSQL \|\| parent\.dbType == DatabaseType\.PG \|\| parent\.dbType == DatabaseType\.REDSHIFT \|\| parent\.dbType == DatabaseType\.KINGBASE/);
-assert.match(tableGroup, /this\.parent\.dbType == DatabaseType\.MSSQL \|\| this\.parent\.dbType == DatabaseType\.PG \|\| this\.parent\.dbType == DatabaseType\.REDSHIFT \|\| this\.parent\.dbType == DatabaseType\.KINGBASE/);
+assert.match(tableGroup, /DatabaseType\.MSSQL \|\| parent\.dbType == DatabaseType\.PG \|\| parent\.dbType == DatabaseType\.REDSHIFT \|\| parent\.dbType == DatabaseType\.SNOWFLAKE \|\| parent\.dbType == DatabaseType\.KINGBASE/);
+assert.match(tableGroup, /this\.parent\.dbType == DatabaseType\.MSSQL \|\| this\.parent\.dbType == DatabaseType\.PG \|\| this\.parent\.dbType == DatabaseType\.REDSHIFT \|\| this\.parent\.dbType == DatabaseType\.SNOWFLAKE \|\| this\.parent\.dbType == DatabaseType\.KINGBASE/);
 
 console.log("redshiftRegistration tests passed");

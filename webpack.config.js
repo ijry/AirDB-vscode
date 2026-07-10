@@ -34,7 +34,8 @@ module.exports = [
             duckdb: 'commonjs duckdb',
             amqplib: 'commonjs amqplib',
             '@aws-sdk/client-s3': 'commonjs @aws-sdk/client-s3',
-            '@aws-sdk/s3-request-presigner': 'commonjs @aws-sdk/s3-request-presigner'
+            '@aws-sdk/s3-request-presigner': 'commonjs @aws-sdk/s3-request-presigner',
+            'snowflake-sdk': 'commonjs snowflake-sdk'
         },
         resolve: {
             extensions: ['.ts', '.js'],
