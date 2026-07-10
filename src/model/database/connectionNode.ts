@@ -42,6 +42,8 @@ export class ConnectionNode extends Node implements CopyAble {
         // https://www.iloveimg.com/zh-cn/resize-image/resize-svg
         if (this.dbType == DatabaseType.PG) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/pg_server.svg");
+        } else if (this.dbType == DatabaseType.REDSHIFT) {
+            this.iconPath = path.join(Constants.RES_PATH, "icon/redshift.svg");
         } else if (this.dbType == DatabaseType.KINGBASE) {
             this.iconPath = new vscode.ThemeIcon("database");
         } else if (this.dbType == DatabaseType.DAMENG) {
