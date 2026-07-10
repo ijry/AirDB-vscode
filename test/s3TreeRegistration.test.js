@@ -80,4 +80,11 @@ assert.match(pkgText, /airdb\.s3\.folder\.new/);
 assert.match(pkgText, /viewItem =~ \/\^\(s3Bucket\|s3Folder\)\$\//);
 assert.match(pkgText, /viewItem == s3Object/);
 
+const connectService = read("src/service/connect/connectService.ts");
+assert.match(connectService, /node\.secretAccessKey/);
+assert.match(connectService, /node\.sessionToken/);
+const treeProviderSecret = read("src/provider/treeDataProvider.ts");
+assert.match(treeProviderSecret, /decryptPassword\(node\.secretAccessKey/);
+assert.match(treeProviderSecret, /decryptPassword\(node\.sessionToken/);
+
 console.log("s3TreeRegistration tests passed");

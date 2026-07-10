@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Amazon S3">
+  <rect width="64" height="64" rx="14" fill="#fff7ed"/>
+  <path d="M15 17 32 8l17 9v30l-17 9-17-9V17Z" fill="#e47f1f"/>
+  <path d="M32 8v48l-17-9V17l17-9Z" fill="#f59e0b"/>
+  <path d="M32 8v48l17-9V17L32 8Z" fill="#c2410c"/>
+  <path d="M20 20 32 14l12 6-12 6-12-6Z" fill="#fed7aa"/>
+  <path d="M20 30 32 36l12-6v6l-12 6-12-6v-6Z" fill="#ffedd5"/>
+  <path d="M20 40 32 46l12-6v5l-12 6-12-6v-5Z" fill="#fff7ed"/>
+  <text x="32" y="35" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="700" fill="#7c2d12">S3</text>
+</svg>

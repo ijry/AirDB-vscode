@@ -100,9 +100,21 @@ export class ConnectService {
                             node.disable = false; // 默认连接
 
                             // 密码加密存储云端
-                            let cryRes = Util.encryptPassword(node.password, iv);
-                            // @ts-ignore
-                            node.password = cryRes.password;
+                            if (node.password != null) {
+                                let cryRes = Util.encryptPassword(node.password, iv);
+                                // @ts-ignore
+                                node.password = cryRes.password;
+                            }
+                            if (node.secretAccessKey) {
+                                const cryResS3Secret = Util.encryptPassword(node.secretAccessKey, iv);
+                                // @ts-ignore
+                                node.secretAccessKey = cryResS3Secret.password;
+                            }
+                            if (node.sessionToken) {
+                                const cryResS3Token = Util.encryptPassword(node.sessionToken, iv);
+                                // @ts-ignore
+                                node.sessionToken = cryResS3Token.password;
+                            }
                             if (node.ssh && node.ssh.password) {
                                 let cryResSSH = Util.encryptPassword(node.ssh.password, iv);
                                 // @ts-ignore

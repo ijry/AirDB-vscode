@@ -91,6 +91,7 @@
     <ElasticSearch v-if="connectionOption.dbType == 'ElasticSearch'" :connectionOption="connectionOption" />
     <Kafka v-else-if="connectionOption.dbType == 'Kafka'" :connectionOption="connectionOption" />
     <RabbitMQ v-else-if="connectionOption.dbType == 'RabbitMQ'" :connectionOption="connectionOption" />
+    <S3 v-else-if="connectionOption.dbType == 'S3'" :connectionOption="connectionOption" />
     <DuckDB
       v-else-if="connectionOption.dbType == 'DuckDB'"
       :connectionOption="connectionOption"
@@ -206,7 +207,7 @@
     <section class="flex items-center">
       <div
         class="inline-block mb-2 mr-10"
-        v-if="connectionOption.dbType != 'SSH' && connectionOption.dbType != 'SQLite' && connectionOption.dbType != 'DuckDB'"
+        v-if="connectionOption.dbType != 'SSH' && connectionOption.dbType != 'SQLite' && connectionOption.dbType != 'DuckDB' && connectionOption.dbType != 'S3'"
       >
         <label class="mr-2 font-bold">{{$t('SSH Tunnel')}}</label>
         <el-switch v-model="connectionOption.usingSSH"></el-switch>
@@ -214,15 +215,18 @@
       <div
         class="inline-block mb-2 mr-10"
         v-if="
-          connectionOption.dbType == 'MySQL' ||
-          connectionOption.dbType == 'Doris' ||
-          connectionOption.dbType == 'PostgreSQL' ||
-          connectionOption.dbType == 'ClickHouse' ||
-          connectionOption.dbType == 'KingbaseES' ||
-          connectionOption.dbType == 'MongoDB' ||
-          connectionOption.dbType == 'Redis' ||
-          connectionOption.dbType == 'Kafka' ||
-          connectionOption.dbType == 'RabbitMQ'
+          [
+            'MySQL',
+            'Doris',
+            'PostgreSQL',
+            'ClickHouse',
+            'KingbaseES',
+            'MongoDB',
+            'Redis',
+            'Kafka',
+            'RabbitMQ',
+            'S3',
+          ].includes(connectionOption.dbType)
         "
       >
         <label class="inline-block mr-5 font-bold w-18">Use SSL</label>
@@ -282,6 +286,7 @@ import ElasticSearch from "./component/ElasticSearch.vue";
 import Kafka from "./component/Kafka.vue";
 import DuckDB from "./component/DuckDB.vue";
 import RabbitMQ from "./component/RabbitMQ.vue";
+import S3 from "./component/S3.vue";
 import SQLite from "./component/SQLite.vue";
 import SQLServer from "./component/SQLServer.vue";
 import SSH from "./component/SSH.vue";
@@ -387,6 +392,12 @@ const dbLogoMap = {
     bg: "#fff7ed",
     color: "#f97316",
   },
+  S3: {
+    icon: require("@/../resources/icon/s3.svg"),
+    text: "S3",
+    bg: "#fff7ed",
+    color: "#c2410c",
+  },
   SSH: {
     icon: require("@/../resources/icon/ssh.svg"),
     text: "SH",
@@ -403,7 +414,7 @@ const dbLogoMap = {
 
 export default {
   name: "Connect",
-  components: { ElasticSearch, Kafka, DuckDB, RabbitMQ, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
+  components: { ElasticSearch, Kafka, DuckDB, RabbitMQ, S3, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
   data() {
     return {
       dialogVisible: false,
@@ -465,6 +476,7 @@ export default {
         "ElasticSearch",
         "Kafka",
         "RabbitMQ",
+        "S3",
         "SSH",
         "FTP",
       ],
@@ -673,6 +685,23 @@ export default {
           this.connectionOption.vhost = "/";
           this.connectionOption.managementPort = 15672;
           this.connectionOption.useSSL = false;
+          break;
+        case "S3":
+          this.connectionOption.host = "";
+          this.connectionOption.port = null;
+          this.connectionOption.user = null;
+          this.connectionOption.password = null;
+          this.connectionOption.database = null;
+          this.connectionOption.region = "us-east-1";
+          this.connectionOption.endpoint = "";
+          this.connectionOption.accessKeyId = "";
+          this.connectionOption.secretAccessKey = "";
+          this.connectionOption.sessionToken = "";
+          this.connectionOption.bucket = "";
+          this.connectionOption.useSSL = true;
+          this.connectionOption.forcePathStyle = false;
+          this.connectionOption.connectTimeout = 5000;
+          this.connectionOption.requestTimeout = 30000;
           break;
         case "Redis":
           this.connectionOption.port = 6379;

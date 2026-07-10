@@ -228,6 +228,12 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
                     if (node.cryptoIv && node.password) {
                         node.password = Util.decryptPassword(node.password, node.cryptoIv);
                     }
+                    if (node.cryptoIv && node.secretAccessKey) {
+                        node.secretAccessKey = Util.decryptPassword(node.secretAccessKey, node.cryptoIv);
+                    }
+                    if (node.cryptoIv && node.sessionToken) {
+                        node.sessionToken = Util.decryptPassword(node.sessionToken, node.cryptoIv);
+                    }
                     // ssh解密
                     if (node.ssh && node.ssh.password) {
                         // @ts-ignore
