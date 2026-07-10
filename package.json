@@ -1260,6 +1260,7 @@
 		"progress-stream": "^2.0.0",
 		"readable-stream": "1.1.x",
 		"routington": "^1.0.3",
+		"snowflake-sdk": "^1.15.0",
 		"sqlstring": "^2.3.2",
 		"ssh2": "0.5.4",
 		"ssh2-streams": "^0.4.10",

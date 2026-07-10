@@ -26,6 +26,7 @@ import { DorisDialect } from "./dialect/dorisDialect";
 import { DuckDBDialect } from "./dialect/duckdbDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { RedshiftDialect } from "./dialect/redshiftDialect";
+import { SnowflakeDialect } from "./dialect/snowflakeDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
 import { KingbaseDumpService } from "./dump/kingbaseDumpService";
@@ -161,6 +162,8 @@ export class ServiceManager {
                 return new PostgresqlImortService();
             case DatabaseType.REDSHIFT:
                 return new PostgresqlImortService();
+            case DatabaseType.SNOWFLAKE:
+                return new PostgresqlImortService();
             case DatabaseType.KINGBASE:
                 return new KingbaseImportService();
             case DatabaseType.DAMENG:
@@ -186,6 +189,8 @@ export class ServiceManager {
                 return new PostgreSqlDialect();
             case DatabaseType.REDSHIFT:
                 return new RedshiftDialect();
+            case DatabaseType.SNOWFLAKE:
+                return new SnowflakeDialect();
             case DatabaseType.KINGBASE:
                 return new KingbaseDialect();
             case DatabaseType.DAMENG:
@@ -208,6 +213,8 @@ export class ServiceManager {
             case DatabaseType.PG:
                 return new PostgreSqlPageService();
             case DatabaseType.REDSHIFT:
+                return new PostgreSqlPageService();
+            case DatabaseType.SNOWFLAKE:
                 return new PostgreSqlPageService();
             case DatabaseType.CLICKHOUSE:
                 return new PostgreSqlPageService();

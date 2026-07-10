@@ -16,6 +16,7 @@ import { MysqlConnection } from "./connect/mysqlConnection";
 import { OracleConnection } from "./connect/oracleConnection";
 import { PostgreSqlConnection } from "./connect/postgreSqlConnection";
 import { RedshiftConnection } from "./connect/redshiftConnection";
+import { SnowflakeConnection } from "./connect/snowflakeConnection";
 import { RedisConnection } from "./connect/redisConnection";
 import { FTPConnection } from "./connect/ftpConnection";
 import { SqliteConnection } from "./connect/sqliteConnection";
@@ -165,6 +166,8 @@ export class ConnectionManager {
                 return new PostgreSqlConnection(opt)
             case DatabaseType.REDSHIFT:
                 return new RedshiftConnection(opt)
+            case DatabaseType.SNOWFLAKE:
+                return new SnowflakeConnection(opt)
             case DatabaseType.KINGBASE:
                 return new KingbaseConnection(opt)
             case DatabaseType.DAMENG:

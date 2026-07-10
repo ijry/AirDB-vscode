@@ -33,7 +33,7 @@ export class TableGroup extends Node {
                 // @ts-ignore
                 this.pinedTables = parent.pinedTablesMap['default-' + this.parent.label];
             }
-        } else if(parent.dbType == DatabaseType.MSSQL || parent.dbType == DatabaseType.PG || parent.dbType == DatabaseType.REDSHIFT || parent.dbType == DatabaseType.KINGBASE) {
+        } else if(parent.dbType == DatabaseType.MSSQL || parent.dbType == DatabaseType.PG || parent.dbType == DatabaseType.REDSHIFT || parent.dbType == DatabaseType.SNOWFLAKE || parent.dbType == DatabaseType.KINGBASE) {
             // this.parent.parent is catalog
             // this.parent is schema
             this.stateKey = this.key + '-' + this.parent.parent.label + '-' + this.parent.label + '-TableFilterKeyword'
@@ -67,7 +67,7 @@ export class TableGroup extends Node {
             if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG || this.dbType == DatabaseType.CLICKHOUSE || this.dbType == DatabaseType.DORIS) {
                 // @ts-ignore
                 pinedTablesMap['default-' + this.parent.label] = this.pinedTables
-            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.REDSHIFT || this.parent.dbType == DatabaseType.KINGBASE) {
+            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.REDSHIFT || this.parent.dbType == DatabaseType.SNOWFLAKE || this.parent.dbType == DatabaseType.KINGBASE) {
                 // @ts-ignore
                 pinedTablesMap[this.parent.parent.label + '-' + this.parent.label] = this.pinedTables
             } else {
@@ -105,7 +105,7 @@ export class TableGroup extends Node {
                     this.parent.parent.pinedTablesMap['default-' + this.parent.label] = this.pinedTables;
                 }
                 connections[key] = NodeUtil.removeParent(this.parent.parent);
-            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.REDSHIFT || this.parent.dbType == DatabaseType.KINGBASE) {
+            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.REDSHIFT || this.parent.dbType == DatabaseType.SNOWFLAKE || this.parent.dbType == DatabaseType.KINGBASE) {
                 // @ts-ignore
                 if (this.pinedTables != null) {
                     // schemeNode

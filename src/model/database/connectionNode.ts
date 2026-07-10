@@ -32,6 +32,8 @@ export class ConnectionNode extends Node implements CopyAble {
             this.label = this.dbPath;
         } else if (this.dbType == DatabaseType.DUCKDB) {
             this.label = this.dbPath;
+        } else if (this.dbType == DatabaseType.SNOWFLAKE) {
+            this.label = this.account || this.host;
         }
         this.cacheSelf()
         if (parent.name) {
@@ -44,6 +46,8 @@ export class ConnectionNode extends Node implements CopyAble {
             this.iconPath = path.join(Constants.RES_PATH, "icon/pg_server.svg");
         } else if (this.dbType == DatabaseType.REDSHIFT) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/redshift.svg");
+        } else if (this.dbType == DatabaseType.SNOWFLAKE) {
+            this.iconPath = path.join(Constants.RES_PATH, "icon/snowflake.svg");
         } else if (this.dbType == DatabaseType.KINGBASE) {
             this.iconPath = new vscode.ThemeIcon("database");
         } else if (this.dbType == DatabaseType.DAMENG) {

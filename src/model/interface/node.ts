@@ -126,6 +126,14 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
     public forcePathStyle?: boolean;
 
     /**
+     * snowflake only
+     */
+    public account?: string;
+    public warehouse?: string;
+    public role?: string;
+    public authenticator?: string;
+
+    /**
      * encoding, ftp only
      */
     public encoding: string;
@@ -173,6 +181,10 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
         this.sessionToken = source.sessionToken
         this.bucket = source.bucket
         this.forcePathStyle = source.forcePathStyle
+        this.account = source.account
+        this.warehouse = source.warehouse
+        this.role = source.role
+        this.authenticator = source.authenticator
         this.encoding = source.encoding
         this.showHidden = source.showHidden
         this.connectionKey = source.connectionKey
@@ -337,6 +349,9 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
 
 
         let uid = (this.usingSSH) ? `${this.ssh.host}@${this.ssh.port}` : `${this.host}@${this.instanceName ? this.instanceName : this.port}`;
+        if (this.dbType == DatabaseType.SNOWFLAKE) {
+            uid = `${this.account || this.host}@${this.port || 443}`;
+        }
 
         uid = `${this.key}@@${uid}`
 
