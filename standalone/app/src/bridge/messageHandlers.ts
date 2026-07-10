@@ -1,7 +1,31 @@
-import type { HostMessage } from "@airdb-standalone/protocol";
+import type {
+  ExtensionDiagnosticPhase,
+  ExtensionDiagnosticStatus,
+  HostMessage
+} from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
-import type { NotificationItem } from "../workbench/types";
+import type { ExtensionDiagnosticEventState, ExtensionDiagnosticState, NotificationItem } from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
+
+const DIAGNOSTIC_STATUSES = [
+  "discovered",
+  "loading",
+  "loaded",
+  "activating",
+  "activated",
+  "failed"
+] as const satisfies readonly ExtensionDiagnosticStatus[];
+
+const DIAGNOSTIC_PHASES = [
+  "discover",
+  "manifest",
+  "contributions",
+  "mainResolution",
+  "moduleImport",
+  "activation"
+] as const satisfies readonly ExtensionDiagnosticPhase[];
+
+const MAX_DIAGNOSTIC_EVENTS = 200;
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
   if (message.kind !== "notification" && message.kind !== "request") {
@@ -37,6 +61,10 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       });
       return [{ type: "containers/register", containers }];
     }
+    case "extension.diagnostics":
+      return isDiagnosticsPayload(message.payload)
+        ? [{ type: "diagnostics/extensions", extensions: message.payload.extensions }]
+        : [];
     case "tree.create":
       return [{
         type: "tree/register",
@@ -191,7 +219,82 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
 }
 
 function isStringRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object");
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function isDiagnosticsPayload(value: unknown): value is { extensions: ExtensionDiagnosticState[] } {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+  return Array.isArray(value.extensions) && value.extensions.every(isDiagnosticExtension);
+}
+
+function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticState {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+
+  return Boolean(
+    typeof value.id === "string" &&
+      typeof value.extensionPath === "string" &&
+      isNonNegativeInteger(value.commandCount) &&
+      isDiagnosticStatus(value.status) &&
+      isOptionalString(value.displayName) &&
+      isOptionalString(value.version) &&
+      isOptionalString(value.publisher) &&
+      isOptionalString(value.main) &&
+      isOptionalString(value.resolvedMain) &&
+      isOptionalString(value.lastError) &&
+      isOptionalString(value.startedAt) &&
+      isOptionalString(value.activatedAt) &&
+      isOptionalStringArray(value.activationEvents) &&
+      isOptionalStringArray(value.contributedViews) &&
+      Array.isArray(value.events) &&
+      value.events.length <= MAX_DIAGNOSTIC_EVENTS &&
+      value.events.every(isDiagnosticEvent)
+  );
+}
+
+function isDiagnosticEvent(value: unknown): value is ExtensionDiagnosticEventState {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+
+  return Boolean(
+    typeof value.id === "string" &&
+      isOptionalString(value.extensionId) &&
+      typeof value.extensionPath === "string" &&
+      typeof value.timestamp === "string" &&
+      isDiagnosticPhase(value.phase) &&
+      isDiagnosticStatus(value.status) &&
+      typeof value.message === "string" &&
+      isOptionalString(value.error) &&
+      isOptionalRecord(value.details)
+  );
+}
+
+function isDiagnosticStatus(value: unknown): value is ExtensionDiagnosticStatus {
+  return typeof value === "string" && DIAGNOSTIC_STATUSES.includes(value as ExtensionDiagnosticStatus);
+}
+
+function isDiagnosticPhase(value: unknown): value is ExtensionDiagnosticPhase {
+  return typeof value === "string" && DIAGNOSTIC_PHASES.includes(value as ExtensionDiagnosticPhase);
+}
+
+function isOptionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
+}
+
+function isOptionalStringArray(value: unknown): boolean {
+  return value === undefined || (Array.isArray(value) && value.every((item) => typeof item === "string"));
+}
+
+function isNonNegativeInteger(value: unknown): boolean {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isOptionalRecord(value: unknown): boolean {
+  return value === undefined || isStringRecord(value);
 }
 
 function normalizeStringArray(value: unknown): string[] {

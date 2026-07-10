@@ -8,6 +8,66 @@
 
 **Tech Stack:** TypeScript, Vitest, React 18, Vite, Node.js child process smoke tests, existing standalone IPC protocol.
 
+## Current Completion
+
+Core diagnostics panel completion: 100%.
+
+The generic `extension.diagnostics` protocol, extension-host registry, loader/main IPC wiring, workbench state, React diagnostics panel, README section, and IPC smoke test have been implemented. Follow-up hardening is being handled as small commits on top of the completed feature.
+
+Latest hardening completed on 2026-07-08:
+
+- Tightened front-end `extension.diagnostics` IPC validation for optional string fields, optional string arrays, and event `details` records.
+- Added regression tests that reject invalid `activationEvents`, invalid `contributedViews`, and invalid event `details`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+
+Additional hardening completed on 2026-07-08:
+
+- Tightened app diagnostics state types to reuse protocol `ExtensionDiagnosticStatus` and `ExtensionDiagnosticPhase`.
+- Added regression tests that reject unknown extension status, unknown event phase, and unknown event status.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
+Additional hardening completed on 2026-07-11:
+
+- Sanitized diagnostics manifest metadata extraction in the extension-host registry so invalid optional strings and mixed arrays are dropped before snapshot emission.
+- Added a regression test that keeps valid publisher/activation/view data while rejecting dirty `displayName`, `version`, `main`, activation events, and view ids.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/extension-host`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/extension-host`.
+
+Additional hardening completed on 2026-07-11:
+
+- Sanitized diagnostics event `details` in the extension-host registry so non-record values are dropped and nested values stay JSON-safe before snapshot emission.
+- Added a regression test covering invalid array details, nested records, and omitted undefined detail values.
+- Verified `npx tsc -p tsconfig.json --noEmit` in `standalone/extension-host`.
+- Verified `npx vitest run` in `standalone/extension-host`.
+
+Additional hardening completed on 2026-07-11:
+
+- Deep-copied nested diagnostics event `details` in the app reducer so action payload mutations cannot leak into workbench state.
+- Extended the diagnostics state defensive-copy regression test to cover nested detail objects.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- workbenchStore.test.ts -t "stores extension diagnostics snapshots defensively"`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
+Additional hardening completed on 2026-07-11:
+
+- Tightened app diagnostics IPC validation so `commandCount` must be a non-negative safe integer.
+- Added a regression test that rejects diagnostics snapshots with invalid command counts.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts -t "invalid command counts"`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
+Additional hardening completed on 2026-07-11:
+
+- Tightened app diagnostics IPC validation to reject snapshots with more than 200 events per extension.
+- Added a regression test for oversized diagnostics event arrays.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts -t "too many events"`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

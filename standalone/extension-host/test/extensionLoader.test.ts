@@ -1,7 +1,10 @@
+import fs from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CommandRegistry } from "@airdb-standalone/vscode-shim";
+import { ExtensionDiagnosticsRegistry } from "../src/extensionDiagnostics";
 import { ExtensionLoader, resolveExtensionActivate } from "../src/extensionLoader";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
@@ -115,5 +118,191 @@ describe("ExtensionLoader", () => {
     expect(normalizePath(result.contextLogPath)).toBe(
       normalizePath(path.join(storageRoot, "fixture.hello-extension", "logs"))
     );
+  });
+
+  it("emits diagnostics for successful activation", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-success-"));
+    const extensionPath = path.join(root, "fixture");
+    await fs.mkdir(extensionPath, { recursive: true });
+    await fs.writeFile(
+      path.join(extensionPath, "package.json"),
+      JSON.stringify({
+        name: "fixture",
+        publisher: "acme",
+        version: "1.0.0",
+        main: "./extension.js",
+        contributes: {
+          commands: [{ command: "fixture.hello", title: "Hello" }],
+          views: { explorer: [{ id: "fixture.view", name: "Fixture" }] }
+        }
+      })
+    );
+    await fs.writeFile(
+      path.join(extensionPath, "extension.js"),
+      "exports.activate = function activate() { return { ok: true }; };\n"
+    );
+    const snapshots: unknown[] = [];
+    const diagnostics = new ExtensionDiagnosticsRegistry((payload) => snapshots.push(payload));
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await loader.loadAll();
+
+    const extension = diagnostics.snapshot().extensions.find((item) => item.id === "acme.fixture");
+    expect(extension).toMatchObject({
+      id: "acme.fixture",
+      status: "activated",
+      commandCount: 1,
+      contributedViews: ["fixture.view"]
+    });
+    expect(snapshots.length).toBeGreaterThan(0);
+  });
+
+  it("records missing main file failures", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-missing-main-"));
+    const extensionPath = path.join(root, "broken");
+    await fs.mkdir(extensionPath, { recursive: true });
+    await fs.writeFile(
+      path.join(extensionPath, "package.json"),
+      JSON.stringify({
+        name: "broken",
+        publisher: "acme",
+        version: "1.0.0",
+        main: "./missing.js"
+      })
+    );
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow();
+
+    expect(diagnostics.snapshot().extensions[0]).toMatchObject({
+      id: "acme.broken",
+      status: "failed"
+    });
+    expect(diagnostics.snapshot().extensions[0].events.at(-1)).toMatchObject({
+      phase: "mainResolution",
+      status: "failed"
+    });
+  });
+
+  it("records malformed manifest failures under the extension path", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-bad-manifest-"));
+    const extensionPath = path.join(root, "bad-manifest");
+    await fs.mkdir(extensionPath, { recursive: true });
+    await fs.writeFile(path.join(extensionPath, "package.json"), "{ bad json");
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow();
+
+    const extension = diagnostics.snapshot().extensions[0];
+    expect(extension).toMatchObject({
+      id: extensionPath,
+      extensionPath,
+      status: "failed"
+    });
+    expect(extension.events.at(-1)).toMatchObject({
+      phase: "manifest",
+      status: "failed"
+    });
+  });
+
+  it("records discovery for every extension directory before a later load failure stops loading", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-discover-all-"));
+    const brokenPath = path.join(root, "01-broken");
+    const pendingPath = path.join(root, "02-pending");
+    await fs.mkdir(brokenPath, { recursive: true });
+    await fs.mkdir(pendingPath, { recursive: true });
+    await fs.writeFile(
+      path.join(brokenPath, "package.json"),
+      JSON.stringify({
+        name: "broken",
+        publisher: "acme",
+        main: "./missing.js"
+      })
+    );
+    await fs.writeFile(
+      path.join(pendingPath, "package.json"),
+      JSON.stringify({
+        name: "pending",
+        publisher: "acme",
+        main: "./extension.js"
+      })
+    );
+    await fs.writeFile(
+      path.join(pendingPath, "extension.js"),
+      "exports.activate = function activate() { return { ok: true }; };\n"
+    );
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow();
+
+    expect(diagnostics.snapshot().extensions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "acme.broken", status: "failed" }),
+        expect.objectContaining({ id: pendingPath, status: "discovered" })
+      ])
+    );
+  });
+
+  it("records activation failures with the activation phase", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-activation-failure-"));
+    const extensionPath = path.join(root, "activation-broken");
+    await fs.mkdir(extensionPath, { recursive: true });
+    await fs.writeFile(
+      path.join(extensionPath, "package.json"),
+      JSON.stringify({
+        name: "activation-broken",
+        publisher: "acme",
+        version: "1.0.0",
+        main: "./extension.js"
+      })
+    );
+    await fs.writeFile(
+      path.join(extensionPath, "extension.js"),
+      "exports.activate = function activate() { throw new Error('activation exploded'); };\n"
+    );
+    const diagnostics = new ExtensionDiagnosticsRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: root,
+      storageRoot: path.join(root, ".data"),
+      bridge: { notify: () => undefined, request: async () => null },
+      diagnostics
+    });
+
+    await expect(loader.loadAll()).rejects.toThrow("activation exploded");
+
+    const extension = diagnostics.snapshot().extensions[0];
+    expect(extension).toMatchObject({
+      id: "acme.activation-broken",
+      status: "failed",
+      lastError: "activation exploded"
+    });
+    expect(extension.events.at(-1)).toMatchObject({
+      phase: "activation",
+      status: "failed",
+      error: "activation exploded"
+    });
   });
 });

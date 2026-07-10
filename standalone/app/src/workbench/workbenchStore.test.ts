@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { initialWorkbenchState, workbenchReducer } from "./workbenchStore";
+import type { ExtensionDiagnosticState } from "./types";
 
 describe("workbenchReducer", () => {
   it("registers containers and selects the first one", () => {
@@ -213,5 +214,82 @@ describe("workbenchReducer", () => {
     expect(shown.terminals[0].visible).toBe(true);
     expect(hidden.terminals[0].visible).toBe(false);
     expect(disposed.terminals).toEqual([]);
+  });
+
+  it("replaces extension diagnostics snapshots idempotently", () => {
+    const first = workbenchReducer(initialWorkbenchState, {
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 1,
+        status: "activated",
+        events: []
+      }]
+    });
+    const second = workbenchReducer(first, {
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 2,
+        status: "failed",
+        lastError: "boom",
+        events: []
+      }]
+    });
+
+    expect(second.diagnostics.extensions).toEqual([{
+      id: "acme.fixture",
+      extensionPath: "C:/extensions/fixture",
+      commandCount: 2,
+      status: "failed",
+      lastError: "boom",
+      events: []
+    }]);
+  });
+
+  it("stores extension diagnostics snapshots defensively", () => {
+    const extensions: ExtensionDiagnosticState[] = [{
+      id: "acme.fixture",
+      extensionPath: "C:/extensions/fixture",
+      activationEvents: ["onStartupFinished"],
+      contributedViews: ["fixture.view"],
+      commandCount: 1,
+      status: "activated",
+      events: [{
+        id: "diagnostic-1",
+        extensionPath: "C:/extensions/fixture",
+        timestamp: "2026-07-08T00:00:00.000Z",
+        phase: "activation",
+        status: "activated",
+        message: "Activated extension",
+        details: {
+          resolvedMain: "C:/extensions/fixture/extension.js",
+          nested: { path: "C:/extensions/fixture/extension.js" }
+        }
+      }]
+    }];
+
+    const state = workbenchReducer(initialWorkbenchState, {
+      type: "diagnostics/extensions",
+      extensions
+    });
+    const fixture = extensions[0]!;
+    const event = fixture.events[0]!;
+    fixture.activationEvents!.push("tampered");
+    fixture.contributedViews!.push("tampered.view");
+    event.message = "Tampered";
+    event.details!.resolvedMain = "C:/tampered.js";
+    (event.details!.nested as Record<string, unknown>).path = "C:/tampered-nested.js";
+
+    const extension = state.diagnostics.extensions[0];
+    expect(extension.activationEvents).toEqual(["onStartupFinished"]);
+    expect(extension.contributedViews).toEqual(["fixture.view"]);
+    expect(extension.events[0].message).toBe("Activated extension");
+    expect(extension.events[0].details).toEqual({
+      resolvedMain: "C:/extensions/fixture/extension.js",
+      nested: { path: "C:/extensions/fixture/extension.js" }
+    });
   });
 });

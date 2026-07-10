@@ -6,6 +6,7 @@ import { CommandRegistry, createVscodeApi } from "@airdb-standalone/vscode-shim"
 import type { HostBridge } from "@airdb-standalone/vscode-shim";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { createExtensionContext } from "./extensionContext.js";
+import type { ExtensionDiagnosticsRegistry } from "./extensionDiagnostics.js";
 import type { ExtensionManifest } from "./manifest.js";
 import { getExtensionId } from "./manifest.js";
 import { patchVscodeModule } from "./modulePatch.js";
@@ -23,6 +24,7 @@ export interface ExtensionLoaderOptions {
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
   contributionRegistry?: ContributionRegistry;
+  diagnostics?: ExtensionDiagnosticsRegistry;
   workspaceRoot?: string;
 }
 
@@ -40,48 +42,121 @@ export class ExtensionLoader {
 
   async loadAll(): Promise<LoadedExtension[]> {
     const entries = await fs.readdir(this.options.extensionsDir, { withFileTypes: true });
+    const extensionPaths = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(this.options.extensionsDir, entry.name));
+
+    for (const extensionPath of extensionPaths) {
+      this.options.diagnostics?.recordDiscovered(extensionPath);
+    }
+
     const loaded: LoadedExtension[] = [];
 
-    for (const entry of entries) {
-      if (!entry.isDirectory()) {
-        continue;
-      }
-      loaded.push(await this.loadExtension(path.join(this.options.extensionsDir, entry.name)));
+    for (const extensionPath of extensionPaths) {
+      loaded.push(await this.loadExtension(extensionPath));
     }
 
     return loaded;
   }
 
   async loadExtension(extensionPath: string): Promise<LoadedExtension> {
-    const manifestPath = path.join(extensionPath, "package.json");
-    const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8")) as ExtensionManifest;
-    const extensionId = getExtensionId(manifest);
+    let extensionId: string | undefined;
+    let failurePhase: "manifest" | "contributions" | "mainResolution" | "moduleImport" | "activation" = "manifest";
 
-    this.contributionRegistry.register(manifest);
+    try {
+      const manifestPath = path.join(extensionPath, "package.json");
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        phase: "manifest",
+        status: "loading",
+        message: "Reading extension manifest",
+        details: { manifestPath }
+      });
+      const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8")) as ExtensionManifest;
+      extensionId = this.options.diagnostics?.recordManifest(extensionPath, manifest) ?? getExtensionId(manifest);
 
-    const vscodeApi = createVscodeApi({
-      extensionId,
-      extensionPath,
-      bridge: this.options.bridge,
-      commandRegistry: this.commandRegistry,
-      extensions: [{ id: extensionId, extensionPath, packageJSON: manifest }],
-      workspaceRoot: this.options.workspaceRoot
-    });
+      failurePhase = "contributions";
+      this.contributionRegistry.register(manifest);
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        extensionId,
+        phase: "contributions",
+        status: "loaded",
+        message: "Registered extension contributions"
+      });
 
-    patchVscodeModule(extensionPath, vscodeApi);
+      const vscodeApi = createVscodeApi({
+        extensionId,
+        extensionPath,
+        bridge: this.options.bridge,
+        commandRegistry: this.commandRegistry,
+        extensions: [{ id: extensionId, extensionPath, packageJSON: manifest }],
+        workspaceRoot: this.options.workspaceRoot
+      });
 
-    const mainFile = await resolveMainFile(extensionPath, manifest.main ?? "./out/extension.js");
-    delete extensionRequire.cache[extensionRequire.resolve(mainFile)];
-    const moduleUrl = `${pathToFileURL(mainFile).href}?airdbLoad=${extensionImportNonce++}`;
-    const extensionModule = await import(moduleUrl);
-    const context = createExtensionContext({
-      extensionPath,
-      storageRoot: path.join(this.options.storageRoot, extensionId),
-      workspaceRoot: this.options.workspaceRoot
-    });
-    const activate = resolveExtensionActivate(extensionModule);
-    const exports = activate ? await activate(context) : undefined;
-    return { id: extensionId, extensionPath, manifest, exports };
+      patchVscodeModule(extensionPath, vscodeApi);
+
+      failurePhase = "mainResolution";
+      const mainFile = await resolveMainFile(extensionPath, manifest.main ?? "./out/extension.js");
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        extensionId,
+        phase: "mainResolution",
+        status: "loaded",
+        message: "Resolved extension entry",
+        details: { resolvedMain: mainFile }
+      });
+      delete extensionRequire.cache[extensionRequire.resolve(mainFile)];
+      const moduleUrl = `${pathToFileURL(mainFile).href}?airdbLoad=${extensionImportNonce++}`;
+      failurePhase = "moduleImport";
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        extensionId,
+        phase: "moduleImport",
+        status: "loading",
+        message: "Importing extension module"
+      });
+      const extensionModule = await import(moduleUrl);
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        extensionId,
+        phase: "moduleImport",
+        status: "loaded",
+        message: "Imported extension module"
+      });
+      const context = createExtensionContext({
+        extensionPath,
+        storageRoot: path.join(this.options.storageRoot, extensionId),
+        workspaceRoot: this.options.workspaceRoot
+      });
+      failurePhase = "activation";
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        extensionId,
+        phase: "activation",
+        status: "activating",
+        message: "Activating extension"
+      });
+      const activate = resolveExtensionActivate(extensionModule);
+      const exports = activate ? await activate(context) : undefined;
+      this.options.diagnostics?.recordPhase({
+        extensionPath,
+        extensionId,
+        phase: "activation",
+        status: "activated",
+        message: "Activated extension"
+      });
+      return { id: extensionId, extensionPath, manifest, exports };
+    } catch (error) {
+      this.options.diagnostics?.recordFailure({
+        extensionPath,
+        extensionId,
+        phase: failurePhase,
+        message: "Failed to load extension",
+        error
+      });
+      throw error;
+    }
   }
 }
 

@@ -22,6 +22,14 @@ npm run verify
 
 This runs workspace checks, typecheck, build, AirDB extension preparation, the default extension-set guard, unit tests, and the key AirDB IPC smoke tests. It does not build MSI/NSIS installers.
 
+AirDB webview builds also use the root project webpack dependencies. If the repository root does not already have `node_modules`, install them before running `npm run build:airdb` or AirDB-backed smoke tests:
+
+```bash
+cd ..
+npm install --no-package-lock
+cd standalone
+```
+
 ## Running The Standalone Host
 
 ```bash
@@ -166,13 +174,28 @@ The smoke test starts the Node extension host with a temporary fixture extension
 
 ```bash
 cd standalone
+npm install
 npm run build
 npm run build:airdb
 npm run prepare:extensions
 npm run smoke:webview-ipc
 ```
 
-The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, verifies that a webview panel emits HTML containing standalone local resource URIs, sends a simulated webview `init` message, and verifies the extension replies with `syncState`.
+The smoke test starts the Node extension host, waits for AirDB activation, executes `airdb.connection.add`, verifies that a webview panel emits HTML containing standalone local resource URIs, sends a simulated webview `init` message, and verifies the extension replies with `syncState`. If `build:airdb` cannot find `webpack`, install the root project dependencies as described in Development.
+
+## Extension Diagnostics IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:extension-diagnostics-ipc
+```
+
+The smoke test starts the Node extension host with a temporary fixture extension and verifies that `extension.diagnostics` reports the activated extension, contributed view, and command count.
+
+## Extension Diagnostics Troubleshooting
+
+The standalone workbench includes an extension diagnostics panel. Use it when a bundled VS Code-style extension does not appear or does not activate. The panel shows discovery, manifest parsing, contribution registration, main file resolution, module import, activation status, recent diagnostic events, command count, and contributed views. A failed extension should show the phase and error message that caused the failure.
 
 ## Packages
 

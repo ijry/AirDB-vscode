@@ -41,6 +41,7 @@ export type HostMessageGroup =
   | "state.update"
   | "extension.registerContributions"
   | "extension.activated"
+  | "extension.diagnostics"
   | "log";
 
 export interface HostMessageBase {
@@ -143,6 +144,56 @@ export interface HostTerminalDto {
   id: string;
   name: string;
   visible: boolean;
+}
+
+export type ExtensionDiagnosticStatus =
+  | "discovered"
+  | "loading"
+  | "loaded"
+  | "activating"
+  | "activated"
+  | "failed";
+
+export type ExtensionDiagnosticPhase =
+  | "discover"
+  | "manifest"
+  | "contributions"
+  | "mainResolution"
+  | "moduleImport"
+  | "activation";
+
+export interface ExtensionDiagnosticEventDto {
+  id: string;
+  extensionId?: string;
+  extensionPath: string;
+  timestamp: string;
+  phase: ExtensionDiagnosticPhase;
+  status: ExtensionDiagnosticStatus;
+  message: string;
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface ExtensionDiagnosticDto {
+  id: string;
+  extensionPath: string;
+  displayName?: string;
+  version?: string;
+  publisher?: string;
+  main?: string;
+  resolvedMain?: string;
+  activationEvents?: string[];
+  contributedViews?: string[];
+  commandCount: number;
+  status: ExtensionDiagnosticStatus;
+  lastError?: string;
+  startedAt?: string;
+  activatedAt?: string;
+  events: ExtensionDiagnosticEventDto[];
+}
+
+export interface ExtensionDiagnosticsPayload {
+  extensions: ExtensionDiagnosticDto[];
 }
 
 export interface TerminalAppendPayload {

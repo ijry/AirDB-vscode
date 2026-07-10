@@ -257,4 +257,204 @@ describe("mapHostMessageToActions", () => {
       { type: "terminal/append", id: "terminal-1", name: "Feedback Terminal", line: "select 1" }
     ]);
   });
+
+  it("maps extension diagnostics snapshots", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([{
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 1,
+        status: "activated",
+        events: [{
+          id: "diagnostic-1",
+          extensionPath: "C:/extensions/fixture",
+          timestamp: "2026-07-08T00:00:00.000Z",
+          phase: "activation",
+          status: "activated",
+          message: "Activated extension"
+        }]
+      }]
+    }]);
+  });
+
+  it("ignores invalid extension diagnostics payloads", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", { extensions: "invalid" }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid command counts", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: -1,
+          status: "activated",
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid event payloads", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{ id: "diagnostic-1", status: "activated" }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with too many events", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: Array.from({ length: 201 }, (_, index) => ({
+            id: `diagnostic-${index}`,
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension"
+          }))
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid activation events", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          activationEvents: ["onStartupFinished", 123],
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid contributed views", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          contributedViews: ["fixture.view", {}],
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid event details", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension",
+            details: "invalid"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown extension status", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "unknown",
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown event phase", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "unexpected",
+            status: "activated",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown event status", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "unexpected",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
 });

@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { CommandRegistry } from "@airdb-standalone/vscode-shim";
 import { IpcBridge } from "./ipcBridge.js";
 import { ContributionRegistry } from "./contributionRegistry.js";
+import { ExtensionDiagnosticsRegistry } from "./extensionDiagnostics.js";
 import { ExtensionHostController } from "./extensionHostController.js";
 import { ExtensionLoader } from "./extensionLoader.js";
 import { Logger } from "./logger.js";
@@ -24,6 +25,9 @@ const webviewRegistry = new WebviewRegistry();
 const bridge = new IpcBridge((line) => {
   process.stdout.write(`${line}\n`);
 }, treeViewRegistry, webviewRegistry);
+const diagnostics = new ExtensionDiagnosticsRegistry((payload) => {
+  bridge.notify("extension.diagnostics", payload);
+});
 
 const controller = new ExtensionHostController({ commandRegistry, treeViewRegistry, webviewRegistry });
 startStdinMessageLoop(process.stdin, controller, (line) => {
@@ -37,7 +41,8 @@ try {
     workspaceRoot,
     bridge,
     contributionRegistry,
-    commandRegistry
+    commandRegistry,
+    diagnostics
   });
   const loaded = await loader.loadAll();
   bridge.notify("extension.registerContributions", { extensions: contributionRegistry.all() });

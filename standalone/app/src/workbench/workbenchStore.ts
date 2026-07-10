@@ -2,6 +2,7 @@ import type {
   ActivityContainer,
   DialogState,
   EditorTab,
+  ExtensionDiagnosticState,
   NotificationState,
   OutputChannelState,
   StatusBarItemState,
@@ -40,7 +41,8 @@ export type WorkbenchAction =
   | { type: "terminal/append"; id: string; name?: string; line: string }
   | { type: "terminal/show"; id: string }
   | { type: "terminal/hide"; id: string }
-  | { type: "terminal/dispose"; id: string };
+  | { type: "terminal/dispose"; id: string }
+  | { type: "diagnostics/extensions"; extensions: ExtensionDiagnosticState[] };
 
 export const initialWorkbenchState: WorkbenchState = {
   containers: [],
@@ -51,7 +53,10 @@ export const initialWorkbenchState: WorkbenchState = {
   notifications: [],
   outputs: [],
   statusBarItems: [],
-  terminals: []
+  terminals: [],
+  diagnostics: {
+    extensions: []
+  }
 };
 
 export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction): WorkbenchState {
@@ -210,9 +215,46 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         ...state,
         terminals: state.terminals.filter((terminal) => terminal.id !== action.id)
       };
+    case "diagnostics/extensions":
+      return {
+        ...state,
+        diagnostics: {
+          extensions: copyDiagnosticsExtensions(action.extensions)
+        }
+      };
     default:
       return state;
   }
+}
+
+function copyDiagnosticsExtensions(extensions: ExtensionDiagnosticState[]): ExtensionDiagnosticState[] {
+  return extensions.map((extension) => ({
+    ...extension,
+    ...(extension.activationEvents ? { activationEvents: [...extension.activationEvents] } : {}),
+    ...(extension.contributedViews ? { contributedViews: [...extension.contributedViews] } : {}),
+    events: extension.events.map((event) => ({
+      ...event,
+      ...(event.details ? { details: copyDiagnosticDetails(event.details) } : {})
+    }))
+  }));
+}
+
+function copyDiagnosticDetails(details: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(details).map(([key, value]) => [key, copyDiagnosticDetailValue(value)])
+  );
+}
+
+function copyDiagnosticDetailValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(copyDiagnosticDetailValue);
+  }
+
+  if (value && typeof value === "object") {
+    return copyDiagnosticDetails(value as Record<string, unknown>);
+  }
+
+  return value;
 }
 
 function upsertOutput(outputs: OutputChannelState[], output: OutputChannelState): OutputChannelState[] {
