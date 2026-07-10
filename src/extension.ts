@@ -33,6 +33,7 @@ import { ESIndexNode } from "./model/es/model/esIndexNode";
 import { activeEs } from "./model/es/provider/main";
 import { RedisConnectionNode } from "./model/redis/redisConnectionNode";
 import KeyNode from "./model/redis/keyNode";
+import { KafkaTopicNode } from "./model/kafka/kafkaTopicNode";
 import { DiffService } from "./service/diff/diffService";
 import { DatabaseCache } from "./service/common/databaseCache";
 import { FileNode } from "./model/ssh/fileNode";
@@ -228,6 +229,11 @@ export function activate(context: vscode.ExtensionContext) {
                 "airdb.connection.terminal": (node: Node) => node.openTerminal(),
                 "airdb.redis.key.detail": (keyNode: KeyNode) => keyNode.detail(),
                 "airdb.redis.key.del": (keyNode: KeyNode) => keyNode.delete(),
+            },
+            // kafka
+            ...{
+                "airdb.kafka.topic.view": (topicNode: KafkaTopicNode) => topicNode.viewMessages(),
+                "airdb.kafka.topic.send": (topicNode: KafkaTopicNode) => topicNode.sendMessage(),
             },
             // table node
             ...{

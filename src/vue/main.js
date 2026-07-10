@@ -33,6 +33,8 @@ import structDiff from "./structDiff";
 import keyView from "./redis/keyView";
 import terminal from "./redis/terminal";
 import redisStatus from "./redis/redisStatus";
+import kafkaMessageViewer from "./kafka/messageViewer.vue";
+import kafkaMessageProducer from "./kafka/messageProducer.vue";
 import forward from "./forward";
 import sshTerminal from "./xterm";
 import userCenter from "./user/userCenter.vue";
@@ -47,6 +49,9 @@ const router = new VueRouter({
     { path: '/keyView', component: keyView, name: 'keyView' },
     { path: '/terminal', component: terminal, name: 'terminal' },
     { path: '/redisStatus', component: redisStatus, name: 'redisStatus' },
+    // kafka
+    { path: '/kafkaMessageViewer', component: kafkaMessageViewer, name: 'kafkaMessageViewer' },
+    { path: '/kafkaMessageProducer', component: kafkaMessageProducer, name: 'kafkaMessageProducer' },
     // ssh
     { path: '/forward', component: forward, name: 'forward' },
     { path: '/sshTerminal', component: sshTerminal, name: 'sshTerminal' },

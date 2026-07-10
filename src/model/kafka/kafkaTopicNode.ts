@@ -1,4 +1,5 @@
 import { ModelType } from "@/common/constants";
+import { ViewManager } from "@/common/viewManager";
 import { Node } from "@/model/interface/node";
 import { InfoNode } from "@/model/other/infoNode";
 import * as vscode from "vscode";
@@ -39,10 +40,83 @@ export class KafkaTopicNode extends KafkaBaseNode {
     }
 
     public viewMessages() {
-        vscode.window.showInformationMessage(`Kafka message viewer: ${this.topic}`);
+        ViewManager.createWebviewPanel({
+            title: `${this.topic} messages`,
+            type: `kafka-message-viewer-${this.getConnectId()}-${this.topic}`,
+            splitView: true,
+            singlePage: false,
+            path: "app",
+            eventHandler: (handler) => {
+                handler.on("init", () => {
+                    handler.emit("route", "kafkaMessageViewer");
+                }).on("route-kafkaMessageViewer", () => {
+                    handler.emit("config", {
+                        node: {
+                            key: this.key,
+                            host: this.host,
+                            port: this.port,
+                            brokers: this.brokers,
+                            clientId: this.clientId,
+                            kafkaAuth: this.kafkaAuth,
+                            user: this.user,
+                            password: this.password,
+                            useSSL: this.useSSL,
+                            caPath: this.caPath,
+                            clientCertPath: this.clientCertPath,
+                            clientKeyPath: this.clientKeyPath,
+                            connectTimeout: this.connectTimeout,
+                            requestTimeout: this.requestTimeout,
+                            dbType: this.dbType,
+                        },
+                        topic: this.topic,
+                    });
+                }).on("readKafkaMessages", async (options) => {
+                    try {
+                        const connection = await this.getKafkaConnection();
+                        const rows = await connection.readMessages({
+                            topic: this.topic,
+                            partition: options.partition === "" || options.partition == null ? undefined : parseInt(options.partition),
+                            startMode: options.startMode,
+                            offset: options.offset,
+                            limit: options.limit,
+                        });
+                        handler.emit("messages", rows);
+                    } catch (error) {
+                        handler.emit("error", error?.message || String(error));
+                    }
+                });
+            },
+        });
     }
 
     public sendMessage() {
-        vscode.window.showInformationMessage(`Kafka message producer: ${this.topic}`);
+        ViewManager.createWebviewPanel({
+            title: `${this.topic} producer`,
+            type: `kafka-message-producer-${this.getConnectId()}-${this.topic}`,
+            splitView: true,
+            singlePage: false,
+            path: "app",
+            eventHandler: (handler) => {
+                handler.on("init", () => {
+                    handler.emit("route", "kafkaMessageProducer");
+                }).on("route-kafkaMessageProducer", () => {
+                    handler.emit("config", { topic: this.topic });
+                }).on("sendKafkaMessage", async (payload) => {
+                    try {
+                        const connection = await this.getKafkaConnection();
+                        const result = await connection.sendMessage({
+                            topic: this.topic,
+                            partition: payload.partition === "" || payload.partition == null ? undefined : parseInt(payload.partition),
+                            key: payload.key || undefined,
+                            value: payload.value || "",
+                            headers: payload.headers || {},
+                        });
+                        handler.emit("sent", result);
+                    } catch (error) {
+                        handler.emit("error", error?.message || String(error));
+                    }
+                });
+            },
+        });
     }
 }

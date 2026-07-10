@@ -449,6 +449,18 @@
 				"title": "%command.redis.key.detail%"
 			},
 			{
+				"command": "airdb.kafka.topic.view",
+				"title": "View Kafka Messages",
+				"category": "AirDB",
+				"icon": "$(eye)"
+			},
+			{
+				"command": "airdb.kafka.topic.send",
+				"title": "Send Kafka Message",
+				"category": "AirDB",
+				"icon": "$(send)"
+			},
+			{
 				"command": "airdb.ssh.terminal.hear",
 				"title": "Open Terminal in hear"
 			},
@@ -597,27 +609,27 @@
 			"view/item/context": [
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(catalog|esConnection|sshConnection|folder|redisConnection|kafkaConnection|kafkaTopicGroup|kafkaTopic|kafkaConsumerGroup|connection|tableGroup|viewGroup|systemViewGroup|triggerGroup|procedureGroup|functionGroup|table)$/",
 					"group": "inline@-2"
 				},
 				{
 					"command": "airdb.connection.edit",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@2"
 				},
 				{
 					"command": "airdb.connection.open",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@3"
 				},
 				{
 					"command": "airdb.connection.disable",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
 					"group": "1_mysql@4"
 				},
 				{
 					"command": "airdb.host.copy",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection)$/",
 					"group": "1_mysql@6"
 				},
 				{
@@ -642,7 +654,7 @@
 				},
 				{
 					"command": "airdb.refresh",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(esConnection|ftpConnection|ftpFolder)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(esConnection|kafkaConnection|kafkaTopicGroup|kafkaTopic|kafkaConsumerGroup|ftpConnection|ftpFolder)$/",
 					"group": "2_mysql@1"
 				},
 				{
@@ -657,7 +669,7 @@
 				},
 				{
 					"command": "airdb.connection.delete",
-					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|ftpConnection|sshConnection)$/",
+					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(connection|esConnection|redisConnection|kafkaConnection|ftpConnection|sshConnection)$/",
 					"group": "10mysql@2"
 				},
 				{
@@ -919,6 +931,16 @@
 					"command": "airdb.redis.key.del",
 					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /^(redisKey|redisFolder)$/",
 					"group": "inline"
+				},
+				{
+					"command": "airdb.kafka.topic.view",
+					"when": "view == activitybar.airdb.nosql && viewItem == kafkaTopic",
+					"group": "inline@0"
+				},
+				{
+					"command": "airdb.kafka.topic.send",
+					"when": "view == activitybar.airdb.nosql && viewItem == kafkaTopic",
+					"group": "inline@1"
 				},
 				{
 					"command": "airdb.connection.delete",
