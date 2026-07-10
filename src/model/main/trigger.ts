@@ -22,8 +22,13 @@ export class TriggerNode extends Node {
     public async showSource() {
         this.execute(this.dialect.showTriggerSource(this.schema, this.name))
             .then((procedDtails) => {
-                const procedDtail = procedDtails[0]
-                QueryUnit.showSQLTextDocument(this, `${this.dialect.dropTriggerTemplate(this.wrap(this.name))};\n${procedDtail['SQL Original Statement']}`);
+                const procedDtail = procedDtails[0];
+                const source = procedDtail?.['SQL Original Statement'] || procedDtail?.CREATE_SQL;
+                if (!source) {
+                    vscode.window.showErrorMessage(vscode.l10n.t("Routine source is empty."));
+                    return;
+                }
+                QueryUnit.showSQLTextDocument(this, `${this.dialect.dropTriggerTemplate(this.wrap(this.name))};\n${source}`);
             });
     }
 

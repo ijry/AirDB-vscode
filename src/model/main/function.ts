@@ -23,8 +23,13 @@ export class FunctionNode extends Node {
         this.execute<any[]>( this.dialect.showFunctionSource(this.schema,this.name))
             .then((procedDtails) => {
                 const procedDtail = procedDtails[0];
+                const source = procedDtail?.['Create Function'] || procedDtail?.CREATE_SQL;
+                if (!source) {
+                    vscode.window.showErrorMessage(vscode.l10n.t("Routine source is empty."));
+                    return;
+                }
                 QueryUnit.showSQLTextDocument(this,
-                    `DROP FUNCTION IF EXISTS ${this.name};\n${procedDtail['Create Function']}`);
+                    `DROP FUNCTION IF EXISTS ${this.name};\n${source}`);
             });
     }
 

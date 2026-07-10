@@ -13,8 +13,11 @@ assert.match(dialect.showProcedures("SYSDBA"), /"ROUTINE_NAME"/);
 assert.match(dialect.showFunctions("SYSDBA"), /"ROUTINE_NAME"/);
 assert.match(dialect.showTriggers("SYSDBA"), /"TRIGGER_NAME"/);
 assert.match(dialect.showProcedureSource("SYSDBA", "P_DEMO"), /"Create Procedure"/);
+assert.match(dialect.showProcedureSource("SYSDBA", "P_DEMO"), /"CREATE_SQL"/);
 assert.match(dialect.showFunctionSource("SYSDBA", "F_DEMO"), /"Create Function"/);
+assert.match(dialect.showFunctionSource("SYSDBA", "F_DEMO"), /"CREATE_SQL"/);
 assert.match(dialect.showTriggerSource("SYSDBA", "T_DEMO"), /"SQL Original Statement"/);
+assert.match(dialect.showTriggerSource("SYSDBA", "T_DEMO"), /"CREATE_SQL"/);
 assert.strictEqual(
   dialect.buildPageSql("SYSDBA", "DEMO", 20),
   "SELECT * FROM SYSDBA.DEMO OFFSET 0 ROWS FETCH NEXT 20 ROWS ONLY"

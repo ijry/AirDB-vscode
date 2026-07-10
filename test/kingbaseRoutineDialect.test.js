@@ -11,8 +11,11 @@ assert.match(dialect.showFunctions("public"), /pg_proc/i);
 assert.match(dialect.showFunctions("public"), /prokind\s+IN\s+\('f','a','w'\)/i);
 assert.match(dialect.showProcedureSource("public", "demo_proc"), /pg_get_functiondef\(p\.oid\)/i);
 assert.match(dialect.showProcedureSource("public", "demo_proc"), /"Create Procedure"/);
+assert.match(dialect.showProcedureSource("public", "demo_proc"), /"CREATE_SQL"/);
 assert.match(dialect.showFunctionSource("public", "demo_fun"), /"Create Function"/);
+assert.match(dialect.showFunctionSource("public", "demo_fun"), /"CREATE_SQL"/);
 assert.match(dialect.showTriggerSource("public", "demo_trigger"), /pg_get_triggerdef\(t\.oid\)/i);
+assert.match(dialect.showTriggerSource("public", "demo_trigger"), /"CREATE_SQL"/);
 assert.match(dialect.procedureTemplate(), /\$body\$/);
 assert.match(dialect.functionTemplate(), /\$body\$/);
 

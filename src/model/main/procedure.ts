@@ -23,8 +23,13 @@ export class ProcedureNode extends Node {
     public async showSource() {
         this.execute<any[]>(this.dialect.showProcedureSource(this.schema, this.name))
             .then((procedDtails) => {
-                const procedDtail = procedDtails[0]
-                QueryUnit.showSQLTextDocument(this, `DROP PROCEDURE IF EXISTS ${this.name};\n${procedDtail['Create Procedure']}`);
+                const procedDtail = procedDtails[0];
+                const source = procedDtail?.['Create Procedure'] || procedDtail?.CREATE_SQL;
+                if (!source) {
+                    vscode.window.showErrorMessage(vscode.l10n.t("Routine source is empty."));
+                    return;
+                }
+                QueryUnit.showSQLTextDocument(this, `DROP PROCEDURE IF EXISTS ${this.name};\n${source}`);
             });
     }
 
