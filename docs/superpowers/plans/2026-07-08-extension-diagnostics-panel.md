@@ -60,6 +60,14 @@ Additional hardening completed on 2026-07-11:
 - Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
 - Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
 
+Additional hardening completed on 2026-07-11:
+
+- Tightened app diagnostics IPC validation to reject snapshots with more than 200 events per extension.
+- Added a regression test for oversized diagnostics event arrays.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts -t "too many events"`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

@@ -25,6 +25,8 @@ const DIAGNOSTIC_PHASES = [
   "activation"
 ] as const satisfies readonly ExtensionDiagnosticPhase[];
 
+const MAX_DIAGNOSTIC_EVENTS = 200;
+
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
   if (message.kind !== "notification" && message.kind !== "request") {
     return [];
@@ -248,6 +250,7 @@ function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticStat
       isOptionalStringArray(value.activationEvents) &&
       isOptionalStringArray(value.contributedViews) &&
       Array.isArray(value.events) &&
+      value.events.length <= MAX_DIAGNOSTIC_EVENTS &&
       value.events.every(isDiagnosticEvent)
   );
 }
