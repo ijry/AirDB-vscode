@@ -52,6 +52,14 @@ Additional hardening completed on 2026-07-11:
 - Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
 - Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
 
+Additional hardening completed on 2026-07-11:
+
+- Tightened app diagnostics IPC validation so `commandCount` must be a non-negative safe integer.
+- Added a regression test that rejects diagnostics snapshots with invalid command counts.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- messageHandlers.test.ts -t "invalid command counts"`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

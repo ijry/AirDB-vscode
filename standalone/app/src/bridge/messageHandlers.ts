@@ -235,7 +235,7 @@ function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticStat
   return Boolean(
     typeof value.id === "string" &&
       typeof value.extensionPath === "string" &&
-      typeof value.commandCount === "number" &&
+      isNonNegativeInteger(value.commandCount) &&
       isDiagnosticStatus(value.status) &&
       isOptionalString(value.displayName) &&
       isOptionalString(value.version) &&
@@ -284,6 +284,10 @@ function isOptionalString(value: unknown): boolean {
 
 function isOptionalStringArray(value: unknown): boolean {
   return value === undefined || (Array.isArray(value) && value.every((item) => typeof item === "string"));
+}
+
+function isNonNegativeInteger(value: unknown): boolean {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
 function isOptionalRecord(value: unknown): boolean {

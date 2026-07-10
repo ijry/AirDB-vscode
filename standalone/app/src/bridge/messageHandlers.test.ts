@@ -301,6 +301,20 @@ describe("mapHostMessageToActions", () => {
     ).toEqual([]);
   });
 
+  it("ignores extension diagnostics with invalid command counts", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: -1,
+          status: "activated",
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
   it("ignores extension diagnostics with invalid event payloads", () => {
     expect(
       mapHostMessageToActions(createNotification("extension.diagnostics", {
