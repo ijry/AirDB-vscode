@@ -35,6 +35,9 @@ import { RedisConnectionNode } from "./model/redis/redisConnectionNode";
 import KeyNode from "./model/redis/keyNode";
 import { KafkaTopicNode } from "./model/kafka/kafkaTopicNode";
 import { RabbitMQQueueNode } from "./model/rabbitmq/rabbitmqQueueNode";
+import { S3BucketNode } from "./model/s3/s3BucketNode";
+import { S3FolderNode } from "./model/s3/s3FolderNode";
+import { S3ObjectNode } from "./model/s3/s3ObjectNode";
 import { DiffService } from "./service/diff/diffService";
 import { DatabaseCache } from "./service/common/databaseCache";
 import { FileNode } from "./model/ssh/fileNode";
@@ -240,6 +243,16 @@ export function activate(context: vscode.ExtensionContext) {
             ...{
                 "airdb.rabbitmq.queue.view": (queueNode: RabbitMQQueueNode) => queueNode.viewMessages(),
                 "airdb.rabbitmq.queue.send": (queueNode: RabbitMQQueueNode) => queueNode.sendMessage(),
+            },
+            // s3
+            ...{
+                "airdb.s3.object.open": (objectNode: S3ObjectNode) => objectNode.open(),
+                "airdb.s3.object.download": (objectNode: S3ObjectNode) => objectNode.download(),
+                "airdb.s3.object.delete": (objectNode: S3ObjectNode | S3FolderNode) => objectNode.delete(),
+                "airdb.s3.object.copy": (objectNode: S3ObjectNode) => objectNode.copyObject(),
+                "airdb.s3.object.presign": (objectNode: S3ObjectNode) => objectNode.createPresignedUrl(),
+                "airdb.s3.object.upload": (parentNode: S3BucketNode | S3FolderNode) => parentNode.upload(),
+                "airdb.s3.folder.new": (parentNode: S3BucketNode | S3FolderNode) => parentNode.newFolder(),
             },
             // table node
             ...{

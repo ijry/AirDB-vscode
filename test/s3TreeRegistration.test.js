@@ -50,8 +50,34 @@ assert.match(treeProvider, /CacheKey\.NOSQL_CONNECTION/);
   "src/service/connect/s3Connection.ts",
   "src/model/s3/s3BaseNode.ts",
   "src/model/s3/s3ConnectionNode.ts",
+  "src/model/s3/s3BucketNode.ts",
+  "src/model/s3/s3FolderNode.ts",
+  "src/model/s3/s3ObjectNode.ts",
 ].forEach((relativePath) => {
   assert.ok(fs.existsSync(path.resolve(__dirname, "..", relativePath)), `${relativePath} exists`);
 });
+
+const extension = read("src/extension.ts");
+assert.match(extension, /S3BucketNode/);
+assert.match(extension, /S3FolderNode/);
+assert.match(extension, /S3ObjectNode/);
+assert.match(extension, /"airdb\.s3\.object\.open"/);
+assert.match(extension, /"airdb\.s3\.object\.download"/);
+assert.match(extension, /"airdb\.s3\.object\.delete"/);
+assert.match(extension, /"airdb\.s3\.object\.copy"/);
+assert.match(extension, /"airdb\.s3\.object\.presign"/);
+assert.match(extension, /"airdb\.s3\.object\.upload"/);
+assert.match(extension, /"airdb\.s3\.folder\.new"/);
+
+const pkgText = read("package.json");
+assert.match(pkgText, /airdb\.s3\.object\.open/);
+assert.match(pkgText, /airdb\.s3\.object\.download/);
+assert.match(pkgText, /airdb\.s3\.object\.delete/);
+assert.match(pkgText, /airdb\.s3\.object\.copy/);
+assert.match(pkgText, /airdb\.s3\.object\.presign/);
+assert.match(pkgText, /airdb\.s3\.object\.upload/);
+assert.match(pkgText, /airdb\.s3\.folder\.new/);
+assert.match(pkgText, /viewItem =~ \/\^\(s3Bucket\|s3Folder\)\$\//);
+assert.match(pkgText, /viewItem == s3Object/);
 
 console.log("s3TreeRegistration tests passed");

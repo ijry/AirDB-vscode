@@ -2,6 +2,9 @@ import { ConfigKey, ModelType } from "@/common/constants";
 import { Global } from "@/common/global";
 import { Util } from "@/common/util";
 import { CommandKey, Node } from "@/model/interface/node";
+import { InfoNode } from "@/model/other/infoNode";
+import { S3BucketNode } from "@/model/s3/s3BucketNode";
+import { formatS3Error } from "@/service/connect/s3Connection";
 import * as vscode from "vscode";
 import { S3BaseNode } from "./s3BaseNode";
 
@@ -26,7 +29,19 @@ export class S3ConnectionNode extends S3BaseNode {
     }
 
     async getChildren(): Promise<Node[]> {
-        return [];
+        try {
+            if (this.bucket) {
+                return [new S3BucketNode(this.bucket, this)];
+            }
+            const connection = await this.getS3Connection();
+            const buckets = await connection.listBuckets();
+            if (!buckets.length) return [new InfoNode(vscode.l10n.t("There are no files in this folder."))];
+            return buckets
+                .map((bucket) => new S3BucketNode(bucket.name, this, bucket.creationDate))
+                .sort((a, b) => String(a.label).localeCompare(String(b.label)));
+        } catch (error) {
+            return [new InfoNode(`List buckets failed: ${formatS3Error(error)}`)];
+        }
     }
 
     public copyName() {
