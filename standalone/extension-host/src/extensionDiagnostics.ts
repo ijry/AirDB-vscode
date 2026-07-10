@@ -74,6 +74,7 @@ export class ExtensionDiagnosticsRegistry {
     try {
       const extension = this.ensure(input.extensionPath, input.extensionId);
       const timestamp = new Date().toISOString();
+      const details = sanitizeDetails(input.details);
       const event: ExtensionDiagnosticEventDto = {
         id: `diagnostic-${++this.eventSequence}`,
         extensionId: input.extensionId,
@@ -82,14 +83,14 @@ export class ExtensionDiagnosticsRegistry {
         phase: input.phase,
         status: input.status,
         message: input.message,
-        ...(input.details ? { details: { ...input.details } } : {})
+        ...(details ? { details } : {})
       };
       const next: ExtensionDiagnosticDto = {
         ...extension,
         status: input.status,
         startedAt: extension.startedAt ?? timestamp,
         ...(input.status === "activated" ? { activatedAt: timestamp } : {}),
-        ...(typeof input.details?.resolvedMain === "string" ? { resolvedMain: input.details.resolvedMain } : {}),
+        ...(typeof details?.resolvedMain === "string" ? { resolvedMain: details.resolvedMain } : {}),
         events: appendEvent(extension.events, event)
       };
       this.extensions.set(next.id, next);
@@ -104,6 +105,7 @@ export class ExtensionDiagnosticsRegistry {
       const error = input.error instanceof Error ? input.error.message : String(input.error);
       const extension = this.ensure(input.extensionPath, input.extensionId);
       const timestamp = new Date().toISOString();
+      const details = sanitizeDetails(input.details);
       const event: ExtensionDiagnosticEventDto = {
         id: `diagnostic-${++this.eventSequence}`,
         extensionId: input.extensionId,
@@ -113,7 +115,7 @@ export class ExtensionDiagnosticsRegistry {
         status: "failed",
         message: input.message,
         error,
-        ...(input.details ? { details: { ...input.details } } : {})
+        ...(details ? { details } : {})
       };
       this.extensions.set(extension.id, {
         ...extension,
@@ -211,11 +213,54 @@ function copyExtensionDiagnostic(extension: ExtensionDiagnosticDto): ExtensionDi
     ...extension,
     ...(extension.activationEvents ? { activationEvents: [...extension.activationEvents] } : {}),
     ...(extension.contributedViews ? { contributedViews: [...extension.contributedViews] } : {}),
-    events: extension.events.map((event) => ({
-      ...event,
-      ...(event.details ? { details: { ...event.details } } : {})
-    }))
+    events: extension.events.map((event) => {
+      const details = sanitizeDetails(event.details);
+      return {
+        ...event,
+        ...(details ? { details } : {})
+      };
+    })
   };
+}
+
+
+function sanitizeDetails(value: unknown): Record<string, unknown> | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const details: Record<string, unknown> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    const sanitized = sanitizeDetailValue(entry);
+    if (sanitized !== undefined) {
+      details[key] = sanitized;
+    }
+  }
+
+  return Object.keys(details).length > 0 ? details : undefined;
+}
+
+function sanitizeDetailValue(value: unknown): unknown {
+  if (value === null) {
+    return null;
+  }
+
+  const valueType = typeof value;
+  if (valueType === "string" || valueType === "number" || valueType === "boolean") {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value
+      .map((entry) => sanitizeDetailValue(entry))
+      .filter((entry) => entry !== undefined);
+  }
+
+  if (isRecord(value)) {
+    return sanitizeDetails(value) ?? {};
+  }
+
+  return undefined;
 }
 
 function getOptionalString(value: unknown): string | undefined {

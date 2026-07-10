@@ -37,6 +37,13 @@ Additional hardening completed on 2026-07-11:
 - Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/extension-host`.
 - Verified `npm --prefix standalone run test --workspace @airdb-standalone/extension-host`.
 
+Additional hardening completed on 2026-07-11:
+
+- Sanitized diagnostics event `details` in the extension-host registry so non-record values are dropped and nested values stay JSON-safe before snapshot emission.
+- Added a regression test covering invalid array details, nested records, and omitted undefined detail values.
+- Verified `npx tsc -p tsconfig.json --noEmit` in `standalone/extension-host`.
+- Verified `npx vitest run` in `standalone/extension-host`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

@@ -147,6 +147,37 @@ describe("ExtensionDiagnosticsRegistry", () => {
     expect(extension.main).toBeUndefined();
   });
 
+  it("sanitizes event details before storing diagnostics", () => {
+    const registry = new ExtensionDiagnosticsRegistry();
+
+    registry.recordPhase({
+      extensionPath: "C:/extensions/fixture",
+      phase: "mainResolution",
+      status: "loaded",
+      message: "Resolved extension entry",
+      details: ["not-a-record"] as unknown as Record<string, unknown>
+    });
+    registry.recordFailure({
+      extensionPath: "C:/extensions/fixture",
+      phase: "moduleImport",
+      message: "Import failed",
+      error: new Error("boom"),
+      details: {
+        code: "ERR_IMPORT",
+        nested: { path: "C:/extensions/fixture/extension.js" },
+        ignored: undefined as unknown as string
+      }
+    });
+
+    const events = registry.snapshot().extensions[0].events;
+    expect(events[0].details).toBeUndefined();
+    expect(events[1].details).toEqual({
+      code: "ERR_IMPORT",
+      nested: { path: "C:/extensions/fixture/extension.js" }
+    });
+    expect(registry.snapshot().extensions[0].resolvedMain).toBeUndefined();
+  });
+
   it("returns defensive snapshot copies", () => {
     const registry = new ExtensionDiagnosticsRegistry();
     const id = registry.recordManifest("C:/extensions/fixture", {
