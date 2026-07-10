@@ -21,6 +21,7 @@ import { SqliteConnection } from "./connect/sqliteConnection";
 import { Console } from "@/common/Console";
 import { MongoConnection } from "./connect/mongoConnection";
 import { KingbaseConnection } from "./connect/kingbaseConnection";
+import { DamengConnection } from "./connect/damengConnection";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -157,6 +158,8 @@ export class ConnectionManager {
                 return new PostgreSqlConnection(opt)
             case DatabaseType.KINGBASE:
                 return new KingbaseConnection(opt)
+            case DatabaseType.DAMENG:
+                return new DamengConnection(opt)
             case DatabaseType.ORACLE:
                 return new OracleConnection(opt);
             case DatabaseType.SQLITE:

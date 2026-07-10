@@ -42,6 +42,8 @@ export class ConnectionNode extends Node implements CopyAble {
             this.iconPath = path.join(Constants.RES_PATH, "icon/pg_server.svg");
         } else if (this.dbType == DatabaseType.KINGBASE) {
             this.iconPath = new vscode.ThemeIcon("database");
+        } else if (this.dbType == DatabaseType.DAMENG) {
+            this.iconPath = new vscode.ThemeIcon("database");
         } else if (this.dbType == DatabaseType.MSSQL) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/mssql_server.png");
         } else if (this.dbType == DatabaseType.SQLITE) {
@@ -91,6 +93,7 @@ Console.log('asdasd')
 
         const hasCatalog = this.dbType != DatabaseType.MYSQL
             && this.dbType != DatabaseType.ORACLE
+            && this.dbType != DatabaseType.DAMENG
             && this.contextValue == ModelType.CONNECTION;
         // pg/mssql与mysql相比多一层Catalog
         const sql = hasCatalog ? this.dialect.showDatabases() : this.dialect.showSchemas();
@@ -130,7 +133,7 @@ Console.log('asdasd')
         let childMap = {};
         const dbNameList = (await this.getChildren()).filter((databaseNode) => (databaseNode instanceof SchemaNode || databaseNode instanceof CatalogNode)).map((databaseNode) => {
             childMap[databaseNode.uid] = databaseNode
-            return (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE)
+            return (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG)
                 ? databaseNode.schema
                 : databaseNode.database;
         });

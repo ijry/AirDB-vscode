@@ -300,6 +300,11 @@ const dbLogoMap = {
     bg: "#ecfeff",
     color: "#0891b2",
   },
+  Dameng: {
+    text: "DM",
+    bg: "#f0fdf4",
+    color: "#15803d",
+  },
   Oracle: {
     text: "OR",
     bg: "#fff1f2",
@@ -394,6 +399,7 @@ export default {
         "MySQL",
         "PostgreSQL",
         "KingbaseES",
+        "Dameng",
         "Oracle",
         "SqlServer",
         "SQLite",
@@ -540,6 +546,12 @@ export default {
           this.connectionOption.encrypt = false;
           this.connectionOption.port = 54321;
           this.connectionOption.database = "test";
+          break;
+        case "Dameng":
+          this.connectionOption.user = "SYSDBA";
+          this.connectionOption.encrypt = false;
+          this.connectionOption.port = 5236;
+          this.connectionOption.database = "SYSDBA";
           break;
         case "Oracle":
           this.connectionOption.user = "system";

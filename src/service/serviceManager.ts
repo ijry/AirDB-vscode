@@ -20,19 +20,23 @@ import { MssqlDIalect } from "./dialect/mssqlDIalect";
 import { MysqlDialect } from "./dialect/mysqlDialect";
 import { OracleDialect } from "./dialect/oracleDialect";
 import { KingbaseDialect } from "./dialect/kingbaseDialect";
+import { DamengDialect } from "./dialect/damengDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
 import { KingbaseDumpService } from "./dump/kingbaseDumpService";
+import { DamengDumpService } from "./dump/damengDumpService";
 import { MysqlImportService } from "./import/mysqlImportService";
 import { PostgresqlImortService } from "./import/postgresqlImortService";
 import { SqlServerImportService } from "./import/sqlServerImportService";
 import { KingbaseImportService } from "./import/kingbaseImportService";
+import { DamengImportService } from "./import/damengImportService";
 import { MockRunner } from "./mock/mockRunner";
 import { EsPageService } from "./page/esPageService";
 import { MssqlPageService } from "./page/mssqlPageService";
 import { MysqlPageSerivce } from "./page/mysqlPageSerivce";
 import { OraclePageService } from "./page/oraclePageService";
+import { DamengPageService } from "./page/damengPageService";
 import { PageService } from "./page/pageService";
 import { PostgreSqlPageService } from "./page/postgreSqlPageService";
 import { MysqlSettingService } from "./setting/MysqlSettingService";
@@ -134,6 +138,8 @@ export class ServiceManager {
                 return new MysqlDumpService()
             case DatabaseType.KINGBASE:
                 return new KingbaseDumpService()
+            case DatabaseType.DAMENG:
+                return new DamengDumpService()
         }
         return new DumpService()
     }
@@ -147,6 +153,8 @@ export class ServiceManager {
                 return new PostgresqlImortService();
             case DatabaseType.KINGBASE:
                 return new KingbaseImportService();
+            case DatabaseType.DAMENG:
+                return new DamengImportService();
         }
         return new MysqlImportService()
     }
@@ -162,6 +170,8 @@ export class ServiceManager {
                 return new PostgreSqlDialect();
             case DatabaseType.KINGBASE:
                 return new KingbaseDialect();
+            case DatabaseType.DAMENG:
+                return new DamengDialect();
             case DatabaseType.ORACLE:
                 return new OracleDialect();
             case DatabaseType.ES:
@@ -181,6 +191,8 @@ export class ServiceManager {
                 return new PostgreSqlPageService();
             case DatabaseType.KINGBASE:
                 return new PostgreSqlPageService();
+            case DatabaseType.DAMENG:
+                return new DamengPageService();
             case DatabaseType.ORACLE:
                 return new OraclePageService();
             case DatabaseType.MONGO_DB:

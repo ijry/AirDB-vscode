@@ -25,7 +25,7 @@ export class TableGroup extends Node {
         super(vscode.l10n.t("Table"));
         this.init(parent);
 
-        if (parent.dbType == DatabaseType.MYSQL || parent.dbType == DatabaseType.ORACLE) {
+        if (parent.dbType == DatabaseType.MYSQL || parent.dbType == DatabaseType.ORACLE || parent.dbType == DatabaseType.DAMENG) {
             this.stateKey = this.key + '-default-' + this.parent.label + '-TableFilterKeyword'
             // @ts-ignore
             if (parent.pinedTablesMap != null && parent.pinedTablesMap['default-' + this.parent.label] != null) {
@@ -33,7 +33,7 @@ export class TableGroup extends Node {
                 // @ts-ignore
                 this.pinedTables = parent.pinedTablesMap['default-' + this.parent.label];
             }
-        } else if(parent.dbType == DatabaseType.MSSQL || parent.dbType == DatabaseType.PG) {
+        } else if(parent.dbType == DatabaseType.MSSQL || parent.dbType == DatabaseType.PG || parent.dbType == DatabaseType.KINGBASE) {
             // this.parent.parent is catalog
             // this.parent is schema
             this.stateKey = this.key + '-' + this.parent.parent.label + '-' + this.parent.label + '-TableFilterKeyword'
@@ -64,10 +64,10 @@ export class TableGroup extends Node {
             };
             let url = `https://airdb.lingyun.net/api/v1/airdb/conns/updatePinedTables`;
             let pinedTablesMap = {}
-            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE) {
+            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG) {
                 // @ts-ignore
                 pinedTablesMap['default-' + this.parent.label] = this.pinedTables
-            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG) {
+            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.KINGBASE) {
                 // @ts-ignore
                 pinedTablesMap[this.parent.parent.label + '-' + this.parent.label] = this.pinedTables
             } else {
@@ -93,7 +93,7 @@ export class TableGroup extends Node {
             const connectionKey = this.connectionKey;
             const key = this.key
             const connections = this.context.get<{ [key: string]: Node }>(connectionKey, {});
-            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE) {
+            if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG) {
                 Console.log(this.pinedTables)
                 // @ts-ignore
                 if (this.pinedTables != null) {
@@ -105,7 +105,7 @@ export class TableGroup extends Node {
                     this.parent.parent.pinedTablesMap['default-' + this.parent.label] = this.pinedTables;
                 }
                 connections[key] = NodeUtil.removeParent(this.parent.parent);
-            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG) {
+            } else if(this.parent.dbType == DatabaseType.MSSQL || this.parent.dbType == DatabaseType.PG || this.parent.dbType == DatabaseType.KINGBASE) {
                 // @ts-ignore
                 if (this.pinedTables != null) {
                     // schemeNode
@@ -113,7 +113,7 @@ export class TableGroup extends Node {
                     if (this.parent.parent.parent.pinedTablesMap == null) {
                         this.parent.parent.parent.pinedTablesMap = {};
                     }
-                    this.parent.parent.parent.pinedTablesMap['default-' + this.parent.label] = this.pinedTables;
+                    this.parent.parent.parent.pinedTablesMap[this.parent.parent.label + '-' + this.parent.label] = this.pinedTables;
                 }
                 connections[key] = NodeUtil.removeParent(this.parent.parent.parent);
             } else {

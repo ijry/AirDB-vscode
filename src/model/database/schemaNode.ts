@@ -71,7 +71,7 @@ export class SchemaNode extends Node implements CopyAble {
 
     public dropDatatabase() {
 
-        const target = this.dbType == DatabaseType.ORACLE
+        const target = this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG
             ? 'user'
             : (this.dbType == DatabaseType.MSSQL || this.dbType == DatabaseType.PG || this.dbType == DatabaseType.KINGBASE ? 'schema' : 'database');
         vscode.window.showInputBox({
