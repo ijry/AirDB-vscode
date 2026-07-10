@@ -33,6 +33,7 @@
 - [x] Task 3 added in-memory workspace configuration and local file-system watchers.
 - [x] Task 4 added built-in context keys, simple menu `when` filtering, and command discovery.
 - [x] Task 5 added file-backed extension secrets and a minimal local authentication provider registry.
+- [x] Task 6 added a reusable VS Code API compatibility fixture and smoke command.
 
 ## Verified Baseline
 
@@ -42,6 +43,7 @@
 - [x] `npm --prefix standalone run typecheck`
 - [x] `npm --prefix standalone run build`
 - [x] `npm --prefix standalone run smoke:extension-diagnostics-ipc`
+- [x] `npm --prefix standalone run smoke:vscode-api-compat-ipc`
 
 ## Current API Coverage
 
@@ -188,11 +190,11 @@ Missing high-priority surfaces:
 
 **Deliverable:** A reusable fixture extension exercises the phase-2 APIs and gives one command to detect regressions.
 
-- [ ] Add a fixture extension that touches configuration, watchers, extension exports, context keys, secrets, and command discovery.
-- [ ] Add `smoke:vscode-api-compat-ipc` to run the fixture through the real extension host process.
-- [ ] Keep the fixture separate from the default AirDB-only prepared extension set.
-- [ ] Document the smoke command in `standalone/README.md`.
-- [ ] Verify with `npm --prefix standalone run smoke:vscode-api-compat-ipc`.
+- [x] Add a fixture extension that touches configuration, watchers, extension exports, context keys, secrets, and command discovery.
+- [x] Add `smoke:vscode-api-compat-ipc` to run the fixture through the real extension host process.
+- [x] Keep the fixture separate from the default AirDB-only prepared extension set.
+- [x] Document the smoke command in `standalone/README.md`.
+- [x] Verify with `npm --prefix standalone run smoke:vscode-api-compat-ipc`.
 
 ## Merge Strategy
 

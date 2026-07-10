@@ -1,0 +1,31 @@
+{
+  "name": "compat-extension",
+  "publisher": "fixture",
+  "version": "0.0.1",
+  "main": "./extension.js",
+  "activationEvents": ["*"],
+  "contributes": {
+    "commands": [
+      {
+        "command": "compat.fixture.run",
+        "title": "Run Compatibility Fixture"
+      },
+      {
+        "command": "compat.fixture.extra",
+        "title": "Compatibility Fixture Extra"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "compat.fixture.run",
+          "when": "compat.fixture.ready"
+        },
+        {
+          "command": "compat.fixture.extra",
+          "when": "compat.fixture.mode == 'smoke'"
+        }
+      ]
+    }
+  }
+}

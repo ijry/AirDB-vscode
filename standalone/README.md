@@ -193,6 +193,16 @@ npm run smoke:extension-diagnostics-ipc
 
 The smoke test starts the Node extension host with a temporary fixture extension and verifies that `extension.diagnostics` reports the activated extension, contributed view, and command count.
 
+## VS Code API Compatibility IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run smoke:vscode-api-compat-ipc
+```
+
+The smoke test starts the Node extension host with the separate `extension-host/test/fixtures-compat` fixture and verifies configuration updates, file watchers, extension exports, context-key-filtered menus, secret storage, and command discovery. It does not change the default AirDB-only prepared extension set.
+
 ## Extension Diagnostics Troubleshooting
 
 The standalone workbench includes an extension diagnostics panel. Use it when a bundled VS Code-style extension does not appear or does not activate. The panel shows discovery, manifest parsing, contribution registration, main file resolution, module import, activation status, recent diagnostic events, command count, and contributed views. A failed extension should show the phase and error message that caused the failure.

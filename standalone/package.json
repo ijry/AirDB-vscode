@@ -32,6 +32,7 @@
     "smoke:notification-ipc": "node scripts/smoke-notification-ipc.mjs",
     "smoke:webview-ipc": "node scripts/smoke-webview-ipc.mjs",
     "smoke:extension-diagnostics-ipc": "node scripts/smoke-extension-diagnostics-ipc.mjs",
+    "smoke:vscode-api-compat-ipc": "node scripts/smoke-vscode-api-compat-ipc.mjs",
     "package": "node scripts/build-standalone.mjs"
   },
   "devDependencies": {
