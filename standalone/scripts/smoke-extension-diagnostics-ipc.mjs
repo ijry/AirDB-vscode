@@ -29,7 +29,7 @@ await fs.writeFile(
     "const vscode = require(\"vscode\");",
     "exports.activate = function activate() {",
     "  try {",
-    "    vscode.workspace.createFileSystemWatcher(\"**/*\");",
+    "    vscode.window.registerWebviewViewProvider(\"diagnostic.fixture\", {});",
     "  } catch {",
     "    // Expected: this smoke verifies unsupported API diagnostics without failing activation.",
     "  }",
@@ -101,7 +101,7 @@ function handleStdoutLine(line) {
     if (
       extension?.events?.some((event) =>
         event.phase === "unsupportedApi" &&
-        event.details?.api === "workspace.createFileSystemWatcher" &&
+        event.details?.api === "window.registerWebviewViewProvider" &&
         event.details?.code === "AIRDB_STANDALONE_UNSUPPORTED_VSCODE_API"
       )
     ) {

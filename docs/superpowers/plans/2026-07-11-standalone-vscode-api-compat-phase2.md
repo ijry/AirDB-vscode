@@ -30,6 +30,7 @@
 - [x] Merge conflict resolution preserved the AirDB-only prepared extension guard and diagnostics smoke script.
 - [x] Task 1 added the coverage matrix and unsupported API diagnostics path.
 - [x] Task 2 added the shared extension registry and activated export visibility.
+- [x] Task 3 added in-memory workspace configuration and local file-system watchers.
 
 ## Verified Baseline
 
@@ -50,6 +51,8 @@ Implemented or heavily exercised:
 - [x] `window.createTreeView` with root/child resolution and item command invocation.
 - [x] `window.createWebviewPanel`, `webview.html`, `webview.postMessage`, `onDidReceiveMessage`, `asWebviewUri`.
 - [x] `workspace.fs` file operations for `file:` URIs.
+- [x] `workspace.getConfiguration` with in-memory updates and `workspace.onDidChangeConfiguration` affected-section checks.
+- [x] `workspace.createFileSystemWatcher` for local `file:` workspace roots with basic glob support.
 - [x] `workspace.openTextDocument` and `window.showTextDocument` for supported document inputs.
 - [x] `workspace.workspaceFolders`, `workspace.name`, `workspace.rootPath`.
 - [x] `ExtensionContext` storage URIs, storage path aliases, `logUri`, `globalState`, `workspaceState`.
@@ -61,15 +64,14 @@ Implemented or heavily exercised:
 
 Partial or stubbed:
 
-- [ ] `workspace.getConfiguration` returns defaults only and does not persist or emit changes.
+- [ ] `workspace.getConfiguration` is in-memory only and does not persist scoped settings.
+- [ ] `workspace.createFileSystemWatcher` uses a limited glob matcher and does not provide full VS Code watcher parity.
 - [ ] Language provider registrations are stored but not invoked by the workbench.
 - [ ] Text editor events exist only as shim hooks; the workbench does not provide full editor lifecycle parity.
 - [ ] Activation events are not semantically evaluated like VS Code; bundled extensions are loaded directly.
 
 Missing high-priority surfaces:
 
-- [ ] `workspace.createFileSystemWatcher`.
-- [ ] `workspace.onDidChangeConfiguration`.
 - [ ] `commands.getCommands`.
 - [ ] Context keys through `setContext` and menu `when` evaluation.
 - [ ] `ExtensionContext.secrets` and `vscode.authentication`.
@@ -127,12 +129,12 @@ Missing high-priority surfaces:
 
 **Deliverable:** Extensions can read/update in-memory workspace configuration and subscribe to file watcher events for file-system-backed workspace paths.
 
-- [ ] Split configuration handling out of `workspace.ts`.
-- [ ] Implement section/key lookup with default values and per-section updates.
-- [ ] Add `onDidChangeConfiguration` events with affected-section checks.
-- [ ] Implement a disposable `createFileSystemWatcher` backed by Node `fs.watch` for local `file:` workspace roots.
-- [ ] Add tests for configuration read/update/change events and watcher create/change/delete notifications.
-- [ ] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim`.
+- [x] Split configuration handling out of `workspace.ts`.
+- [x] Implement section/key lookup with default values and per-section updates.
+- [x] Add `onDidChangeConfiguration` events with affected-section checks.
+- [x] Implement a disposable `createFileSystemWatcher` backed by Node `fs.watch` for local `file:` workspace roots.
+- [x] Add tests for configuration read/update/change events and watcher create/change/delete notifications.
+- [x] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim`.
 
 ### Task 4: Context Keys, Menus, And Command Discovery
 

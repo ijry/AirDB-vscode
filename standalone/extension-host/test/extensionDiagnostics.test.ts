@@ -98,9 +98,9 @@ describe("ExtensionDiagnosticsRegistry", () => {
     registry.recordUnsupportedApi({
       extensionPath: "C:/extensions/fixture",
       extensionId: id,
-      api: "workspace.createFileSystemWatcher",
+      api: "window.registerWebviewViewProvider",
       code: "AIRDB_STANDALONE_UNSUPPORTED_VSCODE_API",
-      message: "Not implemented in standalone host: workspace.createFileSystemWatcher"
+      message: "Not implemented in standalone host: window.registerWebviewViewProvider"
     });
 
     const extension = registry.snapshot().extensions[0];
@@ -108,9 +108,9 @@ describe("ExtensionDiagnosticsRegistry", () => {
     expect(extension.events.at(-1)).toMatchObject({
       phase: "unsupportedApi",
       status: "activating",
-      message: "Not implemented in standalone host: workspace.createFileSystemWatcher",
+      message: "Not implemented in standalone host: window.registerWebviewViewProvider",
       details: {
-        api: "workspace.createFileSystemWatcher",
+        api: "window.registerWebviewViewProvider",
         code: "AIRDB_STANDALONE_UNSUPPORTED_VSCODE_API"
       }
     });

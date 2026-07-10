@@ -1,4 +1,6 @@
 import path from "node:path";
+import { WorkspaceConfigurationStore } from "./configuration.js";
+import { createFileSystemWatcher, type GlobPattern } from "./fileSystemWatcher.js";
 import { openTextDocumentInput } from "./textDocument.js";
 import { Disposable, Uri, type WorkspaceFolder } from "./types.js";
 import { createWorkspaceFsApi } from "./workspaceFs.js";
@@ -6,6 +8,7 @@ import type { HostBridge } from "./window.js";
 
 export interface WorkspaceApiOptions {
   workspaceRoot?: string;
+  configurationStore?: WorkspaceConfigurationStore;
 }
 
 export function createWorkspaceApi(_extensionId: string, _bridge: HostBridge, options: WorkspaceApiOptions = {}) {
@@ -17,6 +20,7 @@ export function createWorkspaceApi(_extensionId: string, _bridge: HostBridge, op
     index: 0
   };
   const workspaceFolders = [workspaceFolder];
+  const configurationStore = options.configurationStore ?? new WorkspaceConfigurationStore();
 
   return {
     workspaceFolders,
@@ -32,22 +36,22 @@ export function createWorkspaceApi(_extensionId: string, _bridge: HostBridge, op
     onDidSaveTextDocument() {
       return new Disposable();
     },
+    onDidChangeConfiguration: configurationStore.onDidChangeConfiguration,
     getConfiguration(section?: string) {
-      return {
-        get<T>(_key: string, defaultValue?: T): T | undefined {
-          return defaultValue;
-        },
-        update() {
-          return Promise.resolve();
-        },
-        has() {
-          return false;
-        },
-        inspect() {
-          return undefined;
-        },
-        section
-      };
+      return configurationStore.getConfiguration(section);
+    },
+    createFileSystemWatcher(
+      globPattern: GlobPattern,
+      ignoreCreateEvents?: boolean,
+      ignoreChangeEvents?: boolean,
+      ignoreDeleteEvents?: boolean
+    ) {
+      return createFileSystemWatcher(globPattern, {
+        workspaceRoot,
+        ignoreCreateEvents,
+        ignoreChangeEvents,
+        ignoreDeleteEvents
+      });
     }
   };
 }

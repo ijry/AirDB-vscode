@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CommandRegistry, ExtensionRegistry, createVscodeApi } from "@airdb-standalone/vscode-shim";
+import { CommandRegistry, ExtensionRegistry, WorkspaceConfigurationStore, createVscodeApi } from "@airdb-standalone/vscode-shim";
 import type { HostBridge } from "@airdb-standalone/vscode-shim";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { createExtensionContext } from "./extensionContext.js";
@@ -24,6 +24,7 @@ export interface ExtensionLoaderOptions {
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
   extensionRegistry?: ExtensionRegistry;
+  workspaceConfigurationStore?: WorkspaceConfigurationStore;
   contributionRegistry?: ContributionRegistry;
   diagnostics?: ExtensionDiagnosticsRegistry;
   workspaceRoot?: string;
@@ -35,11 +36,13 @@ let extensionImportNonce = 0;
 export class ExtensionLoader {
   readonly commandRegistry: CommandRegistry;
   readonly extensionRegistry: ExtensionRegistry;
+  readonly workspaceConfigurationStore: WorkspaceConfigurationStore;
   readonly contributionRegistry: ContributionRegistry;
 
   constructor(private readonly options: ExtensionLoaderOptions) {
     this.commandRegistry = options.commandRegistry ?? new CommandRegistry();
     this.extensionRegistry = options.extensionRegistry ?? new ExtensionRegistry();
+    this.workspaceConfigurationStore = options.workspaceConfigurationStore ?? new WorkspaceConfigurationStore();
     this.contributionRegistry = options.contributionRegistry ?? new ContributionRegistry();
   }
 
@@ -102,6 +105,7 @@ export class ExtensionLoader {
         commandRegistry: this.commandRegistry,
         extensions: this.extensionRegistry,
         workspaceRoot: this.options.workspaceRoot,
+        workspaceConfigurationStore: this.workspaceConfigurationStore,
         unsupportedApiReporter: (event) =>
           this.options.diagnostics?.recordUnsupportedApi({
             extensionPath,

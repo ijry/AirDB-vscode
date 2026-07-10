@@ -1,4 +1,5 @@
 import { CommandRegistry, createCommandsApi } from "./commands.js";
+import { WorkspaceConfigurationStore } from "./configuration.js";
 import { createEnvApi } from "./env.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
 import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
@@ -21,6 +22,7 @@ export interface VscodeApiOptions {
   commandRegistry?: CommandRegistry;
   extensions?: ExtensionRegistry | ExtensionRegistryRecordInput[];
   workspaceRoot?: string;
+  workspaceConfigurationStore?: WorkspaceConfigurationStore;
   unsupportedApiReporter?: UnsupportedApiReporter;
 }
 
@@ -41,13 +43,10 @@ export function createVscodeApi(options: VscodeApiOptions) {
     registerWebviewViewProvider: ReturnType<typeof createUnsupportedApiFunction>;
   };
   windowApi.registerWebviewViewProvider = unsupportedApi("window.registerWebviewViewProvider");
-  const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, { workspaceRoot: options.workspaceRoot }) as
-    ReturnType<typeof createWorkspaceApi> & {
-      createFileSystemWatcher: ReturnType<typeof createUnsupportedApiFunction>;
-      onDidChangeConfiguration: ReturnType<typeof createUnsupportedApiFunction>;
-    };
-  workspaceApi.createFileSystemWatcher = unsupportedApi("workspace.createFileSystemWatcher");
-  workspaceApi.onDidChangeConfiguration = unsupportedApi("workspace.onDidChangeConfiguration");
+  const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, {
+    workspaceRoot: options.workspaceRoot,
+    configurationStore: options.workspaceConfigurationStore
+  });
 
   return {
     ...types,

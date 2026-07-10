@@ -39,12 +39,12 @@ describe("unsupported VS Code API reporting", () => {
     const events: UnsupportedApiEvent[] = [];
     const api = createApi(events);
 
-    expect(() => api.workspace.createFileSystemWatcher("**/*")).toThrow(UnsupportedApiError);
+    expect(() => api.window.registerWebviewViewProvider("fixture.view", {})).toThrow(UnsupportedApiError);
 
     expect(events).toEqual([{
-      api: "workspace.createFileSystemWatcher",
+      api: "window.registerWebviewViewProvider",
       code: UNSUPPORTED_VSCODE_API_ERROR_CODE,
-      message: "Not implemented in standalone host: workspace.createFileSystemWatcher"
+      message: "Not implemented in standalone host: window.registerWebviewViewProvider"
     }]);
   });
 
