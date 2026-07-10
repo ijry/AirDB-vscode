@@ -219,6 +219,7 @@
           [
             'MySQL',
             'Doris',
+            'TDengine',
             'PostgreSQL',
             'Redshift',
             'Snowflake',
@@ -259,7 +260,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'Doris', 'PostgreSQL', 'Redshift', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
+        ['MySQL', 'Doris', 'TDengine', 'PostgreSQL', 'Redshift', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -341,6 +342,12 @@ const dbLogoMap = {
     text: "DO",
     bg: "#ecfdf5",
     color: "#0f766e",
+  },
+  TDengine: {
+    icon: require("@/../resources/icon/tdengine.svg"),
+    text: "TD",
+    bg: "#eef2ff",
+    color: "#0041CE",
   },
   DuckDB: {
     icon: require("@/../resources/icon/duckdb.svg"),
@@ -488,6 +495,7 @@ export default {
         "Snowflake",
         "ClickHouse",
         "Doris",
+        "TDengine",
         "DuckDB",
         "KingbaseES",
         "Dameng",
@@ -676,6 +684,15 @@ export default {
           this.connectionOption.port = 9030;
           this.connectionOption.database = "";
           this.connectionOption.useSSL = false;
+          break;
+        case "TDengine":
+          this.connectionOption.user = "root";
+          this.connectionOption.password = "taosdata";
+          this.connectionOption.port = 6041;
+          this.connectionOption.database = "";
+          this.connectionOption.useSSL = false;
+          this.connectionOption.connectTimeout = 5000;
+          this.connectionOption.requestTimeout = 10000;
           break;
         case "DuckDB":
           this.connectionOption.user = null;

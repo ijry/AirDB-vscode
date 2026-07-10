@@ -23,6 +23,7 @@ import { KingbaseDialect } from "./dialect/kingbaseDialect";
 import { DamengDialect } from "./dialect/damengDialect";
 import { ClickHouseDialect } from "./dialect/clickHouseDialect";
 import { DorisDialect } from "./dialect/dorisDialect";
+import { TDengineDialect } from "./dialect/tdengineDialect";
 import { DuckDBDialect } from "./dialect/duckdbDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { RedshiftDialect } from "./dialect/redshiftDialect";
@@ -31,6 +32,7 @@ import { SqlDialect } from "./dialect/sqlDialect";
 import { DumpService } from "./dump/dumpService";
 import { KingbaseDumpService } from "./dump/kingbaseDumpService";
 import { DamengDumpService } from "./dump/damengDumpService";
+import { ImportService } from "./import/importService";
 import { MysqlImportService } from "./import/mysqlImportService";
 import { PostgresqlImortService } from "./import/postgresqlImortService";
 import { SqlServerImportService } from "./import/sqlServerImportService";
@@ -54,6 +56,8 @@ import { SQLSymbolProvide } from "@/provider/sqlSymbolProvide";
 import { MysqlDumpService } from "./dump/mysqlDumpService";
 import { UserCenterService } from "./user/UserCenterService"
 import { Console } from "@/common/Console";
+
+class GenericImportService extends ImportService { }
 
 export class ServiceManager {
 
@@ -143,6 +147,8 @@ export class ServiceManager {
                 return new MysqlDumpService()
             case DatabaseType.DORIS:
                 return new MysqlDumpService()
+            case DatabaseType.TDENGINE:
+                return new DumpService()
             case DatabaseType.KINGBASE:
                 return new KingbaseDumpService()
             case DatabaseType.DAMENG:
@@ -156,6 +162,8 @@ export class ServiceManager {
         switch (dbType) {
             case DatabaseType.DORIS:
                 return new MysqlImportService();
+            case DatabaseType.TDENGINE:
+                return new GenericImportService();
             case DatabaseType.MSSQL:
                 return new SqlServerImportService()
             case DatabaseType.PG:
@@ -183,6 +191,8 @@ export class ServiceManager {
                 return new ClickHouseDialect();
             case DatabaseType.DORIS:
                 return new DorisDialect();
+            case DatabaseType.TDENGINE:
+                return new TDengineDialect();
             case DatabaseType.DUCKDB:
                 return new DuckDBDialect();
             case DatabaseType.PG:
@@ -220,6 +230,8 @@ export class ServiceManager {
                 return new PostgreSqlPageService();
             case DatabaseType.DORIS:
                 return new MysqlPageSerivce();
+            case DatabaseType.TDENGINE:
+                return new PostgreSqlPageService();
             case DatabaseType.DUCKDB:
                 return new PostgreSqlPageService();
             case DatabaseType.KINGBASE:

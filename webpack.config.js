@@ -31,6 +31,7 @@ module.exports = [
             'mongodb-client-encryption':'mongodb-client-encryption',
             oracledb: 'commonjs oracledb',
             '@clickhouse/client': 'commonjs @clickhouse/client',
+            '@tdengine/websocket': 'commonjs @tdengine/websocket',
             duckdb: 'commonjs duckdb',
             amqplib: 'commonjs amqplib',
             '@aws-sdk/client-s3': 'commonjs @aws-sdk/client-s3',

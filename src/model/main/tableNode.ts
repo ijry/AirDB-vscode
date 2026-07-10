@@ -97,9 +97,12 @@ export class TableNode extends Node implements CopyAble {
 
     public async showSource(open = true) {
         let sql: string;
-        if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.SQLITE || this.dbType == DatabaseType.DORIS) {
+        if (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.SQLITE || this.dbType == DatabaseType.DORIS || this.dbType == DatabaseType.TDENGINE) {
             const sourceResule = await this.execute<any[]>(this.dialect.showTableSource(this.schema, this.table))
-            sql = sourceResule[0]['Create Table'];
+            const sourceRow = sourceResule[0] || {};
+            const sourceKey = Object.keys(sourceRow).find((key) => /create.*table/i.test(key));
+            const sourceKeyValue = sourceKey ? sourceRow[sourceKey] : null;
+            sql = (sourceRow['Create Table'] || sourceRow['create_table'] || sourceKeyValue || Object.values(sourceRow)[0] || "") as string;
             if (this.dbType == DatabaseType.SQLITE) {
                 sql = sql.replace(/\\n/g, '\n');
             }

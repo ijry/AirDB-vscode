@@ -27,6 +27,7 @@ import { DamengConnection } from "./connect/damengConnection";
 import { KafkaConnection } from "./connect/kafkaConnection";
 import { ClickHouseConnection } from "./connect/clickHouseConnection";
 import { DorisConnection } from "./connect/dorisConnection";
+import { TDengineConnection } from "./connect/tdengineConnection";
 import { DuckDBConnection } from "./connect/duckdbConnection";
 import { RabbitMQConnection } from "./connect/rabbitmqConnection";
 import { S3Connection } from "./connect/s3Connection";
@@ -180,6 +181,8 @@ export class ConnectionManager {
                 return new ClickHouseConnection(opt);
             case DatabaseType.DORIS:
                 return new DorisConnection(opt);
+            case DatabaseType.TDENGINE:
+                return new TDengineConnection(opt);
             case DatabaseType.DUCKDB:
                 return new DuckDBConnection(opt);
             case DatabaseType.ES:

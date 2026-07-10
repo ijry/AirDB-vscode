@@ -1231,6 +1231,7 @@
 		"@aws-sdk/client-s3": "^3.1085.0",
 		"@aws-sdk/s3-request-presigner": "^3.1085.0",
 		"@clickhouse/client": "^1.20.0",
+		"@tdengine/websocket": "^3.5.0",
 		"@types/amqplib": "^0.10.8",
 		"@vscode/l10n": "^0.0.18",
 		"amqplib": "^2.0.1",
