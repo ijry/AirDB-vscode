@@ -31,6 +31,7 @@ import { TDengineConnection } from "./connect/tdengineConnection";
 import { DuckDBConnection } from "./connect/duckdbConnection";
 import { RabbitMQConnection } from "./connect/rabbitmqConnection";
 import { S3Connection } from "./connect/s3Connection";
+import { Neo4jConnection } from "./connect/neo4jConnection";
 
 interface ConnectionWrapper {
     connection: IConnection;
@@ -198,6 +199,8 @@ export class ConnectionManager {
                 return new RabbitMQConnection(opt);
             case DatabaseType.S3:
                 return new S3Connection(opt);
+            case DatabaseType.NEO4J:
+                return new Neo4jConnection(opt);
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
             default:

@@ -230,6 +230,7 @@
             'Kafka',
             'RabbitMQ',
             'S3',
+            'Neo4j',
           ].includes(connectionOption.dbType)
         "
       >
@@ -260,7 +261,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'Doris', 'TDengine', 'PostgreSQL', 'Redshift', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
+        ['MySQL', 'Doris', 'TDengine', 'PostgreSQL', 'Redshift', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ', 'Neo4j'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -391,6 +392,12 @@ const dbLogoMap = {
     bg: "#eafaf1",
     color: "#16a34a",
   },
+  Neo4j: {
+    icon: require("@/../resources/icon/neo4j.svg"),
+    text: "N4J",
+    bg: "#e8f7f3",
+    color: "#018b74",
+  },
   Redis: {
     icon: require("@/../resources/icon/redis.svg"),
     text: "RD",
@@ -503,6 +510,7 @@ export default {
         "SqlServer",
         "SQLite",
         "MongoDB",
+        "Neo4j",
         "Redis",
         "ElasticSearch",
         "Kafka",
@@ -777,6 +785,15 @@ export default {
           this.connectionOption.user = null;
           this.connectionOption.password = null;
           this.connectionOption.port = 27017;
+          break;
+        case "Neo4j":
+          this.connectionOption.user = "neo4j";
+          this.connectionOption.password = "";
+          this.connectionOption.port = 7687;
+          this.connectionOption.database = "neo4j";
+          this.connectionOption.useSSL = false;
+          this.connectionOption.connectTimeout = 5000;
+          this.connectionOption.requestTimeout = 10000;
           break;
         case "FTP":
           this.connectionOption.port = 21;

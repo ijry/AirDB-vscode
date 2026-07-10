@@ -164,6 +164,7 @@ node_modules/*
 !node_modules/moment/**
 !node_modules/moment-timezone/**
 !node_modules/ms/**
+!node_modules/neo4j-driver/**
 !node_modules/node-fetch/**
 !node_modules/node-gyp-build/**
 !node_modules/once/**

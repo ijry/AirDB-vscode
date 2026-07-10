@@ -36,6 +36,7 @@ module.exports = [
             amqplib: 'commonjs amqplib',
             '@aws-sdk/client-s3': 'commonjs @aws-sdk/client-s3',
             '@aws-sdk/s3-request-presigner': 'commonjs @aws-sdk/s3-request-presigner',
+            'neo4j-driver': 'commonjs neo4j-driver',
             'snowflake-sdk': 'commonjs snowflake-sdk'
         },
         resolve: {
