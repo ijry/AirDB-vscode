@@ -52,7 +52,7 @@ export enum Confirm {
 export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", KINGBASE = "KingbaseES", DAMENG = "Dameng", SQLITE = "SQLite",
     MSSQL = "SqlServer", ORACLE = "Oracle", MONGO_DB="MongoDB",
-    CLICKHOUSE = "ClickHouse", DUCKDB = "DuckDB",
+    CLICKHOUSE = "ClickHouse", DORIS = "Doris", DUCKDB = "DuckDB",
     ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", RABBITMQ = "RabbitMQ", SSH="SSH",FTP="FTP"
 }
 

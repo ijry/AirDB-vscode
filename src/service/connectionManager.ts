@@ -24,6 +24,7 @@ import { KingbaseConnection } from "./connect/kingbaseConnection";
 import { DamengConnection } from "./connect/damengConnection";
 import { KafkaConnection } from "./connect/kafkaConnection";
 import { ClickHouseConnection } from "./connect/clickHouseConnection";
+import { DorisConnection } from "./connect/dorisConnection";
 import { DuckDBConnection } from "./connect/duckdbConnection";
 import { RabbitMQConnection } from "./connect/rabbitmqConnection";
 
@@ -170,6 +171,8 @@ export class ConnectionManager {
                 return new SqliteConnection(opt);
             case DatabaseType.CLICKHOUSE:
                 return new ClickHouseConnection(opt);
+            case DatabaseType.DORIS:
+                return new DorisConnection(opt);
             case DatabaseType.DUCKDB:
                 return new DuckDBConnection(opt);
             case DatabaseType.ES:
