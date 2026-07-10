@@ -1110,6 +1110,7 @@
 		"g2": "^2.3.13",
 		"ioredis": "^4.23.0",
 		"json-format-highlight": "^1.0.4",
+		"kafkajs": "^2.2.4",
 		"lodash": "^4.17.20",
 		"lodash.defaults": "^4.1.0",
 		"mongodb": "^3.6.9",
