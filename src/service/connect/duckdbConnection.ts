@@ -1,10 +1,15 @@
 import { Node } from "@/model/interface/node";
 import { EventEmitter } from "events";
-import * as duckdb from "duckdb";
 import * as vscode from "vscode";
 import { IConnection, queryCallback } from "./connection";
 
 type DuckDbFactory = (path: string) => any;
+type DuckDbModule = { Database: new (path: string) => any };
+
+function createDuckDbDatabase(dbPath: string): any {
+    const duckdb = require("duckdb") as DuckDbModule;
+    return new duckdb.Database(dbPath);
+}
 
 function fieldsFromRows(rows: any[]): any[] {
     const first = rows && rows[0];
@@ -17,7 +22,7 @@ export class DuckDBConnection extends IConnection {
     private connection: any;
     private connected = false;
 
-    constructor(private node: Node, private databaseFactory: DuckDbFactory = (dbPath) => new duckdb.Database(dbPath)) {
+    constructor(private node: Node, private databaseFactory: DuckDbFactory = createDuckDbDatabase) {
         super();
     }
 

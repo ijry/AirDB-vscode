@@ -3,15 +3,23 @@ import { EventEmitter } from "events";
 import { IConnection, queryCallback } from "./connection";
 import { adaptOracleResult } from "./oracleResultAdapter";
 
-const oracledb = require("oracledb");
+type OracleDbModule = {
+    OUT_FORMAT_OBJECT: any;
+    getConnection(config: any): Promise<any>;
+};
+
+function loadOracleDb(): OracleDbModule {
+    return require("oracledb") as OracleDbModule;
+}
 
 export class OracleConnection extends IConnection {
     private connection: any;
     private inTransaction = false;
     private readonly connectionConfig: any;
     private readonly requestTimeout: number;
+    private oracleDb: OracleDbModule;
 
-    constructor(node: Node) {
+    constructor(node: Node, private readonly oracleDbLoader: () => OracleDbModule = loadOracleDb) {
         super();
         const port = node.port || 1521;
         const serviceName = node.database || "";
@@ -36,6 +44,7 @@ export class OracleConnection extends IConnection {
     }
 
     connect(callback: (err: Error) => void): void {
+        const oracledb = this.getOracleDb();
         oracledb.getConnection(this.connectionConfig)
             .then((connection) => {
                 this.connection = connection;
@@ -70,6 +79,7 @@ export class OracleConnection extends IConnection {
             return event;
         }
 
+        const oracledb = this.getOracleDb();
         this.connection.execute(sql, binds, {
             outFormat: oracledb.OUT_FORMAT_OBJECT,
             autoCommit: !this.inTransaction,
@@ -147,5 +157,12 @@ export class OracleConnection extends IConnection {
     private isFatalError(err: any): boolean {
         const errorNum = err?.errorNum;
         return errorNum == 28 || errorNum == 3113 || errorNum == 3114 || errorNum == 3135 || errorNum == 1012;
+    }
+
+    private getOracleDb(): OracleDbModule {
+        if (!this.oracleDb) {
+            this.oracleDb = this.oracleDbLoader();
+        }
+        return this.oracleDb;
     }
 }

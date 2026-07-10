@@ -12,7 +12,18 @@ build({
     sourceRoot:__dirname,
     minify:false,
     watch:false,
-    external: ['vscode', 'pg-native', 'cardinal', 'aws4', 'mongodb-client-encryption'],
+    external: [
+        'vscode',
+        'pg-native',
+        'cardinal',
+        'encoding',
+        'aws4',
+        'mongodb-client-encryption',
+        'oracledb',
+        '@clickhouse/client',
+        'duckdb',
+        'amqplib',
+    ],
     plugins: [
         {
             name: 'build notice',

@@ -12,6 +12,16 @@ npm install
 npm run check:workspace
 ```
 
+After running `npm run prepare:extensions`, use `npm run check:prepared-extensions` to verify the prepared standalone extension set contains only AirDB.
+
+For a full pre-package verification pass, run:
+
+```bash
+npm run verify
+```
+
+This runs workspace checks, typecheck, build, AirDB extension preparation, the default extension-set guard, unit tests, and the key AirDB IPC smoke tests. It does not build MSI/NSIS installers.
+
 ## Running The Standalone Host
 
 ```bash
@@ -38,6 +48,16 @@ Remove-Item Env:\AIRDB_STANDALONE_NODE_RUNTIME
 
 `AIRDB_STANDALONE_NODE_RUNTIME` may point to a Node executable, a directory containing `node.exe`, or a directory containing `<platform>/node.exe`. For Windows x64 packaging, the staged runtime path is `standalone/runtime/node/windows-x64/node.exe`. The application still falls back to system `node` during development.
 
+## NSIS Installer Smoke Test
+
+```powershell
+cd standalone
+npm run package
+npm run smoke:nsis-install
+```
+
+This Windows-only smoke test installs the generated NSIS setup executable into a temporary directory, verifies that the installed extension set contains only AirDB, starts the installed `airdb-standalone.exe`, runs `uninstall.exe /S`, and checks that no install directory, HKCU registry key, or `airdb-standalone` process remains. It refuses to run if an existing HKCU AirDB Standalone install is detected. Set `AIRDB_STANDALONE_NSIS_INSTALLER` to test a specific setup executable.
+
 ## Tree IPC Smoke Test
 
 ```bash
@@ -49,6 +69,18 @@ npm run smoke:tree-ipc
 ```
 
 The smoke test starts the Node extension host, waits for AirDB activation, sends a `tree.resolveChildren` request for `activitybar.airdb.sql`, and verifies a successful response.
+
+## Isolated Extension IPC Smoke Test
+
+```bash
+cd standalone
+npm run build
+npm run build:airdb
+npm run prepare:extensions
+npm run smoke:isolated-extension-ipc
+```
+
+The smoke test copies the prepared AirDB extension into a temporary extension root, starts the Node extension host with isolated storage, resolves `activitybar.airdb.sql`, and verifies activation does not depend on repository-root `node_modules`.
 
 ## Dialog IPC Smoke Test
 

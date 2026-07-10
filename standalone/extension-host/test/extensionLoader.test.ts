@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CommandRegistry } from "@airdb-standalone/vscode-shim";
-import { ExtensionLoader } from "../src/extensionLoader";
+import { ExtensionLoader, resolveExtensionActivate } from "../src/extensionLoader";
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -11,6 +11,12 @@ function normalizePath(value: string): string {
 }
 
 describe("ExtensionLoader", () => {
+  it("resolves activate from CommonJS default import namespaces", () => {
+    const activate = () => ({ activated: true });
+
+    expect(resolveExtensionActivate({ default: { activate } })).toBe(activate);
+  });
+
   it("loads a built-in extension and registers its command", async () => {
     const commandRegistry = new CommandRegistry();
     const loader = new ExtensionLoader({
@@ -44,6 +50,27 @@ describe("ExtensionLoader", () => {
     await loader.loadAll();
 
     await expect(commandRegistry.executeCommand("fixture.lazyRequire")).resolves.toBe("hello");
+  });
+
+  it("activates CommonJS extensions exposed through a default export", async () => {
+    const commandRegistry = new CommandRegistry();
+    const loader = new ExtensionLoader({
+      extensionsDir: path.join(testDir, "fixtures-commonjs-default"),
+      storageRoot: path.join(testDir, ".data"),
+      commandRegistry,
+      bridge: {
+        request: async () => undefined as never,
+        notify: () => undefined
+      }
+    });
+
+    const loaded = await loader.loadExtension(
+      path.join(testDir, "fixtures-commonjs-default", "commonjs-default-extension")
+    );
+
+    expect(loaded.id).toBe("fixture.commonjs-default-extension");
+    expect(loaded.exports).toEqual({ activated: true });
+    await expect(commandRegistry.executeCommand("fixture.commonjsDefault")).resolves.toBe("commonjs-default");
   });
 
   it("passes workspace root and context paths into loaded extensions", async () => {

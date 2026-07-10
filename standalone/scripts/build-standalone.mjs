@@ -121,6 +121,7 @@ function validatePackagedResolverLayout() {
 run(["run", "build"]);
 run(["run", "build:airdb"]);
 run(["run", "prepare:extensions"]);
+run(["run", "check:prepared-extensions"]);
 createPackagedDependencyLayout();
 const packagedNodeRuntime = ensureNodeRuntimeStaged({
   standaloneRoot,

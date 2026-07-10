@@ -79,9 +79,31 @@ export class ExtensionLoader {
       storageRoot: path.join(this.options.storageRoot, extensionId),
       workspaceRoot: this.options.workspaceRoot
     });
-    const exports = extensionModule.activate ? await extensionModule.activate(context) : undefined;
+    const activate = resolveExtensionActivate(extensionModule);
+    const exports = activate ? await activate(context) : undefined;
     return { id: extensionId, extensionPath, manifest, exports };
   }
+}
+
+type ExtensionActivate = (context: ReturnType<typeof createExtensionContext>) => unknown | Promise<unknown>;
+
+export function resolveExtensionActivate(extensionModule: unknown): ExtensionActivate | undefined {
+  return readActivate(extensionModule) ?? readActivate(readDefaultExport(extensionModule));
+}
+
+function readActivate(value: unknown): ExtensionActivate | undefined {
+  if (isRecord(value) && typeof value.activate === "function") {
+    return value.activate as ExtensionActivate;
+  }
+  return undefined;
+}
+
+function readDefaultExport(value: unknown): unknown {
+  return isRecord(value) ? value.default : undefined;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return (typeof value === "object" && value !== null) || typeof value === "function";
 }
 
 async function resolveMainFile(extensionPath: string, mainFile: string): Promise<string> {

@@ -1,9 +1,13 @@
 import { Node } from "@/model/interface/node";
 import { EventEmitter } from "events";
-import { createClient } from "@clickhouse/client";
 import { IConnection, queryCallback } from "./connection";
 
 type ClickHouseFactory = (config: any) => any;
+
+function createDefaultClickHouseClient(config: any): any {
+    const { createClient } = require("@clickhouse/client") as { createClient: ClickHouseFactory };
+    return createClient(config);
+}
 
 function buildUrl(node: Node | any): string {
     if (node.connectionUrl) return node.connectionUrl;
@@ -35,7 +39,7 @@ export class ClickHouseConnection extends IConnection {
     private client: any;
     private connected = false;
 
-    constructor(private node: Node, private clientFactory: ClickHouseFactory = createClient) {
+    constructor(private node: Node, private clientFactory: ClickHouseFactory = createDefaultClickHouseClient) {
         super();
         this.client = clientFactory(createClickHouseConfig(node));
     }

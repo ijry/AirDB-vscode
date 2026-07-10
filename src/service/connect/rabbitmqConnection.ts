@@ -1,7 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { Node } from "@/model/interface/node";
 import { IConnection, queryCallback } from "./connection";
-import * as amqp from "amqplib";
 
 export interface RabbitMQMessage {
     payload: string;
@@ -22,6 +21,11 @@ export interface RabbitMQPublishOptions {
 }
 
 type AmqpConnect = (url: string, options?: any) => Promise<any>;
+
+function connectRabbitMQ(url: string, options?: any): Promise<any> {
+    const amqp = require("amqplib") as { connect: AmqpConnect };
+    return amqp.connect(url, options);
+}
 
 function trimSlash(value: string): string {
     return value ? value.replace(/\/+$/, "") : value;
@@ -58,7 +62,7 @@ export class RabbitMQConnection extends IConnection {
 
     constructor(
         private node: Node,
-        private amqpConnect: AmqpConnect = amqp.connect,
+        private amqpConnect: AmqpConnect = connectRabbitMQ,
         managementClient?: AxiosInstance
     ) {
         super();
