@@ -9,17 +9,17 @@ export class DamengDialect extends OracleDialect {
         return value.toUpperCase();
     }
 
-    private quoteLiteral(value: string): string {
+    private quoteDamengLiteral(value: string): string {
         return String(value || "").replace(/'/g, "''");
     }
 
-    private owner(schema: string): string {
-        return this.quoteLiteral(this.normalizeDamengIdentifier(schema));
+    private damengOwner(schema: string): string {
+        return this.quoteDamengLiteral(this.normalizeDamengIdentifier(schema));
     }
 
-    private objectName(name: string): string {
+    private damengObjectName(name: string): string {
         const parts = String(name || "").split(".");
-        return this.quoteLiteral(this.normalizeDamengIdentifier(parts[parts.length - 1]));
+        return this.quoteDamengLiteral(this.normalizeDamengIdentifier(parts[parts.length - 1]));
     }
 
     showSchemas(): string {
@@ -34,7 +34,7 @@ ORDER BY USERNAME`;
     }
 
     showTables(database: string): string {
-        const owner = this.owner(database);
+        const owner = this.damengOwner(database);
         return `SELECT t.TABLE_NAME "name", NVL(c.COMMENTS, '') "comment"
 FROM ALL_TABLES t
 LEFT JOIN ALL_TAB_COMMENTS c
@@ -44,7 +44,7 @@ ORDER BY t.TABLE_NAME`;
     }
 
     showViews(database: string): string {
-        const owner = this.owner(database);
+        const owner = this.damengOwner(database);
         return `SELECT VIEW_NAME "name"
 FROM ALL_VIEWS
 WHERE OWNER = '${owner}'
@@ -52,8 +52,8 @@ ORDER BY VIEW_NAME`;
     }
 
     showColumns(database: string, table: string): string {
-        const owner = this.owner(database);
-        const tableName = this.objectName(table);
+        const owner = this.damengOwner(database);
+        const tableName = this.damengObjectName(table);
         return `SELECT c.COLUMN_NAME "name",
        c.DATA_TYPE "simpleType",
        CASE
@@ -80,7 +80,7 @@ ORDER BY c.COLUMN_ID`;
     }
 
     showProcedures(database: string): string {
-        const owner = this.owner(database);
+        const owner = this.damengOwner(database);
         return `SELECT OBJECT_NAME "ROUTINE_NAME"
 FROM ALL_OBJECTS
 WHERE OWNER = '${owner}' AND OBJECT_TYPE = 'PROCEDURE'
@@ -88,7 +88,7 @@ ORDER BY OBJECT_NAME`;
     }
 
     showFunctions(database: string): string {
-        const owner = this.owner(database);
+        const owner = this.damengOwner(database);
         return `SELECT OBJECT_NAME "ROUTINE_NAME"
 FROM ALL_OBJECTS
 WHERE OWNER = '${owner}' AND OBJECT_TYPE = 'FUNCTION'
@@ -96,7 +96,7 @@ ORDER BY OBJECT_NAME`;
     }
 
     showTriggers(database: string): string {
-        const owner = this.owner(database);
+        const owner = this.damengOwner(database);
         return `SELECT TRIGGER_NAME "TRIGGER_NAME"
 FROM ALL_TRIGGERS
 WHERE OWNER = '${owner}'
@@ -172,8 +172,8 @@ END;
     }
 
     private sourceByMetadata(objectType: string, schema: string, name: string, alias: string): string {
-        const owner = this.owner(schema);
-        const objectName = this.objectName(name);
+        const owner = this.damengOwner(schema);
+        const objectName = this.damengObjectName(name);
         return `SELECT DBMS_METADATA.GET_DDL('${objectType}', '${objectName}', '${owner}') "${alias}",
        DBMS_METADATA.GET_DDL('${objectType}', '${objectName}', '${owner}') "CREATE_SQL"
 FROM DUAL`;
