@@ -92,6 +92,7 @@
     <Kafka v-else-if="connectionOption.dbType == 'Kafka'" :connectionOption="connectionOption" />
     <RabbitMQ v-else-if="connectionOption.dbType == 'RabbitMQ'" :connectionOption="connectionOption" />
     <S3 v-else-if="connectionOption.dbType == 'S3'" :connectionOption="connectionOption" />
+    <Snowflake v-else-if="connectionOption.dbType == 'Snowflake'" :connectionOption="connectionOption" />
     <DuckDB
       v-else-if="connectionOption.dbType == 'DuckDB'"
       :connectionOption="connectionOption"
@@ -220,6 +221,7 @@
             'Doris',
             'PostgreSQL',
             'Redshift',
+            'Snowflake',
             'ClickHouse',
             'KingbaseES',
             'MongoDB',
@@ -288,6 +290,7 @@ import Kafka from "./component/Kafka.vue";
 import DuckDB from "./component/DuckDB.vue";
 import RabbitMQ from "./component/RabbitMQ.vue";
 import S3 from "./component/S3.vue";
+import Snowflake from "./component/Snowflake.vue";
 import SQLite from "./component/SQLite.vue";
 import SQLServer from "./component/SQLServer.vue";
 import SSH from "./component/SSH.vue";
@@ -320,6 +323,12 @@ const dbLogoMap = {
     text: "RS",
     bg: "#f5edff",
     color: "#6d28d9",
+  },
+  Snowflake: {
+    icon: require("@/../resources/icon/snowflake.svg"),
+    text: "SF",
+    bg: "#e0f7ff",
+    color: "#0284c7",
   },
   ClickHouse: {
     icon: require("@/../resources/icon/clickhouse.svg"),
@@ -421,7 +430,7 @@ const dbLogoMap = {
 
 export default {
   name: "Connect",
-  components: { ElasticSearch, Kafka, DuckDB, RabbitMQ, S3, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
+  components: { ElasticSearch, Kafka, DuckDB, RabbitMQ, S3, Snowflake, SQLite, SQLServer, SSH, SSL, FTP, LingyunUser },
   data() {
     return {
       dialogVisible: false,
@@ -436,6 +445,11 @@ export default {
         password: "",
         encoding: "utf8",
         database: null,
+        schema: "",
+        account: "",
+        warehouse: "",
+        role: "",
+        authenticator: "",
         usingSSH: false,
         showHidden: false,
         includeDatabases: null,
@@ -471,6 +485,7 @@ export default {
         "MySQL",
         "PostgreSQL",
         "Redshift",
+        "Snowflake",
         "ClickHouse",
         "Doris",
         "DuckDB",
@@ -629,6 +644,21 @@ export default {
           this.connectionOption.encrypt = false;
           this.connectionOption.port = 5439;
           this.connectionOption.database = "dev";
+          this.connectionOption.useSSL = true;
+          this.connectionOption.connectTimeout = 5000;
+          this.connectionOption.requestTimeout = 10000;
+          break;
+        case "Snowflake":
+          this.connectionOption.account = "";
+          this.connectionOption.host = "";
+          this.connectionOption.port = 443;
+          this.connectionOption.user = "";
+          this.connectionOption.password = "";
+          this.connectionOption.database = "";
+          this.connectionOption.schema = "PUBLIC";
+          this.connectionOption.warehouse = "";
+          this.connectionOption.role = "";
+          this.connectionOption.authenticator = "SNOWFLAKE";
           this.connectionOption.useSSL = true;
           this.connectionOption.connectTimeout = 5000;
           this.connectionOption.requestTimeout = 10000;

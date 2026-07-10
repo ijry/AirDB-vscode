@@ -1,0 +1,22 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Snowflake">
+  <title>Snowflake</title>
+  <rect width="128" height="128" rx="24" fill="#29B5E8"/>
+  <g stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M64 22V106"/>
+    <path d="M27.63 43L100.37 85"/>
+    <path d="M27.63 85L100.37 43"/>
+    <path d="M64 22L50 36"/>
+    <path d="M64 22L78 36"/>
+    <path d="M64 106L50 92"/>
+    <path d="M64 106L78 92"/>
+    <path d="M27.63 43L46.75 37.88"/>
+    <path d="M27.63 43L32.75 62.12"/>
+    <path d="M100.37 85L95.25 65.88"/>
+    <path d="M100.37 85L81.25 90.12"/>
+    <path d="M27.63 85L32.75 65.88"/>
+    <path d="M27.63 85L46.75 90.12"/>
+    <path d="M100.37 43L81.25 37.88"/>
+    <path d="M100.37 43L95.25 62.12"/>
+  </g>
+  <circle cx="64" cy="64" r="10" fill="#FFFFFF"/>
+</svg>
