@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { CommandRegistry } from "@airdb-standalone/vscode-shim";
+import { CommandRegistry, createExtensionsApi } from "@airdb-standalone/vscode-shim";
 import { ExtensionDiagnosticsRegistry } from "../src/extensionDiagnostics";
 import { ExtensionLoader, resolveExtensionActivate } from "../src/extensionLoader";
 
@@ -36,6 +36,10 @@ describe("ExtensionLoader", () => {
 
     expect(loaded.map((extension) => extension.id)).toEqual(["fixture.hello-extension"]);
     await expect(commandRegistry.executeCommand("fixture.hello")).resolves.toBe("hello");
+    const extension = createExtensionsApi(loader.extensionRegistry).getExtension("fixture.hello-extension");
+    expect(extension?.isActive).toBe(true);
+    expect(extension?.exports).toEqual({ activated: true });
+    await expect(extension?.activate()).resolves.toEqual({ activated: true });
   });
 
   it("keeps vscode module resolution available for lazy command callbacks", async () => {
@@ -73,7 +77,82 @@ describe("ExtensionLoader", () => {
 
     expect(loaded.id).toBe("fixture.commonjs-default-extension");
     expect(loaded.exports).toEqual({ activated: true });
+    expect(loader.extensionRegistry.get("fixture.commonjs-default-extension")).toMatchObject({
+      isActive: true,
+      exports: { activated: true }
+    });
     await expect(commandRegistry.executeCommand("fixture.commonjsDefault")).resolves.toBe("commonjs-default");
+  });
+
+  it("shares activated exports through vscode.extensions.getExtension across loaded extensions", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "airdb-loader-extension-registry-"));
+    const providerPath = path.join(root, "01-provider");
+    const consumerPath = path.join(root, "02-consumer");
+    const commandRegistry = new CommandRegistry();
+
+    try {
+      await fs.mkdir(providerPath, { recursive: true });
+      await fs.writeFile(
+        path.join(providerPath, "package.json"),
+        JSON.stringify({
+          name: "provider-extension",
+          publisher: "fixture",
+          main: "./extension.js"
+        })
+      );
+      await fs.writeFile(
+        path.join(providerPath, "extension.js"),
+        "exports.activate = function activate() { return { token: 'provider-export' }; };\n"
+      );
+      await fs.mkdir(consumerPath, { recursive: true });
+      await fs.writeFile(
+        path.join(consumerPath, "package.json"),
+        JSON.stringify({
+          name: "consumer-extension",
+          publisher: "fixture",
+          main: "./extension.js"
+        })
+      );
+      await fs.writeFile(
+        path.join(consumerPath, "extension.js"),
+        [
+          "const vscode = require('vscode');",
+          "exports.activate = function activate(context) {",
+          "  context.subscriptions.push(vscode.commands.registerCommand('fixture.readProvider', async () => {",
+          "    const extension = vscode.extensions.getExtension('fixture.provider-extension');",
+          "    return {",
+          "      isActive: extension?.isActive,",
+          "      exports: extension?.exports,",
+          "      activated: await extension?.activate()",
+          "    };",
+          "  }));",
+          "  return { consumer: true };",
+          "};",
+          ""
+        ].join("\n")
+      );
+
+      const loader = new ExtensionLoader({
+        extensionsDir: root,
+        storageRoot: path.join(root, ".data"),
+        commandRegistry,
+        bridge: {
+          request: async () => undefined as never,
+          notify: () => undefined
+        }
+      });
+
+      await loader.loadExtension(providerPath);
+      await loader.loadExtension(consumerPath);
+
+      await expect(commandRegistry.executeCommand("fixture.readProvider")).resolves.toEqual({
+        isActive: true,
+        exports: { token: "provider-export" },
+        activated: { token: "provider-export" }
+      });
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
   });
 
   it("passes workspace root and context paths into loaded extensions", async () => {

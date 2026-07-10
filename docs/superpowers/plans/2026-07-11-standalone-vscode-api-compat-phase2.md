@@ -29,6 +29,7 @@
 - [x] Merge conflict resolution preserved the CommonJS `default.activate` fix by using `resolveExtensionActivate()`.
 - [x] Merge conflict resolution preserved the AirDB-only prepared extension guard and diagnostics smoke script.
 - [x] Task 1 added the coverage matrix and unsupported API diagnostics path.
+- [x] Task 2 added the shared extension registry and activated export visibility.
 
 ## Verified Baseline
 
@@ -56,11 +57,11 @@ Implemented or heavily exercised:
 - [x] Basic `languages.registerCompletionItemProvider`, `registerCodeLensProvider`, `registerHoverProvider`, `registerDocumentRangeFormattingEditProvider`, `registerDocumentSymbolProvider`.
 - [x] Core value types including `Disposable`, `EventEmitter`, `Uri`, `Position`, `Range`, `Selection`, `TreeItem`, `ThemeIcon`, `ThemeColor`, `MarkdownString`, `Hover`, `TextEdit`.
 - [x] Extension diagnostics for discovery, manifest parsing, contribution registration, main resolution, module import, activation, command count, contributed views, failures.
+- [x] `extensions.getExtension` and `extensions.all` expose live registry metadata, active state, and activated exports for loaded extensions.
 
 Partial or stubbed:
 
 - [ ] `workspace.getConfiguration` returns defaults only and does not persist or emit changes.
-- [ ] `extensions.getExtension` reports metadata but does not expose real activated exports across extensions.
 - [ ] Language provider registrations are stored but not invoked by the workbench.
 - [ ] Text editor events exist only as shim hooks; the workbench does not provide full editor lifecycle parity.
 - [ ] Activation events are not semantically evaluated like VS Code; bundled extensions are loaded directly.
@@ -109,11 +110,11 @@ Missing high-priority surfaces:
 
 **Deliverable:** `vscode.extensions.getExtension(id)` can expose activated exports for loaded extensions, and the loader can defer activation for later event-driven work.
 
-- [ ] Introduce a shared extension registry record containing `id`, `extensionPath`, `packageJSON`, `isActive`, and `exports`.
-- [ ] Update loader registration before import and after activation so exports are visible through the shim.
-- [ ] Preserve current eager activation for bundled AirDB until activation-event gating is implemented.
-- [ ] Add tests for active extension exports, missing extension lookup, and CommonJS default activation exports.
-- [ ] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/extension-host -- extensionLoader.test.ts`.
+- [x] Introduce a shared extension registry record containing `id`, `extensionPath`, `packageJSON`, `isActive`, and `exports`.
+- [x] Update loader registration before import and after activation so exports are visible through the shim.
+- [x] Preserve current eager activation for bundled AirDB until activation-event gating is implemented.
+- [x] Add tests for active extension exports, missing extension lookup, and CommonJS default activation exports.
+- [x] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/extension-host -- extensionLoader.test.ts`.
 
 ### Task 3: Workspace Configuration And Watchers
 

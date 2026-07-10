@@ -1,7 +1,7 @@
 import { CommandRegistry, createCommandsApi } from "./commands.js";
 import { createEnvApi } from "./env.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
-import { createExtensionsApi, type ExtensionRecord } from "./extensions.js";
+import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
 import { createLanguagesApi } from "./languages.js";
 import { createL10nApi } from "./l10n.js";
 import { MemoryMemento } from "./state.js";
@@ -19,7 +19,7 @@ export interface VscodeApiOptions {
   extensionPath: string;
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
-  extensions?: ExtensionRecord[];
+  extensions?: ExtensionRegistry | ExtensionRegistryRecordInput[];
   workspaceRoot?: string;
   unsupportedApiReporter?: UnsupportedApiReporter;
 }

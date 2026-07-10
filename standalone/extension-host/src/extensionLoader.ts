@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { CommandRegistry, createVscodeApi } from "@airdb-standalone/vscode-shim";
+import { CommandRegistry, ExtensionRegistry, createVscodeApi } from "@airdb-standalone/vscode-shim";
 import type { HostBridge } from "@airdb-standalone/vscode-shim";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { createExtensionContext } from "./extensionContext.js";
@@ -23,6 +23,7 @@ export interface ExtensionLoaderOptions {
   storageRoot: string;
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
+  extensionRegistry?: ExtensionRegistry;
   contributionRegistry?: ContributionRegistry;
   diagnostics?: ExtensionDiagnosticsRegistry;
   workspaceRoot?: string;
@@ -33,10 +34,12 @@ let extensionImportNonce = 0;
 
 export class ExtensionLoader {
   readonly commandRegistry: CommandRegistry;
+  readonly extensionRegistry: ExtensionRegistry;
   readonly contributionRegistry: ContributionRegistry;
 
   constructor(private readonly options: ExtensionLoaderOptions) {
     this.commandRegistry = options.commandRegistry ?? new CommandRegistry();
+    this.extensionRegistry = options.extensionRegistry ?? new ExtensionRegistry();
     this.contributionRegistry = options.contributionRegistry ?? new ContributionRegistry();
   }
 
@@ -84,13 +87,20 @@ export class ExtensionLoader {
         status: "loaded",
         message: "Registered extension contributions"
       });
+      this.extensionRegistry.upsert({
+        id: extensionId,
+        extensionPath,
+        packageJSON: manifest,
+        isActive: false,
+        exports: undefined
+      });
 
       const vscodeApi = createVscodeApi({
         extensionId,
         extensionPath,
         bridge: this.options.bridge,
         commandRegistry: this.commandRegistry,
-        extensions: [{ id: extensionId, extensionPath, packageJSON: manifest }],
+        extensions: this.extensionRegistry,
         workspaceRoot: this.options.workspaceRoot,
         unsupportedApiReporter: (event) =>
           this.options.diagnostics?.recordUnsupportedApi({
@@ -145,6 +155,7 @@ export class ExtensionLoader {
       });
       const activate = resolveExtensionActivate(extensionModule);
       const exports = activate ? await activate(context) : undefined;
+      this.extensionRegistry.setActivated(extensionId, exports);
       this.options.diagnostics?.recordPhase({
         extensionPath,
         extensionId,
