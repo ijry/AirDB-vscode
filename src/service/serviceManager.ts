@@ -22,6 +22,7 @@ import { OracleDialect } from "./dialect/oracleDialect";
 import { KingbaseDialect } from "./dialect/kingbaseDialect";
 import { DamengDialect } from "./dialect/damengDialect";
 import { ClickHouseDialect } from "./dialect/clickHouseDialect";
+import { DorisDialect } from "./dialect/dorisDialect";
 import { DuckDBDialect } from "./dialect/duckdbDialect";
 import { PostgreSqlDialect } from "./dialect/postgreSqlDialect";
 import { SqlDialect } from "./dialect/sqlDialect";
@@ -138,6 +139,8 @@ export class ServiceManager {
         switch (dbType) {
             case DatabaseType.MYSQL:
                 return new MysqlDumpService()
+            case DatabaseType.DORIS:
+                return new MysqlDumpService()
             case DatabaseType.KINGBASE:
                 return new KingbaseDumpService()
             case DatabaseType.DAMENG:
@@ -149,6 +152,8 @@ export class ServiceManager {
     public static getImportService(dbType: DatabaseType) {
         if (!dbType) dbType = DatabaseType.MYSQL
         switch (dbType) {
+            case DatabaseType.DORIS:
+                return new MysqlImportService();
             case DatabaseType.MSSQL:
                 return new SqlServerImportService()
             case DatabaseType.PG:
@@ -170,6 +175,8 @@ export class ServiceManager {
                 return new SqliTeDialect()
             case DatabaseType.CLICKHOUSE:
                 return new ClickHouseDialect();
+            case DatabaseType.DORIS:
+                return new DorisDialect();
             case DatabaseType.DUCKDB:
                 return new DuckDBDialect();
             case DatabaseType.PG:
@@ -197,6 +204,8 @@ export class ServiceManager {
                 return new PostgreSqlPageService();
             case DatabaseType.CLICKHOUSE:
                 return new PostgreSqlPageService();
+            case DatabaseType.DORIS:
+                return new MysqlPageSerivce();
             case DatabaseType.DUCKDB:
                 return new PostgreSqlPageService();
             case DatabaseType.KINGBASE:
