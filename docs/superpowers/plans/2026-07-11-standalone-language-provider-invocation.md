@@ -52,7 +52,7 @@
 ## Current Completion
 
 - [x] Phase 4 design committed as `01bff40 docs: design standalone language provider invocation`.
-- [ ] Task 1: `vscode-shim` registry, selector matching, and language value types.
+- [x] Task 1: `vscode-shim` registry, selector matching, and language value types.
 - [ ] Task 2: protocol DTOs and extension-host invocation dispatch.
 - [ ] Task 3: app bridge helper for language provider requests.
 - [ ] Task 4: compat fixture, smoke coverage, docs, final verification.
@@ -82,7 +82,7 @@
 - Produces: `enum SymbolKind` and `class DocumentSymbol`
 - Consumes: existing `CompletionItem`, `CompletionList`, `Hover`, `TextEdit`, `Position`, `Range`, `Uri`, `RelativePattern`, and `createGlobMatcher`
 
-- [ ] **Step 1: Add failing registry tests**
+- [x] **Step 1: Add failing registry tests**
 
 Create `standalone/vscode-shim/test/languages.test.ts`:
 
@@ -242,7 +242,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim
 
 Expected: FAIL because `LanguageProviderRegistry`, `DocumentSymbol`, and `SymbolKind` do not exist.
 
-- [ ] **Step 2: Add language value types**
+- [x] **Step 2: Add language value types**
 
 In `standalone/vscode-shim/src/types.ts`, extend the language value section with these concrete fields:
 
@@ -311,7 +311,7 @@ export class Hover {
 
 Keep existing enum numeric values stable. Only replace the existing `CompletionItem` and `Hover` definitions; do not duplicate class names.
 
-- [ ] **Step 3: Implement the registry**
+- [x] **Step 3: Implement the registry**
 
 Replace `standalone/vscode-shim/src/languages.ts` with this public shape:
 
@@ -492,7 +492,7 @@ function createCancellationToken(): { isCancellationRequested: false; onCancella
 }
 ```
 
-- [ ] **Step 4: Pass the registry through API creation**
+- [x] **Step 4: Pass the registry through API creation**
 
 In `standalone/vscode-shim/src/createApi.ts`, import the type and add the option:
 
@@ -518,7 +518,7 @@ In `standalone/vscode-shim/src/index.ts`, export text document helpers:
 export * from "./textDocument.js";
 ```
 
-- [ ] **Step 5: Verify Task 1**
+- [x] **Step 5: Verify Task 1**
 
 Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim -- languages.test.ts`
 
@@ -528,7 +528,7 @@ Run: `npm --prefix standalone run typecheck --workspace @airdb-standalone/vscode
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Task 1**
+- [x] **Step 6: Commit Task 1**
 
 ```bash
 git add standalone/vscode-shim/src/types.ts standalone/vscode-shim/src/languages.ts standalone/vscode-shim/src/createApi.ts standalone/vscode-shim/src/index.ts standalone/vscode-shim/test/languages.test.ts docs/superpowers/plans/2026-07-11-standalone-language-provider-invocation.md

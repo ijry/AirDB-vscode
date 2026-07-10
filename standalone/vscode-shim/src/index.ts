@@ -10,6 +10,7 @@ export * from "./configuration.js";
 export * from "./fileSystemWatcher.js";
 export * from "./glob.js";
 export * from "./languages.js";
+export * from "./textDocument.js";
 export * from "./env.js";
 export * from "./extensions.js";
 export * from "./l10n.js";

@@ -4,7 +4,7 @@ import { WorkspaceConfigurationStore } from "./configuration.js";
 import { createEnvApi } from "./env.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
 import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
-import { createLanguagesApi } from "./languages.js";
+import { createLanguagesApi, type LanguageProviderRegistry } from "./languages.js";
 import { createL10nApi } from "./l10n.js";
 import { MemorySecretStorage } from "./secrets.js";
 import { MemoryMemento } from "./state.js";
@@ -25,6 +25,7 @@ export interface VscodeApiOptions {
   extensions?: ExtensionRegistry | ExtensionRegistryRecordInput[];
   workspaceRoot?: string;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
+  languageProviderRegistry?: LanguageProviderRegistry;
   unsupportedApiReporter?: UnsupportedApiReporter;
 }
 
@@ -51,7 +52,7 @@ export function createVscodeApi(options: VscodeApiOptions) {
     commands,
     window: windowApi,
     workspace: workspaceApi,
-    languages: createLanguagesApi(),
+    languages: createLanguagesApi(options.languageProviderRegistry),
     env: createEnvApi(options.extensionId, options.bridge),
     extensions: createExtensionsApi(options.extensions ?? []),
     authentication: createAuthenticationApi(options.authenticationRegistry, reportUnsupportedApi),
