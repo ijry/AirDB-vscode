@@ -398,6 +398,12 @@ const dbLogoMap = {
     bg: "#e8f7f3",
     color: "#018b74",
   },
+  ZooKeeper: {
+    icon: require("@/../resources/icon/zookeeper.svg"),
+    text: "ZK",
+    bg: "#eaf6ff",
+    color: "#1d4ed8",
+  },
   Redis: {
     icon: require("@/../resources/icon/redis.svg"),
     text: "RD",
@@ -477,6 +483,7 @@ export default {
         kafkaAuth: "none",
         vhost: "/",
         managementPort: 15672,
+        zookeeperAuthScheme: "digest",
         global: true,
         key: null,
         // scheme: "http",
@@ -511,6 +518,7 @@ export default {
         "SQLite",
         "MongoDB",
         "Neo4j",
+        "ZooKeeper",
         "Redis",
         "ElasticSearch",
         "Kafka",
@@ -794,6 +802,16 @@ export default {
           this.connectionOption.useSSL = false;
           this.connectionOption.connectTimeout = 5000;
           this.connectionOption.requestTimeout = 10000;
+          break;
+        case "ZooKeeper":
+          this.connectionOption.user = "";
+          this.connectionOption.password = "";
+          this.connectionOption.port = 2181;
+          this.connectionOption.database = "/";
+          this.connectionOption.useSSL = false;
+          this.connectionOption.connectTimeout = 5000;
+          this.connectionOption.requestTimeout = 10000;
+          this.connectionOption.zookeeperAuthScheme = "digest";
           break;
         case "FTP":
           this.connectionOption.port = 21;

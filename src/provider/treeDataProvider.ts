@@ -10,6 +10,7 @@ import { KafkaConnectionNode } from "@/model/kafka/kafkaConnectionNode";
 import { Neo4jConnectionNode } from "@/model/neo4j/neo4jConnectionNode";
 import { RabbitMQConnectionNode } from "@/model/rabbitmq/rabbitmqConnectionNode";
 import { S3ConnectionNode } from "@/model/s3/s3ConnectionNode";
+import { ZooKeeperConnectionNode } from "@/model/zookeeper/zookeeperConnectionNode";
 import { CacheKey, DatabaseType } from "../common/constants";
 import { ConnectionNode } from "../model/database/connectionNode";
 import { RootNode } from "../model/database/rootNode";
@@ -137,7 +138,7 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
 
     private getKeyByNode(connectionNode: Node): string {
         const dbType = connectionNode.dbType;
-        if (dbType == DatabaseType.ES || dbType == DatabaseType.REDIS || dbType == DatabaseType.KAFKA || dbType == DatabaseType.RABBITMQ || dbType == DatabaseType.S3 || dbType == DatabaseType.NEO4J || dbType == DatabaseType.SSH || dbType == DatabaseType.FTP || dbType == DatabaseType.MONGO_DB) {
+        if (dbType == DatabaseType.ES || dbType == DatabaseType.REDIS || dbType == DatabaseType.KAFKA || dbType == DatabaseType.RABBITMQ || dbType == DatabaseType.S3 || dbType == DatabaseType.NEO4J || dbType == DatabaseType.ZOOKEEPER || dbType == DatabaseType.SSH || dbType == DatabaseType.FTP || dbType == DatabaseType.MONGO_DB) {
             return CacheKey.NOSQL_CONNECTION;
         }
         return CacheKey.DATBASE_CONECTIONS;
@@ -290,6 +291,8 @@ export class DbTreeDataProvider implements vscode.TreeDataProvider<Node> {
             node = new S3ConnectionNode(key, connectInfo)
         } else if (connectInfo.dbType == DatabaseType.NEO4J) {
             node = new Neo4jConnectionNode(key, connectInfo)
+        } else if (connectInfo.dbType == DatabaseType.ZOOKEEPER) {
+            node = new ZooKeeperConnectionNode(key, connectInfo)
         } else if (connectInfo.dbType == DatabaseType.SSH) {
             connectInfo.ssh.key = connectInfo.key
             node = new SSHConnectionNode(key, connectInfo, connectInfo.ssh, connectInfo.name)

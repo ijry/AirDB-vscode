@@ -515,6 +515,12 @@
 				"icon": "$(new-folder)"
 			},
 			{
+				"command": "airdb.zookeeper.znode.open",
+				"title": "Open ZooKeeper Znode",
+				"category": "AirDB",
+				"icon": "$(go-to-file)"
+			},
+			{
 				"command": "airdb.ssh.terminal.hear",
 				"title": "Open Terminal in hear"
 			},
@@ -1052,6 +1058,11 @@
 					"group": "s3@4"
 				},
 				{
+					"command": "airdb.zookeeper.znode.open",
+					"when": "view == activitybar.airdb.nosql && viewItem == zookeeperZnode",
+					"group": "inline@0"
+				},
+				{
 					"command": "airdb.connection.delete",
 					"when": "view =~ /activitybar.airdb.+?ql/ && viewItem =~ /(sshConnection|ftpConnection)/",
 					"group": "inline@0"
@@ -1254,6 +1265,7 @@
 		"mongodb": "^3.6.9",
 		"mysql2": "^2.2.5",
 		"neo4j-driver": "^6.2.0",
+		"node-zookeeper-client": "^1.1.3",
 		"officegen": "^0.6.5",
 		"oracledb": "^7.0.0",
 		"pg": "^8.5.1",

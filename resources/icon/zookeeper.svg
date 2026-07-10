@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ZooKeeper">
+  <rect width="64" height="64" rx="12" fill="#eaf6ff"/>
+  <path d="M32 8 52 19v26L32 56 12 45V19L32 8z" fill="#ffffff" stroke="#1d4ed8" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="32" cy="20" r="5" fill="#2563eb"/>
+  <circle cx="22" cy="38" r="5" fill="#14b8a6"/>
+  <circle cx="42" cy="38" r="5" fill="#14b8a6"/>
+  <path d="M32 25v8M28 36l-3 2M36 36l3 2" fill="none" stroke="#0f172a" stroke-width="4" stroke-linecap="round"/>
+  <path d="M21 14h22" stroke="#93c5fd" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -38,6 +38,7 @@ import { RabbitMQQueueNode } from "./model/rabbitmq/rabbitmqQueueNode";
 import { S3BucketNode } from "./model/s3/s3BucketNode";
 import { S3FolderNode } from "./model/s3/s3FolderNode";
 import { S3ObjectNode } from "./model/s3/s3ObjectNode";
+import { ZooKeeperZnodeNode } from "./model/zookeeper/zookeeperZnodeNode";
 import { DiffService } from "./service/diff/diffService";
 import { DatabaseCache } from "./service/common/databaseCache";
 import { FileNode } from "./model/ssh/fileNode";
@@ -253,6 +254,10 @@ export function activate(context: vscode.ExtensionContext) {
                 "airdb.s3.object.presign": (objectNode: S3ObjectNode) => objectNode.createPresignedUrl(),
                 "airdb.s3.object.upload": (parentNode: S3BucketNode | S3FolderNode) => parentNode.upload(),
                 "airdb.s3.folder.new": (parentNode: S3BucketNode | S3FolderNode) => parentNode.newFolder(),
+            },
+            // zookeeper
+            ...{
+                "airdb.zookeeper.znode.open": (znodeNode: ZooKeeperZnodeNode) => znodeNode.open(),
             },
             // table node
             ...{

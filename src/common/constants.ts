@@ -53,7 +53,7 @@ export enum DatabaseType {
     MYSQL = "MySQL", PG = "PostgreSQL", REDSHIFT = "Redshift", SNOWFLAKE = "Snowflake", KINGBASE = "KingbaseES", DAMENG = "Dameng", SQLITE = "SQLite",
     MSSQL = "SqlServer", ORACLE = "Oracle", MONGO_DB="MongoDB",
     CLICKHOUSE = "ClickHouse", DORIS = "Doris", TDENGINE = "TDengine", DUCKDB = "DuckDB",
-    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", RABBITMQ = "RabbitMQ", S3 = "S3", NEO4J = "Neo4j", SSH="SSH",FTP="FTP"
+    ES = "ElasticSearch", REDIS = "Redis", KAFKA = "Kafka", RABBITMQ = "RabbitMQ", S3 = "S3", NEO4J = "Neo4j", ZOOKEEPER = "ZooKeeper", SSH="SSH",FTP="FTP"
 }
 
 export enum ModelType {
@@ -98,6 +98,10 @@ export enum ModelType {
     NEO4J_DATABASE = "neo4jDatabase", NEO4J_LABEL_GROUP = "neo4jLabelGroup",
     NEO4J_LABEL = "neo4jLabel", NEO4J_RELATIONSHIP_GROUP = "neo4jRelationshipGroup",
     NEO4J_RELATIONSHIP = "neo4jRelationship",
+    /**
+     * ZooKeeper service registry
+     */
+    ZOOKEEPER_CONNECTION = "zookeeperConnection", ZOOKEEPER_ZNODE = "zookeeperZnode",
     /**
      * database
      */
