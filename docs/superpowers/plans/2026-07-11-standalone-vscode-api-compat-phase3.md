@@ -49,7 +49,7 @@
 
 - [x] Phase 2 completed and verified.
 - [x] Phase 3 design committed as `ddb18e7 docs: design standalone vscode api compatibility phase 3`.
-- [ ] Task 1: URI, RelativePattern, and glob matcher.
+- [x] Task 1: URI, RelativePattern, and glob matcher.
 - [ ] Task 2: webview view provider shim and extension-host registry.
 - [ ] Task 3: workbench sidebar rendering for webview views.
 - [ ] Task 4: progress callback compatibility.
@@ -75,7 +75,7 @@
 - Produces: `createGlobMatcher(basePath: string, globPattern: string): (filePath: string) => boolean`
 - Consumes: existing `workspace.createFileSystemWatcher(globPattern, ignoreCreateEvents?, ignoreChangeEvents?, ignoreDeleteEvents?)`
 
-- [ ] **Step 1: Add failing URI and RelativePattern tests**
+- [x] **Step 1: Add failing URI and RelativePattern tests**
 
 Add these cases to `standalone/vscode-shim/test/types.test.ts`:
 
@@ -110,7 +110,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim
 
 Expected: FAIL because `Uri.joinPath`, `Uri.with`, and `RelativePattern` are not implemented.
 
-- [ ] **Step 2: Add failing glob matcher tests**
+- [x] **Step 2: Add failing glob matcher tests**
 
 Create `standalone/vscode-shim/test/glob.test.ts`:
 
@@ -144,7 +144,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim
 
 Expected: FAIL because `src/glob.ts` does not exist.
 
-- [ ] **Step 3: Implement URI, RelativePattern, and glob matcher**
+- [x] **Step 3: Implement URI, RelativePattern, and glob matcher**
 
 In `standalone/vscode-shim/src/types.ts`, add the exported `RelativePattern` class and extend `Uri` with immutable `joinPath`, `with`, and encoded `toString(skipEncoding?: boolean)` behavior. Preserve existing `fsPath` tests for Windows drive paths and paths containing spaces.
 
@@ -156,17 +156,17 @@ export function createGlobMatcher(basePath: string, globPattern: string): (fileP
 
 The matcher must reject paths outside `basePath`, normalize `\` to `/`, and support `*`, `?`, `**`, brace alternatives, and simple character groups.
 
-- [ ] **Step 4: Update watcher to consume shared pattern objects**
+- [x] **Step 4: Update watcher to consume shared pattern objects**
 
 In `standalone/vscode-shim/src/fileSystemWatcher.ts`, import `RelativePattern` and `createGlobMatcher`. Replace the local `globToRegExp`, `escapeRegExp`, and `createMatcher` functions with the shared matcher. Update `resolveWatcherPattern` so `new RelativePattern(uri, pattern)` and existing object literals both resolve to `{ basePath, pattern }`.
 
-- [ ] **Step 5: Verify Task 1**
+- [x] **Step 5: Verify Task 1**
 
 Run: `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim -- types.test.ts glob.test.ts fileSystemWatcher.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Task 1**
+- [x] **Step 6: Commit Task 1**
 
 ```bash
 git add standalone/vscode-shim/src/types.ts standalone/vscode-shim/src/glob.ts standalone/vscode-shim/src/fileSystemWatcher.ts standalone/vscode-shim/test/types.test.ts standalone/vscode-shim/test/glob.test.ts standalone/vscode-shim/test/fileSystemWatcher.test.ts docs/superpowers/plans/2026-07-11-standalone-vscode-api-compat-phase3.md

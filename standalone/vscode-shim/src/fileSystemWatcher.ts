@@ -1,9 +1,11 @@
 import { existsSync, readdirSync, watch, type FSWatcher } from "node:fs";
 import path from "node:path";
-import { Disposable, EventEmitter, Uri, type Event } from "./types.js";
+import { createGlobMatcher } from "./glob.js";
+import { Disposable, EventEmitter, RelativePattern, Uri, type Event } from "./types.js";
 
 export type GlobPattern =
   | string
+  | RelativePattern
   | {
       base?: string | Uri;
       baseUri?: Uri;
@@ -61,7 +63,7 @@ class StandaloneFileSystemWatcher extends Disposable implements FileSystemWatche
 
     const resolvedPattern = resolveWatcherPattern(globPattern, options.workspaceRoot);
     this.basePath = resolvedPattern.basePath;
-    this.matches = createMatcher(this.basePath, resolvedPattern.pattern);
+    this.matches = createGlobMatcher(this.basePath, resolvedPattern.pattern);
 
     this.snapshotKnownPaths();
     this.start();
@@ -158,55 +160,19 @@ function resolveWatcherPattern(globPattern: GlobPattern, workspaceRoot: string):
     };
   }
 
+  if (globPattern instanceof RelativePattern) {
+    return {
+      basePath: path.resolve(globPattern.base),
+      pattern: globPattern.pattern
+    };
+  }
+
   const base = globPattern.baseUri ?? globPattern.base;
   const basePath = base instanceof Uri ? base.fsPath : base;
   return {
     basePath: path.resolve(basePath ?? workspaceRoot),
     pattern: globPattern.pattern ?? "**/*"
   };
-}
-
-function createMatcher(basePath: string, globPattern: string): (filePath: string) => boolean {
-  const normalizedBasePath = normalizePath(path.resolve(basePath));
-  const expression = globToRegExp(normalizePath(globPattern || "**/*"));
-
-  return (filePath: string): boolean => {
-    const normalizedPath = normalizePath(path.resolve(filePath));
-    if (normalizedPath !== normalizedBasePath && !normalizedPath.startsWith(`${normalizedBasePath}/`)) {
-      return false;
-    }
-    const relativePath = normalizePath(path.relative(basePath, filePath));
-    return relativePath.length > 0 && expression.test(relativePath);
-  };
-}
-
-function globToRegExp(globPattern: string): RegExp {
-  let source = "";
-
-  for (let index = 0; index < globPattern.length; index += 1) {
-    const char = globPattern[index];
-    if (char === "*" && globPattern.slice(index, index + 3) === "**/") {
-      source += "(?:.*/)?";
-      index += 2;
-      continue;
-    }
-    if (char === "*" && globPattern[index + 1] === "*") {
-      source += ".*";
-      index += 1;
-      continue;
-    }
-    if (char === "*") {
-      source += "[^/]*";
-      continue;
-    }
-    if (char === "?") {
-      source += "[^/]";
-      continue;
-    }
-    source += escapeRegExp(char);
-  }
-
-  return new RegExp(`^${source}$`);
 }
 
 function walkExistingPaths(root: string): string[] {
@@ -240,8 +206,4 @@ function walkExistingPaths(root: string): string[] {
 
 function normalizePath(value: string): string {
   return value.replace(/\\/g, "/");
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
 }
