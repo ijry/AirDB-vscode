@@ -219,6 +219,7 @@
             'MySQL',
             'Doris',
             'PostgreSQL',
+            'Redshift',
             'ClickHouse',
             'KingbaseES',
             'MongoDB',
@@ -256,7 +257,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'Doris', 'PostgreSQL', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
+        ['MySQL', 'Doris', 'PostgreSQL', 'Redshift', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -313,6 +314,12 @@ const dbLogoMap = {
     text: "PG",
     bg: "#e8f0ff",
     color: "#2563eb",
+  },
+  Redshift: {
+    icon: require("@/../resources/icon/redshift.svg"),
+    text: "RS",
+    bg: "#f5edff",
+    color: "#6d28d9",
   },
   ClickHouse: {
     icon: require("@/../resources/icon/clickhouse.svg"),
@@ -463,6 +470,7 @@ export default {
       supportDatabases: [
         "MySQL",
         "PostgreSQL",
+        "Redshift",
         "ClickHouse",
         "Doris",
         "DuckDB",
@@ -614,6 +622,16 @@ export default {
           this.connectionOption.encrypt = false;
           this.connectionOption.port = 5432;
           this.connectionOption.database = "postgres";
+          break;
+        case "Redshift":
+          this.connectionOption.user = "awsuser";
+          this.connectionOption.password = "";
+          this.connectionOption.encrypt = false;
+          this.connectionOption.port = 5439;
+          this.connectionOption.database = "dev";
+          this.connectionOption.useSSL = true;
+          this.connectionOption.connectTimeout = 5000;
+          this.connectionOption.requestTimeout = 10000;
           break;
         case "ClickHouse":
           this.connectionOption.user = "default";

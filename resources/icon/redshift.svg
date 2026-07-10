@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Redshift">
+  <rect width="64" height="64" rx="10" fill="#5B2A86"/>
+  <path d="M14 18 32 8l18 10v28L32 56 14 46V18Z" fill="#8C4CC2"/>
+  <path d="M32 8v48L14 46V18L32 8Z" fill="#A56DE2"/>
+  <path d="M32 8v48l18-10V18L32 8Z" fill="#47206A"/>
+  <path d="M20 22h24v6H20v-6Zm0 10h24v6H20v-6Zm0 10h24v6H20v-6Z" fill="#F3E8FF"/>
+  <text x="32" y="38" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#2A1240">RS</text>
+</svg>
