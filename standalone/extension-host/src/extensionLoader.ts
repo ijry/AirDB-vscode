@@ -91,7 +91,13 @@ export class ExtensionLoader {
         bridge: this.options.bridge,
         commandRegistry: this.commandRegistry,
         extensions: [{ id: extensionId, extensionPath, packageJSON: manifest }],
-        workspaceRoot: this.options.workspaceRoot
+        workspaceRoot: this.options.workspaceRoot,
+        unsupportedApiReporter: (event) =>
+          this.options.diagnostics?.recordUnsupportedApi({
+            extensionPath,
+            extensionId,
+            ...event
+          })
       });
 
       patchVscodeModule(extensionPath, vscodeApi);

@@ -25,7 +25,18 @@ await fs.writeFile(path.join(extensionPath, "package.json"), JSON.stringify({
 }));
 await fs.writeFile(
   path.join(extensionPath, "extension.js"),
-  "exports.activate = function activate() { return { ok: true }; };\n"
+  [
+    "const vscode = require(\"vscode\");",
+    "exports.activate = function activate() {",
+    "  try {",
+    "    vscode.workspace.createFileSystemWatcher(\"**/*\");",
+    "  } catch {",
+    "    // Expected: this smoke verifies unsupported API diagnostics without failing activation.",
+    "  }",
+    "  return { ok: true };",
+    "};",
+    ""
+  ].join("\n")
 );
 
 const child = spawn("node", [hostEntry], {
@@ -41,6 +52,7 @@ const child = spawn("node", [hostEntry], {
 
 let sawDiagnostics = false;
 let sawActivated = false;
+let sawUnsupportedApi = false;
 let stderr = "";
 let stdoutBuffer = "";
 
@@ -57,14 +69,15 @@ const timeout = setTimeout(() => {
 function missingCheckpoints() {
   return [
     sawDiagnostics ? "" : "extension.diagnostics activated snapshot",
-    sawActivated ? "" : "extension.activated"
+    sawActivated ? "" : "extension.activated",
+    sawUnsupportedApi ? "" : "extension.diagnostics unsupportedApi event"
   ].filter(Boolean);
 }
 
 function finishIfReady() {
-  if (sawDiagnostics && sawActivated) {
+  if (sawDiagnostics && sawActivated && sawUnsupportedApi) {
     clearTimeout(timeout);
-    console.log("Received extension diagnostics and activation notifications.");
+    console.log("Received extension diagnostics, unsupported API event, and activation notifications.");
     child.kill();
   }
 }
@@ -84,6 +97,15 @@ function handleStdoutLine(line) {
       extension.contributedViews?.includes("diagnostic.fixture")
     ) {
       sawDiagnostics = true;
+    }
+    if (
+      extension?.events?.some((event) =>
+        event.phase === "unsupportedApi" &&
+        event.details?.api === "workspace.createFileSystemWatcher" &&
+        event.details?.code === "AIRDB_STANDALONE_UNSUPPORTED_VSCODE_API"
+      )
+    ) {
+      sawUnsupportedApi = true;
     }
   }
   if (
@@ -113,7 +135,7 @@ child.stdout.on("data", (chunk) => {
 
 child.on("exit", (code) => {
   clearTimeout(timeout);
-  if (!sawDiagnostics || !sawActivated) {
+  if (!sawDiagnostics || !sawActivated || !sawUnsupportedApi) {
     console.error(`Extension host exited before diagnostics smoke completed. Exit code: ${code}`);
     console.error(`Missing checkpoint(s): ${missingCheckpoints().join(", ")}`);
     if (stderr) {

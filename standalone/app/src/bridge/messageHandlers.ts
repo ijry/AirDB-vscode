@@ -22,7 +22,8 @@ const DIAGNOSTIC_PHASES = [
   "contributions",
   "mainResolution",
   "moduleImport",
-  "activation"
+  "activation",
+  "unsupportedApi"
 ] as const satisfies readonly ExtensionDiagnosticPhase[];
 
 const MAX_DIAGNOSTIC_EVENTS = 200;

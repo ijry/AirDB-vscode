@@ -6,6 +6,11 @@ import { createLanguagesApi } from "./languages.js";
 import { createL10nApi } from "./l10n.js";
 import { MemoryMemento } from "./state.js";
 import * as types from "./types.js";
+import {
+  createUnsupportedApiFunction,
+  createUnsupportedNamespace,
+  type UnsupportedApiReporter
+} from "./unsupported.js";
 import { createWindowApi, type HostBridge } from "./window.js";
 import { createWorkspaceApi } from "./workspace.js";
 
@@ -16,6 +21,7 @@ export interface VscodeApiOptions {
   commandRegistry?: CommandRegistry;
   extensions?: ExtensionRecord[];
   workspaceRoot?: string;
+  unsupportedApiReporter?: UnsupportedApiReporter;
 }
 
 export function createVscodeApi(options: VscodeApiOptions) {
@@ -25,14 +31,35 @@ export function createVscodeApi(options: VscodeApiOptions) {
     createExternalActionCommandHandler(options.extensionId, options.bridge)
   );
 
+  const reportUnsupportedApi = options.unsupportedApiReporter;
+  const unsupportedApi = (api: string) => createUnsupportedApiFunction(api, reportUnsupportedApi);
+  const windowApi = createWindowApi({
+    extensionId: options.extensionId,
+    extensionPath: options.extensionPath,
+    bridge: options.bridge
+  }) as ReturnType<typeof createWindowApi> & {
+    registerWebviewViewProvider: ReturnType<typeof createUnsupportedApiFunction>;
+  };
+  windowApi.registerWebviewViewProvider = unsupportedApi("window.registerWebviewViewProvider");
+  const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, { workspaceRoot: options.workspaceRoot }) as
+    ReturnType<typeof createWorkspaceApi> & {
+      createFileSystemWatcher: ReturnType<typeof createUnsupportedApiFunction>;
+      onDidChangeConfiguration: ReturnType<typeof createUnsupportedApiFunction>;
+    };
+  workspaceApi.createFileSystemWatcher = unsupportedApi("workspace.createFileSystemWatcher");
+  workspaceApi.onDidChangeConfiguration = unsupportedApi("workspace.onDidChangeConfiguration");
+
   return {
     ...types,
     commands,
-    window: createWindowApi({ extensionId: options.extensionId, extensionPath: options.extensionPath, bridge: options.bridge }),
-    workspace: createWorkspaceApi(options.extensionId, options.bridge, { workspaceRoot: options.workspaceRoot }),
+    window: windowApi,
+    workspace: workspaceApi,
     languages: createLanguagesApi(),
     env: createEnvApi(options.extensionId, options.bridge),
     extensions: createExtensionsApi(options.extensions ?? []),
+    authentication: createUnsupportedNamespace("authentication", reportUnsupportedApi),
+    tasks: createUnsupportedNamespace("tasks", reportUnsupportedApi),
+    debug: createUnsupportedNamespace("debug", reportUnsupportedApi),
     l10n: createL10nApi(),
     createContext() {
       return {

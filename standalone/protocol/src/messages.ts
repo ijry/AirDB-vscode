@@ -160,7 +160,8 @@ export type ExtensionDiagnosticPhase =
   | "contributions"
   | "mainResolution"
   | "moduleImport"
-  | "activation";
+  | "activation"
+  | "unsupportedApi";
 
 export interface ExtensionDiagnosticEventDto {
   id: string;

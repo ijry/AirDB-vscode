@@ -28,6 +28,7 @@
 - [x] `feature/extension-diagnostics-panel` merged into phase-2 as `a08a82e merge: integrate extension diagnostics panel`.
 - [x] Merge conflict resolution preserved the CommonJS `default.activate` fix by using `resolveExtensionActivate()`.
 - [x] Merge conflict resolution preserved the AirDB-only prepared extension guard and diagnostics smoke script.
+- [x] Task 1 added the coverage matrix and unsupported API diagnostics path.
 
 ## Verified Baseline
 
@@ -90,12 +91,12 @@ Missing high-priority surfaces:
 
 **Deliverable:** A committed coverage matrix plus runtime diagnostics events when an extension touches an explicitly unsupported API.
 
-- [ ] Add `standalone/docs/vscode-api-coverage.md` with implemented, partial, missing, and intentionally unsupported API groups.
-- [ ] Extend `unsupported(api)` to include a stable error code and API name in the thrown error.
-- [ ] Add an optional bridge notification path for unsupported API calls without breaking existing thrown-error behavior.
-- [ ] Add unit tests that assert unsupported calls include the API name and code.
-- [ ] Add a fixture smoke path that triggers one unsupported API and verifies diagnostics can identify it.
-- [ ] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim`.
+- [x] Add `standalone/docs/vscode-api-coverage.md` with implemented, partial, missing, and intentionally unsupported API groups.
+- [x] Extend `unsupported(api)` to include a stable error code and API name in the thrown error.
+- [x] Add an optional bridge notification path for unsupported API calls without breaking existing thrown-error behavior.
+- [x] Add unit tests that assert unsupported calls include the API name and code.
+- [x] Add a fixture smoke path that triggers one unsupported API and verifies diagnostics can identify it.
+- [x] Verify with `npm --prefix standalone run test --workspace @airdb-standalone/vscode-shim`.
 
 ### Task 2: Extension Registry And Activation Semantics
 

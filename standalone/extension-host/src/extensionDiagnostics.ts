@@ -28,6 +28,14 @@ export interface DiagnosticFailureInput {
   details?: Record<string, unknown>;
 }
 
+export interface UnsupportedApiDiagnosticInput {
+  extensionPath: string;
+  extensionId?: string;
+  api: string;
+  code: string;
+  message: string;
+}
+
 export type DiagnosticsEmitter = (payload: ExtensionDiagnosticsPayload) => void;
 
 export class ExtensionDiagnosticsRegistry {
@@ -121,6 +129,34 @@ export class ExtensionDiagnosticsRegistry {
         ...extension,
         status: "failed",
         lastError: error,
+        startedAt: extension.startedAt ?? timestamp,
+        events: appendEvent(extension.events, event)
+      });
+      this.emitSnapshot();
+    } catch {
+      return;
+    }
+  }
+
+  recordUnsupportedApi(input: UnsupportedApiDiagnosticInput): void {
+    try {
+      const extension = this.ensure(input.extensionPath, input.extensionId);
+      const timestamp = new Date().toISOString();
+      const event: ExtensionDiagnosticEventDto = {
+        id: `diagnostic-${++this.eventSequence}`,
+        extensionId: input.extensionId,
+        extensionPath: input.extensionPath,
+        timestamp,
+        phase: "unsupportedApi",
+        status: extension.status,
+        message: input.message,
+        details: {
+          api: input.api,
+          code: input.code
+        }
+      };
+      this.extensions.set(extension.id, {
+        ...extension,
         startedAt: extension.startedAt ?? timestamp,
         events: appendEvent(extension.events, event)
       });

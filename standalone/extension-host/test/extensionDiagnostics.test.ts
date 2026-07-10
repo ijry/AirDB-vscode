@@ -81,6 +81,41 @@ describe("ExtensionDiagnosticsRegistry", () => {
     });
   });
 
+  it("records unsupported API events without changing extension status", () => {
+    const registry = new ExtensionDiagnosticsRegistry();
+    const id = registry.recordManifest("C:/extensions/fixture", {
+      name: "fixture",
+      publisher: "acme"
+    });
+    registry.recordPhase({
+      extensionPath: "C:/extensions/fixture",
+      extensionId: id,
+      phase: "activation",
+      status: "activating",
+      message: "Activating extension"
+    });
+
+    registry.recordUnsupportedApi({
+      extensionPath: "C:/extensions/fixture",
+      extensionId: id,
+      api: "workspace.createFileSystemWatcher",
+      code: "AIRDB_STANDALONE_UNSUPPORTED_VSCODE_API",
+      message: "Not implemented in standalone host: workspace.createFileSystemWatcher"
+    });
+
+    const extension = registry.snapshot().extensions[0];
+    expect(extension.status).toBe("activating");
+    expect(extension.events.at(-1)).toMatchObject({
+      phase: "unsupportedApi",
+      status: "activating",
+      message: "Not implemented in standalone host: workspace.createFileSystemWatcher",
+      details: {
+        api: "workspace.createFileSystemWatcher",
+        code: "AIRDB_STANDALONE_UNSUPPORTED_VSCODE_API"
+      }
+    });
+  });
+
   it("caps events at 200 per extension", () => {
     const registry = new ExtensionDiagnosticsRegistry();
     registry.recordDiscovered("C:/extensions/noisy");
