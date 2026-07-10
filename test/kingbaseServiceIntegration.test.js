@@ -13,6 +13,12 @@ function mockModule(relativePath, exports) {
 }
 
 class EmptyDisposableProvider {}
+class MockKingbaseImportService {}
+class MockKingbaseDumpService {}
+class MockDamengDialect {}
+class MockDamengPageService {}
+class MockDamengImportService {}
+class MockDamengDumpService {}
 
 mockModule("src/provider/treeDataProvider.ts", {
   DbTreeDataProvider: class DbTreeDataProvider {},
@@ -56,14 +62,29 @@ mockModule("src/service/dialect/esDialect.ts", {
 mockModule("src/service/dialect/mongoDialect.ts", {
   MongoDialect: EmptyDisposableProvider,
 });
+mockModule("src/service/dialect/damengDialect.ts", {
+  DamengDialect: MockDamengDialect,
+});
 mockModule("src/service/dump/dumpService.ts", {
   DumpService: EmptyDisposableProvider,
 });
 mockModule("src/service/dump/mysqlDumpService.ts", {
   MysqlDumpService: EmptyDisposableProvider,
 });
+mockModule("src/service/dump/kingbaseDumpService.ts", {
+  KingbaseDumpService: MockKingbaseDumpService,
+});
+mockModule("src/service/dump/damengDumpService.ts", {
+  DamengDumpService: MockDamengDumpService,
+});
 mockModule("src/service/import/mysqlImportService.ts", {
   MysqlImportService: EmptyDisposableProvider,
+});
+mockModule("src/service/import/kingbaseImportService.ts", {
+  KingbaseImportService: MockKingbaseImportService,
+});
+mockModule("src/service/import/damengImportService.ts", {
+  DamengImportService: MockDamengImportService,
 });
 mockModule("src/service/import/postgresqlImortService.ts", {
   PostgresqlImortService: EmptyDisposableProvider,
@@ -76,6 +97,9 @@ mockModule("src/service/page/esPageService.ts", {
 });
 mockModule("src/service/page/mongoPageService.ts", {
   MongoPageService: EmptyDisposableProvider,
+});
+mockModule("src/service/page/damengPageService.ts", {
+  DamengPageService: MockDamengPageService,
 });
 mockModule("src/service/common/historyRecorder.ts", {
   HistoryRecorder: EmptyDisposableProvider,
