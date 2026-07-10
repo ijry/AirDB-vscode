@@ -30,6 +30,13 @@ Additional hardening completed on 2026-07-08:
 - Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
 - Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
 
+Additional hardening completed on 2026-07-11:
+
+- Sanitized diagnostics manifest metadata extraction in the extension-host registry so invalid optional strings and mixed arrays are dropped before snapshot emission.
+- Added a regression test that keeps valid publisher/activation/view data while rejecting dirty `displayName`, `version`, `main`, activation events, and view ids.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/extension-host`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/extension-host`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.

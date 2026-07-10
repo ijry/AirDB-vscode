@@ -184,15 +184,26 @@ function appendEvent(
 }
 
 function extractManifestMetadata(manifest: ExtensionManifest): Partial<ExtensionDiagnosticDto> {
-  return {
-    displayName: manifest.displayName,
-    version: manifest.version,
-    publisher: manifest.publisher,
-    main: manifest.main,
-    activationEvents: Array.isArray(manifest.activationEvents) ? [...manifest.activationEvents] : [],
-    contributedViews: extractContributedViews(manifest),
-    commandCount: Array.isArray(manifest.contributes?.commands) ? manifest.contributes.commands.length : 0
+  const metadata: Partial<ExtensionDiagnosticDto> = {
+    activationEvents: normalizeStringArray((manifest as { activationEvents?: unknown }).activationEvents),
+    contributedViews: extractContributedViews(getContributes(manifest)?.views),
+    commandCount: countCommands(getContributes(manifest)?.commands)
   };
+  const optionalStrings = {
+    displayName: (manifest as { displayName?: unknown }).displayName,
+    version: (manifest as { version?: unknown }).version,
+    publisher: (manifest as { publisher?: unknown }).publisher,
+    main: (manifest as { main?: unknown }).main
+  };
+
+  for (const [key, value] of Object.entries(optionalStrings)) {
+    const sanitized = getOptionalString(value);
+    if (sanitized !== undefined) {
+      Object.assign(metadata, { [key]: sanitized });
+    }
+  }
+
+  return metadata;
 }
 
 function copyExtensionDiagnostic(extension: ExtensionDiagnosticDto): ExtensionDiagnosticDto {
@@ -207,16 +218,38 @@ function copyExtensionDiagnostic(extension: ExtensionDiagnosticDto): ExtensionDi
   };
 }
 
-function extractContributedViews(manifest: ExtensionManifest): string[] {
-  const views = manifest.contributes?.views;
-  if (!views || typeof views !== "object") {
+function getOptionalString(value: unknown): string | undefined {
+  return typeof value === "string" ? value : undefined;
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function getContributes(manifest: ExtensionManifest): Record<string, unknown> | undefined {
+  const contributes = (manifest as { contributes?: unknown }).contributes;
+  return isRecord(contributes) ? contributes : undefined;
+}
+
+function countCommands(value: unknown): number {
+  return Array.isArray(value)
+    ? value.filter((entry) => isRecord(entry) && typeof entry.command === "string").length
+    : 0;
+}
+
+function extractContributedViews(views: unknown): string[] {
+  if (!isRecord(views)) {
     return [];
   }
 
   return Object.values(views).flatMap((entries) =>
     Array.isArray(entries)
       ? entries
-          .map((entry) => entry?.id)
+          .map((entry) => isRecord(entry) ? entry.id : undefined)
           .filter((id): id is string => typeof id === "string")
       : []
   );

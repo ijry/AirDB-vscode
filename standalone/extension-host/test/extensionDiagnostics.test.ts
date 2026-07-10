@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ExtensionManifest } from "../src/manifest";
 import { ExtensionDiagnosticsRegistry } from "../src/extensionDiagnostics";
 
 describe("ExtensionDiagnosticsRegistry", () => {
@@ -115,6 +116,35 @@ describe("ExtensionDiagnosticsRegistry", () => {
     expect(registry.snapshot().extensions[0].events[0].details).toEqual({
       resolvedMain: "C:/extensions/fixture/extension.js"
     });
+  });
+
+  it("sanitizes manifest metadata before storing diagnostics", () => {
+    const registry = new ExtensionDiagnosticsRegistry();
+
+    registry.recordManifest("C:/extensions/fixture", {
+      name: "fixture",
+      publisher: "acme",
+      displayName: 123,
+      version: false,
+      main: ["./extension.js"],
+      activationEvents: ["onStartupFinished", 123],
+      contributes: {
+        views: {
+          explorer: [{ id: "fixture.view", name: "Fixture" }, { id: 42, name: "Invalid" }]
+        }
+      }
+    } as unknown as ExtensionManifest);
+
+    const extension = registry.snapshot().extensions[0];
+    expect(extension).toMatchObject({
+      id: "acme.fixture",
+      publisher: "acme",
+      activationEvents: ["onStartupFinished"],
+      contributedViews: ["fixture.view"]
+    });
+    expect(extension.displayName).toBeUndefined();
+    expect(extension.version).toBeUndefined();
+    expect(extension.main).toBeUndefined();
   });
 
   it("returns defensive snapshot copies", () => {
