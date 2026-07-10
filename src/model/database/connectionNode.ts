@@ -54,6 +54,8 @@ export class ConnectionNode extends Node implements CopyAble {
             this.iconPath = path.join(Constants.RES_PATH, "icon/duckdb.svg");
         } else if (this.dbType == DatabaseType.CLICKHOUSE) {
             this.iconPath = path.join(Constants.RES_PATH, "icon/clickhouse.svg");
+        } else if (this.dbType == DatabaseType.DORIS) {
+            this.iconPath = path.join(Constants.RES_PATH, "icon/doris.svg");
         } else if (this.dbType == DatabaseType.ORACLE) {
             this.iconPath = new vscode.ThemeIcon("database");
         } else if (this.dbType == DatabaseType.MONGO_DB) {
@@ -101,6 +103,7 @@ Console.log('asdasd')
             && this.dbType != DatabaseType.ORACLE
             && this.dbType != DatabaseType.DAMENG
             && this.dbType != DatabaseType.CLICKHOUSE
+            && this.dbType != DatabaseType.DORIS
             && this.contextValue == ModelType.CONNECTION;
         // pg/mssql与mysql相比多一层Catalog
         const sql = hasCatalog ? this.dialect.showDatabases() : this.dialect.showSchemas();
@@ -140,7 +143,7 @@ Console.log('asdasd')
         let childMap = {};
         const dbNameList = (await this.getChildren()).filter((databaseNode) => (databaseNode instanceof SchemaNode || databaseNode instanceof CatalogNode)).map((databaseNode) => {
             childMap[databaseNode.uid] = databaseNode
-            return (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG || this.dbType == DatabaseType.CLICKHOUSE)
+            return (this.dbType == DatabaseType.MYSQL || this.dbType == DatabaseType.ORACLE || this.dbType == DatabaseType.DAMENG || this.dbType == DatabaseType.CLICKHOUSE || this.dbType == DatabaseType.DORIS)
                 ? databaseNode.schema
                 : databaseNode.database;
         });
