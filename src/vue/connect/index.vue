@@ -215,6 +215,7 @@
         class="inline-block mb-2 mr-10"
         v-if="
           connectionOption.dbType == 'MySQL' ||
+          connectionOption.dbType == 'Doris' ||
           connectionOption.dbType == 'PostgreSQL' ||
           connectionOption.dbType == 'ClickHouse' ||
           connectionOption.dbType == 'KingbaseES' ||
@@ -251,7 +252,7 @@
       :connectionOption="connectionOption"
       v-if="
         connectionOption.useSSL &&
-        ['MySQL', 'PostgreSQL', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
+        ['MySQL', 'Doris', 'PostgreSQL', 'ClickHouse', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka', 'RabbitMQ'].includes(connectionOption.dbType)
       "
     />
     <SSH :connectionOption="connectionOption" v-if="connectionOption.usingSSH && connectionOption.dbType != 'SSH'" />
@@ -313,6 +314,12 @@ const dbLogoMap = {
     text: "CH",
     bg: "#fef9c3",
     color: "#ca8a04",
+  },
+  Doris: {
+    icon: require("@/../resources/icon/doris.svg"),
+    text: "DO",
+    bg: "#ecfdf5",
+    color: "#0f766e",
   },
   DuckDB: {
     icon: require("@/../resources/icon/duckdb.svg"),
@@ -446,6 +453,7 @@ export default {
         "MySQL",
         "PostgreSQL",
         "ClickHouse",
+        "Doris",
         "DuckDB",
         "KingbaseES",
         "Dameng",
@@ -600,6 +608,13 @@ export default {
           this.connectionOption.password = "";
           this.connectionOption.port = 8123;
           this.connectionOption.database = "default";
+          this.connectionOption.useSSL = false;
+          break;
+        case "Doris":
+          this.connectionOption.user = "root";
+          this.connectionOption.password = "";
+          this.connectionOption.port = 9030;
+          this.connectionOption.database = "";
           this.connectionOption.useSSL = false;
           break;
         case "DuckDB":
