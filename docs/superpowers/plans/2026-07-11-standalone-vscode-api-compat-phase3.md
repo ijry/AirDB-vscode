@@ -53,7 +53,7 @@
 - [x] Task 2: webview view provider shim and extension-host registry.
 - [x] Task 3: workbench sidebar rendering for webview views.
 - [x] Task 4: progress callback compatibility.
-- [ ] Task 5: compat fixture, coverage docs, and final verification.
+- [x] Task 5: compat fixture, coverage docs, and final verification.
 
 ---
 
@@ -505,6 +505,7 @@ git commit -m "feat: add progress callback compatibility"
 **Files:**
 - Modify: `standalone/extension-host/test/fixtures-compat/compat-extension/package.json`
 - Modify: `standalone/extension-host/test/fixtures-compat/compat-extension/extension.js`
+- Modify: `standalone/scripts/smoke-extension-diagnostics-ipc.mjs`
 - Modify: `standalone/scripts/smoke-vscode-api-compat-ipc.mjs`
 - Modify: `standalone/docs/vscode-api-coverage.md`
 - Modify: `standalone/README.md`
@@ -514,7 +515,7 @@ git commit -m "feat: add progress callback compatibility"
 - Consumes: Phase 3 APIs from Tasks 1-4.
 - Produces: real IPC smoke coverage for URI, RelativePattern, webview views, and progress.
 
-- [ ] **Step 1: Update fixture manifest**
+- [x] **Step 1: Update fixture manifest**
 
 In `compat-extension/package.json`, add a contributed view under the existing test extension:
 
@@ -531,7 +532,7 @@ In `compat-extension/package.json`, add a contributed view under the existing te
 
 If `viewsContainers` does not define `airdbStandalone`, add it with a title of `Compat`.
 
-- [ ] **Step 2: Update fixture extension code**
+- [x] **Step 2: Update fixture extension code**
 
 In `extension.js`, add activation code that:
 
@@ -555,7 +556,7 @@ await vscode.window.withProgress({ title: "Compat Progress", cancellable: true }
 
 Expose command output or activation exports that the smoke script can assert without parsing UI.
 
-- [ ] **Step 3: Update smoke assertions**
+- [x] **Step 3: Update smoke assertions**
 
 In `standalone/scripts/smoke-vscode-api-compat-ipc.mjs`, assert:
 
@@ -564,12 +565,13 @@ In `standalone/scripts/smoke-vscode-api-compat-ipc.mjs`, assert:
 - A `webviewView.setHtml` notification contains `Compat Webview`.
 - Progress start/report/end notifications are observed.
 - Existing Phase 2 assertions still pass.
+- The diagnostics smoke uses `tasks.fetchTasks` as the intentional unsupported API probe because `window.registerWebviewViewProvider` is implemented in Phase 3.
 
-- [ ] **Step 4: Update coverage and README**
+- [x] **Step 4: Update coverage and README**
 
 Move `window.registerWebviewViewProvider`, `Uri.joinPath`, `Uri.with`, `RelativePattern`, richer glob matching, and `withProgress` callback shape to the correct implemented or partial sections in `standalone/docs/vscode-api-coverage.md`. Keep tasks and debug listed as unsupported. Update `standalone/README.md` so the smoke command description includes Phase 3 coverage.
 
-- [ ] **Step 5: Run final verification**
+- [x] **Step 5: Run final verification**
 
 Run:
 
@@ -583,10 +585,10 @@ npm --prefix standalone run smoke:vscode-api-compat-ipc
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 6: Commit Task 5**
+- [x] **Step 6: Commit Task 5**
 
 ```bash
-git add standalone/extension-host/test/fixtures-compat/compat-extension/package.json standalone/extension-host/test/fixtures-compat/compat-extension/extension.js standalone/scripts/smoke-vscode-api-compat-ipc.mjs standalone/docs/vscode-api-coverage.md standalone/README.md docs/superpowers/plans/2026-07-11-standalone-vscode-api-compat-phase3.md
+git add standalone/extension-host/test/fixtures-compat/compat-extension/package.json standalone/extension-host/test/fixtures-compat/compat-extension/extension.js standalone/scripts/smoke-extension-diagnostics-ipc.mjs standalone/scripts/smoke-vscode-api-compat-ipc.mjs standalone/docs/vscode-api-coverage.md standalone/README.md docs/superpowers/plans/2026-07-11-standalone-vscode-api-compat-phase3.md
 git commit -m "test: extend standalone vscode api compatibility smoke"
 ```
 
@@ -594,8 +596,8 @@ git commit -m "test: extend standalone vscode api compatibility smoke"
 
 ## Final Review
 
-- [ ] `git status --short --branch` shows only intentional changes before each commit.
-- [ ] The Phase 3 plan checkboxes reflect completed tasks.
-- [ ] `standalone/docs/vscode-api-coverage.md` does not claim full VS Code API compatibility.
-- [ ] Default prepared extensions remain AirDB-only.
-- [ ] Final verification commands pass.
+- [x] `git status --short --branch` shows only intentional changes before each commit.
+- [x] The Phase 3 plan checkboxes reflect completed tasks.
+- [x] `standalone/docs/vscode-api-coverage.md` does not claim full VS Code API compatibility.
+- [x] Default prepared extensions remain AirDB-only.
+- [x] Final verification commands pass.

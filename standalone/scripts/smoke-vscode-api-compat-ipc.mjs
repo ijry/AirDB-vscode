@@ -36,6 +36,11 @@ const child = spawn(process.execPath, [hostEntry], {
 let sentCommand = false;
 let sawActivated = false;
 let sawContextMenu = false;
+let sawWebviewViewCreate = false;
+let sawWebviewViewHtml = false;
+let sawProgressStart = false;
+let sawProgressReport = false;
+let sawProgressEnd = false;
 let resolved = false;
 let stderr = "";
 let stdoutBuffer = "";
@@ -111,6 +116,40 @@ function handleStdoutLine(line) {
     finishIfReady();
     return;
   }
+  if (message.kind === "notification" && message.group === "extension.diagnostics") {
+    if (hasUnsupportedWebviewProviderDiagnostic(message.payload)) {
+      void fail("Unexpected unsupported diagnostic for window.registerWebviewViewProvider.");
+    }
+    return;
+  }
+  if (message.kind === "notification" && message.group === "webviewView.create") {
+    sawWebviewViewCreate = sawWebviewViewCreate || message.payload?.viewId === "compat.webviewView";
+    finishIfReady();
+    return;
+  }
+  if (message.kind === "notification" && message.group === "webviewView.setHtml") {
+    sawWebviewViewHtml = sawWebviewViewHtml || typeof message.payload?.html === "string" &&
+      message.payload.html.includes("Compat Webview");
+    finishIfReady();
+    return;
+  }
+  if (message.kind === "notification" && message.group === "workbench.progress.start") {
+    sawProgressStart = sawProgressStart ||
+      message.payload?.title === "Compat Progress" && message.payload?.cancellable === true;
+    finishIfReady();
+    return;
+  }
+  if (message.kind === "notification" && message.group === "workbench.progress.report") {
+    sawProgressReport = sawProgressReport ||
+      message.payload?.message === "running" && message.payload?.increment === 25;
+    finishIfReady();
+    return;
+  }
+  if (message.kind === "notification" && message.group === "workbench.progress.end") {
+    sawProgressEnd = sawProgressEnd || typeof message.payload?.id === "string";
+    finishIfReady();
+    return;
+  }
   if (message.kind === "response" && message.id === commandRequest.id) {
     handleCommandResponse(message);
   }
@@ -147,6 +186,11 @@ function isValidCompatibilityPayload(payload) {
     payload.secrets?.deleted === true &&
     Array.isArray(payload.secrets?.changedKeys) &&
     payload.secrets.changedKeys.join(",") === "compat.token,compat.token" &&
+    isValidUriCompatibilityPayload(payload.uri) &&
+    payload.progress?.message === "running" &&
+    payload.progress?.increment === 25 &&
+    payload.progress?.tokenIsCancellationRequested === false &&
+    payload.progress?.hasCancellationEvent === true &&
     payload.commands?.includesRun === true &&
     payload.commands?.includesExtra === true &&
     payload.commands?.extraCommandResult === "extra-ok" &&
@@ -154,6 +198,21 @@ function isValidCompatibilityPayload(payload) {
     payload.extension?.isActive === true &&
     payload.extension?.exports?.activated === true &&
     payload.extension?.exports?.fixture === "compat-extension"
+  );
+}
+
+function isValidUriCompatibilityPayload(uri) {
+  return (
+    typeof uri?.mediaUri === "string" &&
+    uri.mediaUri.includes("/media/main.js") &&
+    typeof uri?.changedUri === "string" &&
+    uri.changedUri.includes("/media/main.js") &&
+    uri.changedUri.includes("?v=1") &&
+    typeof uri?.patternBase === "string" &&
+    uri.patternBase.length > 0 &&
+    typeof uri?.patternBaseUri === "string" &&
+    uri.patternBaseUri.length > 0 &&
+    uri.pattern === "**/*.{json,js}"
   );
 }
 
@@ -171,11 +230,31 @@ function hasEnabledCompatMenu(payload) {
 }
 
 function finishIfReady() {
-  if (resolved && sawActivated && sawContextMenu) {
+  if (
+    resolved &&
+    sawActivated &&
+    sawContextMenu &&
+    sawWebviewViewCreate &&
+    sawWebviewViewHtml &&
+    sawProgressStart &&
+    sawProgressReport &&
+    sawProgressEnd
+  ) {
     clearTimeout(timeout);
-    console.log("Resolved VS Code API compatibility fixture through extension-host command IPC.");
+    console.log("Resolved VS Code API compatibility fixture through extension-host command IPC, webview view IPC, and progress IPC.");
     child.kill();
   }
+}
+
+function hasUnsupportedWebviewProviderDiagnostic(payload) {
+  const extensions = Array.isArray(payload?.extensions) ? payload.extensions : [];
+  return extensions.some((extension) =>
+    Array.isArray(extension?.events) &&
+    extension.events.some((event) =>
+      event?.phase === "unsupportedApi" &&
+      event?.details?.api === "window.registerWebviewViewProvider"
+    )
+  );
 }
 
 function samePath(actual, expected) {
@@ -191,6 +270,11 @@ function missingCheckpoints() {
     sentCommand ? "" : "command.execute",
     sawActivated ? "" : "extension.activated",
     sawContextMenu ? "" : "context-filtered menu contribution",
+    sawWebviewViewCreate ? "" : "webviewView.create",
+    sawWebviewViewHtml ? "" : "webviewView.setHtml",
+    sawProgressStart ? "" : "workbench.progress.start",
+    sawProgressReport ? "" : "workbench.progress.report",
+    sawProgressEnd ? "" : "workbench.progress.end",
     resolved ? "" : "compat command response"
   ].filter(Boolean);
 }

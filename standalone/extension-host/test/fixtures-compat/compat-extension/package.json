@@ -26,6 +26,22 @@
           "when": "compat.fixture.mode == 'smoke'"
         }
       ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "airdbStandalone",
+          "title": "Compat"
+        }
+      ]
+    },
+    "views": {
+      "airdbStandalone": [
+        {
+          "id": "compat.webviewView",
+          "name": "Compat Webview"
+        }
+      ]
     }
   }
 }

@@ -3,7 +3,8 @@ const path = require("node:path");
 const vscode = require("vscode");
 
 exports.activate = function activate(context) {
-  const activatedExports = { activated: true, fixture: "compat-extension" };
+  const phase3 = registerPhase3Compatibility(context);
+  const activatedExports = { activated: true, fixture: "compat-extension", phase3 };
 
   context.subscriptions.push(
     vscode.commands.registerCommand("compat.fixture.extra", () => "extra-ok"),
@@ -37,6 +38,8 @@ async function runCompatibilityFixture(context) {
   secretDisposable.dispose();
 
   const watcherEvents = await exerciseWatcher();
+  const uri = createUriCompatibility(context);
+  const progress = await exerciseProgress();
   const commands = await vscode.commands.getCommands(true);
   const extension = vscode.extensions.getExtension("fixture.compat-extension");
   const activated = await extension?.activate();
@@ -55,6 +58,8 @@ async function runCompatibilityFixture(context) {
       deleted: deletedSecret === undefined,
       changedKeys: secretChanges
     },
+    uri,
+    progress,
     commands: {
       includesRun: commands.includes("compat.fixture.run"),
       includesExtra: commands.includes("compat.fixture.extra"),
@@ -68,10 +73,62 @@ async function runCompatibilityFixture(context) {
   };
 }
 
+function registerPhase3Compatibility(context) {
+  const uri = createUriCompatibility(context);
+
+  context.subscriptions.push(vscode.window.registerWebviewViewProvider("compat.webviewView", {
+    resolveWebviewView(view) {
+      view.webview.html = [
+        "<html><body>",
+        "<h1>Compat Webview</h1>",
+        `<p>${escapeHtml(uri.changedUri)}</p>`,
+        "</body></html>"
+      ].join("");
+    }
+  }));
+
+  return {
+    webviewViewId: "compat.webviewView",
+    changedUri: uri.changedUri
+  };
+}
+
+function createUriCompatibility(context) {
+  const mediaUri = vscode.Uri.joinPath(context.extensionUri, "media", "main.js");
+  const changedUri = mediaUri.with({ query: "v=1" });
+  const pattern = new vscode.RelativePattern(context.extensionUri, "**/*.{json,js}");
+
+  return {
+    mediaUri: mediaUri.toString(),
+    changedUri: changedUri.toString(),
+    patternBase: pattern.base,
+    patternBaseUri: pattern.baseUri.toString(),
+    pattern: pattern.pattern
+  };
+}
+
+async function exerciseProgress() {
+  return vscode.window.withProgress({
+    location: vscode.ProgressLocation.Notification,
+    title: "Compat Progress",
+    cancellable: true
+  }, async (progress, token) => {
+    const message = token.isCancellationRequested ? "cancelled" : "running";
+    progress.report({ message, increment: 25 });
+    return {
+      message,
+      increment: 25,
+      tokenIsCancellationRequested: token.isCancellationRequested,
+      hasCancellationEvent: typeof token.onCancellationRequested === "function"
+    };
+  });
+}
+
 async function exerciseWatcher() {
-  const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath ?? vscode.workspace.rootPath;
+  const rootUri = vscode.workspace.workspaceFolders?.[0]?.uri ?? vscode.Uri.file(vscode.workspace.rootPath);
+  const root = rootUri.fsPath;
   const filePath = path.join(root, "compat-fixture.compat");
-  const watcher = vscode.workspace.createFileSystemWatcher("**/*.compat");
+  const watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(rootUri, "**/*.compat"));
   const events = [];
 
   watcher.onDidCreate((uri) => events.push({ type: "create", path: uri.fsPath }));
@@ -123,4 +180,12 @@ function waitForEvent(events, type) {
 
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
