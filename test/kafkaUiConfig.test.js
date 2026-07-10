@@ -10,7 +10,7 @@ const kafka = fs.readFileSync(kafkaPath, "utf8");
 
 assert.match(connect, /import Kafka from "\.\/component\/Kafka\.vue"/);
 assert.match(connect, /components: \{[\s\S]*Kafka/);
-assert.match(connect, /Kafka:\s*\{\s*text:\s*"KA"/);
+assert.match(connect, /Kafka:\s*\{[\s\S]*icon: require\("@\/\.\.\/resources\/icon\/kafka\.svg"\)/);
 assert.match(connect, /supportDatabases:\s*\[[\s\S]*"Kafka"/);
 assert.match(connect, /<Kafka\s+v-else-if="connectionOption\.dbType == 'Kafka'"/);
 assert.match(connect, /\['MySQL', 'PostgreSQL', 'KingbaseES', 'MongoDB', 'Redis', 'ElasticSearch', 'Kafka'\]/);

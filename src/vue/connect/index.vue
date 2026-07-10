@@ -299,22 +299,25 @@ const dbLogoMap = {
     color: "#2563eb",
   },
   KingbaseES: {
+    icon: require("@/../resources/icon/kingbase.svg"),
     text: "KB",
     bg: "#ecfeff",
     color: "#0891b2",
   },
   Dameng: {
+    icon: require("@/../resources/icon/dameng.svg"),
     text: "DM",
     bg: "#f0fdf4",
     color: "#15803d",
   },
   Oracle: {
+    icon: require("@/../resources/icon/oracle.svg"),
     text: "OR",
     bg: "#fff1f2",
     color: "#e11d48",
   },
   SqlServer: {
-    icon: require("@/../resources/icon/mssql_server.png"),
+    icon: require("@/../resources/icon/sqlserver.svg"),
     text: "MS",
     bg: "#eef2ff",
     color: "#4338ca",
@@ -332,6 +335,7 @@ const dbLogoMap = {
     color: "#16a34a",
   },
   Redis: {
+    icon: require("@/../resources/icon/redis.svg"),
     text: "RD",
     bg: "#fef2f2",
     color: "#dc2626",
@@ -343,6 +347,7 @@ const dbLogoMap = {
     color: "#65a30d",
   },
   Kafka: {
+    icon: require("@/../resources/icon/kafka.svg"),
     text: "KA",
     bg: "#f8fafc",
     color: "#111827",
@@ -354,6 +359,7 @@ const dbLogoMap = {
     color: "#475569",
   },
   FTP: {
+    icon: require("@/../resources/icon/ftp.svg"),
     text: "FTP",
     bg: "#eef2ff",
     color: "#4f46e5",

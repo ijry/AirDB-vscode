@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="KingbaseES">
+  <defs>
+    <linearGradient id="kingbase-a" x1="10" y1="10" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#38bdf8"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#ecfeff"/>
+  <path d="M16 14h8v36h-8z" fill="url(#kingbase-a)"/>
+  <path d="M28 31 48 14h-12L24 26v10l13 14h12z" fill="#0891b2"/>
+  <path d="M28 31 49 50H37L24 37v-8z" fill="#0e7490"/>
+</svg>
