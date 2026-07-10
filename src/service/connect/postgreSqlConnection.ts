@@ -26,9 +26,13 @@ export class PostgreSqlConnection extends IConnection {
                 key: (node.clientKeyPath) ? fs.readFileSync(node.clientKeyPath) : null,
             }
         }
-        this.client = new Client(config);
+        this.client = this.createClient(config);
 
     }
+    protected createClient(config: ClientConfig): Client {
+        return new Client(config);
+    }
+
     isAlive(): boolean {
         const temp = this.client as any;
         return !this.dead && temp._connected && !temp._ending && temp._queryable;

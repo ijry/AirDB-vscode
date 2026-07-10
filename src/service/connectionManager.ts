@@ -15,6 +15,7 @@ import { MSSqlConnnection } from "./connect/mssqlConnection";
 import { MysqlConnection } from "./connect/mysqlConnection";
 import { OracleConnection } from "./connect/oracleConnection";
 import { PostgreSqlConnection } from "./connect/postgreSqlConnection";
+import { RedshiftConnection } from "./connect/redshiftConnection";
 import { RedisConnection } from "./connect/redisConnection";
 import { FTPConnection } from "./connect/ftpConnection";
 import { SqliteConnection } from "./connect/sqliteConnection";
@@ -162,6 +163,8 @@ export class ConnectionManager {
                 return new MSSqlConnnection(opt)
             case DatabaseType.PG:
                 return new PostgreSqlConnection(opt)
+            case DatabaseType.REDSHIFT:
+                return new RedshiftConnection(opt)
             case DatabaseType.KINGBASE:
                 return new KingbaseConnection(opt)
             case DatabaseType.DAMENG:
