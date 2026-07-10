@@ -264,7 +264,10 @@ describe("workbenchReducer", () => {
         phase: "activation",
         status: "activated",
         message: "Activated extension",
-        details: { resolvedMain: "C:/extensions/fixture/extension.js" }
+        details: {
+          resolvedMain: "C:/extensions/fixture/extension.js",
+          nested: { path: "C:/extensions/fixture/extension.js" }
+        }
       }]
     }];
 
@@ -278,13 +281,15 @@ describe("workbenchReducer", () => {
     fixture.contributedViews!.push("tampered.view");
     event.message = "Tampered";
     event.details!.resolvedMain = "C:/tampered.js";
+    (event.details!.nested as Record<string, unknown>).path = "C:/tampered-nested.js";
 
     const extension = state.diagnostics.extensions[0];
     expect(extension.activationEvents).toEqual(["onStartupFinished"]);
     expect(extension.contributedViews).toEqual(["fixture.view"]);
     expect(extension.events[0].message).toBe("Activated extension");
     expect(extension.events[0].details).toEqual({
-      resolvedMain: "C:/extensions/fixture/extension.js"
+      resolvedMain: "C:/extensions/fixture/extension.js",
+      nested: { path: "C:/extensions/fixture/extension.js" }
     });
   });
 });

@@ -234,9 +234,27 @@ function copyDiagnosticsExtensions(extensions: ExtensionDiagnosticState[]): Exte
     ...(extension.contributedViews ? { contributedViews: [...extension.contributedViews] } : {}),
     events: extension.events.map((event) => ({
       ...event,
-      ...(event.details ? { details: { ...event.details } } : {})
+      ...(event.details ? { details: copyDiagnosticDetails(event.details) } : {})
     }))
   }));
+}
+
+function copyDiagnosticDetails(details: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(details).map(([key, value]) => [key, copyDiagnosticDetailValue(value)])
+  );
+}
+
+function copyDiagnosticDetailValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(copyDiagnosticDetailValue);
+  }
+
+  if (value && typeof value === "object") {
+    return copyDiagnosticDetails(value as Record<string, unknown>);
+  }
+
+  return value;
 }
 
 function upsertOutput(outputs: OutputChannelState[], output: OutputChannelState): OutputChannelState[] {

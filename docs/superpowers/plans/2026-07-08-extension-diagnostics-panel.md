@@ -44,6 +44,14 @@ Additional hardening completed on 2026-07-11:
 - Verified `npx tsc -p tsconfig.json --noEmit` in `standalone/extension-host`.
 - Verified `npx vitest run` in `standalone/extension-host`.
 
+Additional hardening completed on 2026-07-11:
+
+- Deep-copied nested diagnostics event `details` in the app reducer so action payload mutations cannot leak into workbench state.
+- Extended the diagnostics state defensive-copy regression test to cover nested detail objects.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app -- workbenchStore.test.ts -t "stores extension diagnostics snapshots defensively"`.
+- Verified `npm --prefix standalone run typecheck --workspace @airdb-standalone/app`.
+- Verified `npm --prefix standalone run test --workspace @airdb-standalone/app`.
+
 ## Global Constraints
 
 - Record diagnostics for every extension directory under `standalone/extensions`.
