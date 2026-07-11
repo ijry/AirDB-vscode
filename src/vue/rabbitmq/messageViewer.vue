@@ -11,7 +11,7 @@
         <el-checkbox v-model="form.requeue">Requeue</el-checkbox>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-refresh" :loading="loading" @click="read">Read</el-button>
+        <el-button type="primary" :icon="Refresh" :loading="loading" @click="read">Read</el-button>
       </el-form-item>
     </el-form>
     <el-alert v-if="error" :title="error" type="error" show-icon class="message"></el-alert>
@@ -22,17 +22,20 @@
       <el-table-column prop="redelivered" label="Redelivered" width="110"></el-table-column>
       <el-table-column prop="payload" label="Payload" min-width="320" show-overflow-tooltip></el-table-column>
       <el-table-column label="Properties" min-width="220" show-overflow-tooltip>
-        <template slot-scope="scope">{{ JSON.stringify(scope.row.properties || {}) }}</template>
+        <template #default="scope">{{ JSON.stringify(scope.row.properties || {}) }}</template>
       </el-table-column>
     </el-table>
   </div>
 </template>
 
 <script>
+import { Refresh } from "@element-plus/icons-vue";
 import { getVscodeEvent } from "../util/vscode";
 let vscodeEvent;
 
 export default {
+  components: { Refresh },
+  setup() { return { Refresh }; },
   data() {
     return {
       queue: "",
@@ -62,7 +65,7 @@ export default {
       });
     vscodeEvent.emit("route-" + this.$route.name);
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy();
   },
   methods: {

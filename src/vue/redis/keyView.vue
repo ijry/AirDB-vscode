@@ -5,29 +5,37 @@
       <el-form :inline="true" size="small">
         <!-- key name -->
         <el-form-item>
-          <el-input ref="keyNameInput" v-model="edit.name" @keyup.enter.native="rename" placeholder="set to rename key">
-            <span slot="prepend" class="key-detail-type">{{ key.type }}</span>
-            <i class="el-icon-check el-input__icon cursor-pointer" slot="suffix" :title="'Click to rename'" @click="rename">
-            </i>
+          <el-input ref="keyNameInput" v-model="edit.name" @keyup.enter="rename" placeholder="set to rename key">
+            <template #prepend>
+              <span class="key-detail-type">{{ key.type }}</span>
+            </template>
+            <template #suffix>
+              <el-icon class="cursor-pointer" :title="'Click to rename'" @click="rename"><Check /></el-icon>
+            </template>
           </el-input>
         </el-form-item>
 
         <!-- key ttl -->
         <el-form-item>
-          <el-input v-model="edit.ttl" @keyup.enter.native="ttlKey" type='number'>
-            <span slot="prepend">TTL</span>
-            <i class="el-icon-check el-input__icon cursor-pointer" slot="suffix" :title="'Click to change ttl'" @click="ttlKey">
-            </i>
+          <el-input v-model="edit.ttl" @keyup.enter="ttlKey" type='number'>
+            <template #prepend>
+              <span>TTL</span>
+            </template>
+            <template #suffix>
+              <el-icon class="cursor-pointer" :title="'Click to change ttl'" @click="ttlKey"><Check /></el-icon>
+            </template>
           </el-input>
         </el-form-item>
 
         <!-- del refresh key btn -->
         <el-form-item>
-          <el-button type="danger" @click="deleteKey" icon="el-icon-delete"></el-button>
-          <el-button type="success" @click="refresh" icon="el-icon-refresh"></el-button>
+          <el-button type="danger" @click="deleteKey" :icon="Delete"></el-button>
+          <el-button type="success" @click="refresh" :icon="Refresh"></el-button>
           <template v-if="key.type=='string'">
-            <el-select v-model="selectedView" class='format-selector' :style='selectStyle' size='mini'>
-              <span slot="prefix" class="fa fa-sitemap"></span>
+            <el-select v-model="selectedView" class='format-selector' :style='selectStyle' size='small'>
+              <template #prefix>
+                <span class="fa fa-sitemap"></span>
+              </template>
               <el-option v-for="item in viewers" :key="item.value" :label="item.text" :value="item.value">
               </el-option>
             </el-select>
@@ -69,7 +77,7 @@
             </el-form-item>
           </el-form>
           <!-- edit & add dialog -->
-          <el-dialog :title="dialogTitle" :visible.sync="editDialogVisiable">
+          <el-dialog :title="dialogTitle" v-model="editDialogVisiable">
             <el-form>
               <el-form-item label="key" v-if="key.type=='hash'">
                 <el-input v-model="addKey"></el-input>
@@ -78,10 +86,12 @@
                 <el-input v-model="addData"></el-input>
               </el-form-item>
             </el-form>
-            <div slot="footer" class="dialog-footer">
-              <el-button @click="editDialogVisiable = false">Cancel</el-button>
-              <el-button type="primary" @click="confirmAdd">Confirm</el-button>
-            </div>
+            <template #footer>
+              <div class="dialog-footer">
+                <el-button @click="editDialogVisiable = false">Cancel</el-button>
+                <el-button type="primary" @click="confirmAdd">Confirm</el-button>
+              </div>
+            </template>
           </el-dialog>
         </div>
         <!-- content table -->
@@ -90,28 +100,24 @@
             <el-table-column type="index" label="ID" sortable width="60" align="center">
             </el-table-column>
             <el-table-column v-if="key.type=='hash'" resizable sortable label="Key" align="center">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{scope.row.key}}
               </template>
             </el-table-column>
             <el-table-column resizable sortable show-overflow-tooltip label="Value" align="center">
-              <template slot-scope="scope">
+              <template #default="scope">
                 {{key.type=='hash'?scope.row.value:scope.row}}
               </template>
             </el-table-column>
             <el-table-column label="Operation" width="150" align="center">
-              <template slot-scope="scope">
-                <el-button type="text" @click="showEditDialog(scope.row)" icon="el-icon-edit" circle  v-if="key.type=='hash'">
+              <template #default="scope">
+                <el-button type="primary" link @click="showEditDialog(scope.row)" :icon="Edit" circle v-if="key.type=='hash'">
                 </el-button>
-                <el-button type="text" @click="deleteLine(scope.row)" icon="el-icon-delete" circle>
+                <el-button type="primary" link @click="deleteLine(scope.row)" :icon="Delete" circle>
                 </el-button>
               </template>
             </el-table-column>
           </el-table>
-          <!-- <el-pagination class="pagenation-table-page-container" v-if="dataAfterFilter.length > pageSize"
-                        :total="dataAfterFilter.length" :page-size="pageSize" :current-page.sync="pageIndex"
-                        layout="total, prev, pager, next" background>
-                    </el-pagination> -->
         </div>
       </div>
       <!-- hset -->
@@ -121,13 +127,18 @@
 
 <script>
 import formatHighlight from "json-format-highlight";
+import { Check, Delete, Edit, Refresh } from "@element-plus/icons-vue";
 
 import { getVscodeEvent } from "../util/vscode";
 const prettyBytes = require("pretty-bytes");
 let vscodeEvent;
 
 export default {
-  destroyed() {
+  components: { Check, Delete, Edit, Refresh },
+  setup() {
+    return { Check, Delete, Edit, Refresh };
+  },
+  unmounted() {
     vscodeEvent.destroy();
   },
   mounted() {

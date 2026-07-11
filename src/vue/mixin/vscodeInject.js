@@ -21,7 +21,7 @@ export const inject = {
             return this;
         }
     },
-    destroyed() {
+    unmounted() {
         this.vscodeEvent.destroy();
     },
 }

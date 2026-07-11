@@ -17,65 +17,74 @@
       <el-table-column prop="remotePort" label="Remote Port">
       </el-table-column>
       <el-table-column prop="state" label="State">
-        <template slot-scope="scope">
+        <template #default="scope">
           {{scope.row.state==true?"running":"stop"}}
         </template>
       </el-table-column>
       <el-table-column fixed="right" width="200">
-        <template slot="header" slot-scope="scope">
-          <el-button type="info" icon="el-icon-circle-plus-outline" size="small" circle @click="createRequest">
+        <template #header>
+          <el-button type="info" size="small" circle @click="createRequest">
+            <el-icon><CirclePlus /></el-icon>
           </el-button>
-          <el-button type="primary" icon="el-icon-refresh" size="small" circle @click="load"> </el-button>
+          <el-button type="primary" size="small" circle @click="load">
+            <el-icon><Refresh /></el-icon>
+          </el-button>
         </template>
-        <template slot-scope="scope">
-          <el-button v-if="!scope.row.state" @click="start(scope.row.id);" type="success" size="small" title="Start"
-            icon="el-icon-video-play" circle>
+        <template #default="scope">
+          <el-button v-if="!scope.row.state" @click="start(scope.row.id);" type="success" size="small" title="Start" circle>
+            <el-icon><VideoPlay /></el-icon>
           </el-button>
-          <el-button v-if="scope.row.state" @click="stop(scope.row.id);" type="danger" size="small" title="Stop"
-            icon="el-icon-switch-button" circle>
+          <el-button v-if="scope.row.state" @click="stop(scope.row.id);" type="danger" size="small" title="Stop" circle>
+            <el-icon><SwitchButton /></el-icon>
           </el-button>
-          <el-button @click="openEdit(scope.row);" type="primary" size="small" title="Edit" icon="el-icon-edit" circle>
+          <el-button @click="openEdit(scope.row);" type="primary" size="small" title="Edit" circle>
+            <el-icon><Edit /></el-icon>
           </el-button>
-          <el-button @click="info(scope.row);" type="info" size="small" title="Show command" icon="el-icon-info" circle>
+          <el-button @click="info(scope.row);" type="info" size="small" title="Show command" circle>
+            <el-icon><InfoFilled /></el-icon>
           </el-button>
-          <el-button @click="deleteConfirm(scope.row.id)" title="delete" type="danger" size="small"
-            icon="el-icon-delete" circle>
+          <el-button @click="deleteConfirm(scope.row.id)" title="delete" type="danger" size="small" circle>
+            <el-icon><Delete /></el-icon>
           </el-button>
         </template>
       </el-table-column>
     </el-table>
-    <el-dialog ref="editDialog" :title="panel.title" :visible.sync="panel.visible" width="90%" top="3vh" size="small">
+    <el-dialog ref="editDialog" :title="panel.title" v-model="panel.visible" width="90%" top="3vh">
       <el-form ref="infoForm" :model="panel.edit" label-width="120px">
-        <el-form-item size="mini" label="name">
+        <el-form-item size="small" label="name">
           <el-input v-model="panel.edit.name"></el-input>
         </el-form-item>
-        <el-form-item size="mini" label="localHost">
+        <el-form-item size="small" label="localHost">
           <el-input v-model="panel.edit.localHost"></el-input>
         </el-form-item>
-        <el-form-item size="mini" label="localPort">
+        <el-form-item size="small" label="localPort">
           <el-input v-model="panel.edit.localPort"></el-input>
         </el-form-item>
-        <el-form-item size="mini" label="remoteHost">
+        <el-form-item size="small" label="remoteHost">
           <el-input v-model="panel.edit.remoteHost"></el-input>
         </el-form-item>
-        <el-form-item size="mini" label="remotePort">
+        <el-form-item size="small" label="remotePort">
           <el-input v-model="panel.edit.remotePort"></el-input>
         </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="panel.visible = false">Cancel</el-button>
-        <el-button type="primary" :loading="panel.loading" @click="confirmUpdate">
-          {{panel.edit.id!=null?"Update":"Create"}}
-        </el-button>
-      </span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="panel.visible = false">Cancel</el-button>
+          <el-button type="primary" :loading="panel.loading" @click="confirmUpdate">
+            {{panel.edit.id!=null?"Update":"Create"}}
+          </el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script>
+  import { CirclePlus, Delete, Edit, InfoFilled, Refresh, SwitchButton, VideoPlay } from "@element-plus/icons-vue";
   import { inject } from "../mixin/vscodeInject";
   export default {
     mixins: [inject],
+    components: { CirclePlus, Delete, Edit, InfoFilled, Refresh, SwitchButton, VideoPlay },
     data() {
       return {
         title: "",

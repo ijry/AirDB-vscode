@@ -31,7 +31,7 @@ export default {
     })
     vscodeEvent.emit("init")
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy()
   },
 }

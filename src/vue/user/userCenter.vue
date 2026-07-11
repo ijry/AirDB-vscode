@@ -23,8 +23,8 @@
                 (<span class="ml-2">{{ replaceMiddleWithAsterisks(initData.mainPwd) }}</span>)
               </div>
               <div clas="flex-1 flex justify-end">
-                <el-button size="mini" @click="resetMainPwd" v-if="initData.mainPwd">{{ $t('Reset') }}</el-button>
-                <el-button size="mini" @click="setMainPwd" v-else>{{ $t('Set') }}</el-button>
+                <el-button size="small" @click="resetMainPwd" v-if="initData.mainPwd">{{ $t('Reset') }}</el-button>
+                <el-button size="small" @click="setMainPwd" v-else>{{ $t('Set') }}</el-button>
               </div>
             </div>
             <div class="mb-2 w-full text-gray-600 flex justify-between">
@@ -32,14 +32,14 @@
                 {{ $t('Vip') }}
               </div>
               <div clas="flex-1 flex justify-end">
-                <el-button size="mini" v-if="vipInfo.typeInfo && vipInfo.typeInfo.title">{{ $t(vipInfo.typeInfo.title) }}</el-button>
-                <el-button size="mini" v-else @click="openBuyVip">{{ $t('Subscribe') }}</el-button>
+                <el-button size="small" v-if="vipInfo.typeInfo && vipInfo.typeInfo.title">{{ $t(vipInfo.typeInfo.title) }}</el-button>
+                <el-button size="small" v-else @click="openBuyVip">{{ $t('Subscribe') }}</el-button>
               </div>
             </div>
             <div class="mb-2 w-full text-gray-600 flex justify-between">
               <div class="w-120px">{{ $t('Logout') }}</div>
               <div clas="flex-1 flex justify-end">
-                <el-button size="mini" @click="logout">{{ $t('Logout') }}</el-button>
+                <el-button size="small" @click="logout">{{ $t('Logout') }}</el-button>
               </div>
             </div>
           </div>
@@ -48,7 +48,7 @@
 
       <el-dialog
         title="User"
-        :visible.sync="dialogVisible"
+        v-model="dialogVisible"
         width="700px">
         <lingyun-user :baseUrl="baseUrl"
           @reg-success="userSuccess"
@@ -103,7 +103,7 @@ export default {
       })
     vscodeEvent.emit("route-" + this.$route.name);
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy();
   },
   methods: {

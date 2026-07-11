@@ -17,7 +17,7 @@
         <el-input type="textarea" :autosize="{ minRows: 10 }" v-model="form.value"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-s-promotion" :loading="loading" @click="send">Send</el-button>
+        <el-button type="primary" :icon="Promotion" :loading="loading" @click="send">Send</el-button>
       </el-form-item>
     </el-form>
     <el-alert v-if="error" :title="error" type="error" show-icon class="message"></el-alert>
@@ -26,10 +26,13 @@
 </template>
 
 <script>
+import { Promotion } from "@element-plus/icons-vue";
 import { getVscodeEvent } from "../util/vscode";
 let vscodeEvent;
 
 export default {
+  components: { Promotion },
+  setup() { return { Promotion }; },
   data() {
     return {
       topic: "",
@@ -62,7 +65,7 @@ export default {
       });
     vscodeEvent.emit("route-" + this.$route.name);
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy();
   },
   methods: {

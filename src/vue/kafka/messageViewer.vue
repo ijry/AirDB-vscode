@@ -21,7 +21,7 @@
         <el-input-number v-model="form.limit" :min="1" :max="1000" controls-position="right"></el-input-number>
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" icon="el-icon-refresh" :loading="loading" @click="read">Read</el-button>
+        <el-button type="primary" :icon="Refresh" :loading="loading" @click="read">Read</el-button>
       </el-form-item>
     </el-form>
     <el-alert v-if="error" :title="error" type="error" show-icon class="message"></el-alert>
@@ -32,17 +32,20 @@
       <el-table-column prop="key" label="Key" width="180" show-overflow-tooltip></el-table-column>
       <el-table-column prop="value" label="Value" min-width="300" show-overflow-tooltip></el-table-column>
       <el-table-column label="Headers" min-width="220" show-overflow-tooltip>
-        <template slot-scope="scope">{{ JSON.stringify(scope.row.headers || {}) }}</template>
+        <template #default="scope">{{ JSON.stringify(scope.row.headers || {}) }}</template>
       </el-table-column>
     </el-table>
   </div>
 </template>
 
 <script>
+import { Refresh } from "@element-plus/icons-vue";
 import { getVscodeEvent } from "../util/vscode";
 let vscodeEvent;
 
 export default {
+  components: { Refresh },
+  setup() { return { Refresh }; },
   data() {
     return {
       topic: "",
@@ -74,7 +77,7 @@ export default {
       });
     vscodeEvent.emit("route-" + this.$route.name);
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy();
   },
   methods: {

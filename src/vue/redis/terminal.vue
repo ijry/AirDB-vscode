@@ -1,12 +1,12 @@
 <template>
   <div id="app">
-    <el-form @submit.native.prevent>
+    <el-form @submit.prevent>
       <el-form-item>
         <!-- content textarea -->
         <el-input ref="cliContent" type="textarea" v-model="content" rows='22' :disabled="true" style="border-bottom: 1px solid #E5E5E5;" id='cli-content'>
         </el-input>
         <!-- input params -->
-        <el-autocomplete class="input-suggestion" autocomplete="off" v-model="params" :debounce="0" :fetch-suggestions="inputSuggestion" :placeholder="'Press Enter To Exec Commands, Up and Down To Switch History'" :select-when-unmatched="false" :trigger-on-focus="false" popper-class="cli-console-suggestion" @keypress.enter.native="consoleExec" ref="cliParams" @keyup.up.native="searchUp" @keyup.down.native="searchDown">
+        <el-autocomplete class="input-suggestion" autocomplete="off" v-model="params" :debounce="0" :fetch-suggestions="inputSuggestion" :placeholder="'Press Enter To Exec Commands, Up and Down To Switch History'" :select-when-unmatched="false" :trigger-on-focus="false" popper-class="cli-console-suggestion" @keypress.enter="consoleExec" ref="cliParams" @keyup.up="searchUp" @keyup.down="searchDown">
         </el-autocomplete>
       </el-form-item>
     </el-form>
@@ -74,7 +74,7 @@ export default {
       });
     vscodeEvent.emit("route-" + this.$route.name);
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy();
   },
   methods: {

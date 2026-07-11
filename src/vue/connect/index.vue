@@ -275,7 +275,7 @@
 
     <el-dialog
       title="User"
-      :visible.sync="dialogVisible"
+      v-model="dialogVisible"
       width="700px">
       <lingyun-user baseUrl="https://airdb.lingyun.net"
         @reg-success="userSuccess"
@@ -579,7 +579,7 @@ export default {
     vscodeEvent.emit("route-" + this.$route.name);
     // vscodeEvent.emit("loginSuccess", {token: '12'});
   },
-  destroyed() {
+  unmounted() {
     vscodeEvent.destroy();
   },
   methods: {
