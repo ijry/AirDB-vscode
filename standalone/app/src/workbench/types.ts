@@ -1,9 +1,21 @@
-import type { HostCommandDto } from "@airdb-standalone/protocol";
+import type {
+  ExtensionDiagnosticPhase,
+  ExtensionDiagnosticStatus,
+  HostCommandDto
+} from "@airdb-standalone/protocol";
 
 export interface ActivityContainer {
   id: string;
   title: string;
   icon?: string;
+}
+
+export interface MenuContributionState {
+  command?: string;
+  when?: string;
+  group?: string;
+  extensionId?: string;
+  [key: string]: unknown;
 }
 
 export interface TreeNode {
@@ -96,17 +108,64 @@ export interface TerminalState {
   visible: boolean;
 }
 
+export interface ProgressState {
+  id: string;
+  extensionId?: string;
+  title?: string;
+  location?: number;
+  cancellable?: boolean;
+  message?: string;
+  increment?: number;
+}
+
+export interface ExtensionDiagnosticEventState {
+  id: string;
+  extensionId?: string;
+  extensionPath: string;
+  timestamp: string;
+  phase: ExtensionDiagnosticPhase;
+  status: ExtensionDiagnosticStatus;
+  message: string;
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface ExtensionDiagnosticState {
+  id: string;
+  extensionPath: string;
+  displayName?: string;
+  version?: string;
+  publisher?: string;
+  main?: string;
+  resolvedMain?: string;
+  activationEvents?: string[];
+  contributedViews?: string[];
+  commandCount: number;
+  status: ExtensionDiagnosticStatus;
+  lastError?: string;
+  startedAt?: string;
+  activatedAt?: string;
+  events: ExtensionDiagnosticEventState[];
+}
+
 export interface WorkbenchState {
   containers: ActivityContainer[];
   activeContainerId?: string;
+  contextKeys: Record<string, unknown>;
+  menus: Record<string, MenuContributionState[]>;
   treeViews: Record<string, TreeViewState>;
   editors: EditorTab[];
   activeEditorId?: string;
   webviews: WebviewState[];
+  webviewViews: WebviewState[];
   dialogs: DialogState[];
   notifications: NotificationState[];
   outputs: OutputChannelState[];
   activeOutputId?: string;
   statusBarItems: StatusBarItemState[];
   terminals: TerminalState[];
+  progresses: ProgressState[];
+  diagnostics: {
+    extensions: ExtensionDiagnosticState[];
+  };
 }

@@ -11,6 +11,7 @@ import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridg
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
 import { respondToTextEditorRequest } from "./bridge/textEditors";
 import { ActivityBar } from "./workbench/ActivityBar";
+import { DiagnosticsPanel } from "./workbench/DiagnosticsPanel";
 import { DialogHost } from "./workbench/DialogHost";
 import { EditorTabs } from "./workbench/EditorTabs";
 import { NotificationHost } from "./workbench/NotificationHost";
@@ -259,6 +260,7 @@ export function App() {
         <WebviewPanel state={state} />
         <OutputPanel state={state} />
         <TerminalPanel state={state} />
+        <DiagnosticsPanel state={state} />
       </section>
       <DialogHost dialogs={state.dialogs} onRespond={(dialog, value) => void respondToDialog(dialog, value)} />
       <NotificationHost

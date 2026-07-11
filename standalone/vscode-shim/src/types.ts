@@ -48,6 +48,13 @@ export class Uri {
 
   static file(fsPath: string): Uri {
     const normalized = fsPath.replace(/\\/g, "/");
+    if (normalized.startsWith("//") && !normalized.startsWith("///")) {
+      const withoutSlashes = normalized.slice(2);
+      const separator = withoutSlashes.indexOf("/");
+      const authority = separator === -1 ? withoutSlashes : withoutSlashes.slice(0, separator);
+      const path = separator === -1 ? "/" : `/${withoutSlashes.slice(separator + 1)}`;
+      return new Uri("file", authority, path);
+    }
     const path = normalized.startsWith("/") ? normalized : `/${normalized}`;
     return new Uri("file", "", path);
   }
@@ -57,27 +64,52 @@ export class Uri {
     return new Uri(
       parsed.protocol.replace(":", ""),
       parsed.host,
-      parsed.pathname,
-      parsed.search.replace(/^\?/, ""),
-      parsed.hash.replace(/^#/, "")
+      decodeUriPath(parsed.pathname),
+      decodeUriComponent(parsed.search.replace(/^\?/, "")),
+      decodeUriComponent(parsed.hash.replace(/^#/, ""))
     );
+  }
+
+  static joinPath(base: Uri, ...pathSegments: string[]): Uri {
+    return base.with({ path: normalizeJoinedUriPath(base.path, pathSegments) });
   }
 
   get fsPath(): string {
     if (this.scheme !== "file") {
       return this.path;
     }
+    if (this.authority) {
+      return `//${this.authority}${decodeUriPath(this.path)}`;
+    }
     const filePath = /^\/[A-Za-z]:(?:\/|$)/.test(this.path) ? this.path.slice(1) : this.path;
     return decodeUriPath(filePath);
   }
 
-  toString(): string {
+  with(change: {
+    scheme?: string | null;
+    authority?: string | null;
+    path?: string | null;
+    query?: string | null;
+    fragment?: string | null;
+  }): Uri {
+    return new Uri(
+      change.scheme ?? this.scheme,
+      change.authority ?? this.authority,
+      change.path ?? this.path,
+      change.query ?? this.query,
+      change.fragment ?? this.fragment
+    );
+  }
+
+  toString(skipEncoding = false): string {
+    const path = skipEncoding ? this.path : encodeUriPath(this.path);
+    const query = this.query ? `?${skipEncoding ? this.query : encodeUriQuery(this.query)}` : "";
+    const fragment = this.fragment ? `#${skipEncoding ? this.fragment : encodeUriFragment(this.fragment)}` : "";
+
     if (this.scheme === "file") {
-      return `file://${this.path}`;
+      return `file://${this.authority}${path}${query}${fragment}`;
     }
-    const query = this.query ? `?${this.query}` : "";
-    const fragment = this.fragment ? `#${this.fragment}` : "";
-    return `${this.scheme}://${this.authority}${this.path}${query}${fragment}`;
+    return `${this.scheme}://${this.authority}${path}${query}${fragment}`;
   }
 }
 
@@ -87,6 +119,59 @@ function decodeUriPath(path: string): string {
   } catch {
     return path;
   }
+}
+
+function decodeUriComponent(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+function encodeUriPath(path: string): string {
+  return path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment).replace(/%3A/gi, ":"))
+    .join("/");
+}
+
+function encodeUriQuery(query: string): string {
+  return encodeURI(query).replace(/#/g, "%23");
+}
+
+function encodeUriFragment(fragment: string): string {
+  return encodeURI(fragment);
+}
+
+function normalizeJoinedUriPath(basePath: string, pathSegments: string[]): string {
+  const joined = pathSegments.reduce((current, segment) => {
+    if (!segment) {
+      return current;
+    }
+    const normalizedSegment = segment.replace(/\\/g, "/").replace(/^\/+/, "");
+    return `${current.replace(/\/+$/, "")}/${normalizedSegment}`;
+  }, basePath || "/");
+
+  return normalizeDotSegments(joined);
+}
+
+function normalizeDotSegments(path: string): string {
+  const absolute = path.startsWith("/");
+  const parts: string[] = [];
+
+  for (const part of path.split("/")) {
+    if (!part || part === ".") {
+      continue;
+    }
+    if (part === "..") {
+      parts.pop();
+      continue;
+    }
+    parts.push(part);
+  }
+
+  return `${absolute ? "/" : ""}${parts.join("/")}` || (absolute ? "/" : "");
 }
 
 export enum FileType {
@@ -143,6 +228,28 @@ export interface WorkspaceFolder {
   readonly uri: Uri;
   readonly name: string;
   readonly index: number;
+}
+
+export class RelativePattern {
+  readonly base: string;
+  readonly baseUri: Uri;
+  readonly pattern: string;
+
+  constructor(base: string | Uri | WorkspaceFolder, pattern: string) {
+    this.baseUri = getRelativePatternBaseUri(base);
+    this.base = this.baseUri.fsPath;
+    this.pattern = pattern;
+  }
+}
+
+function getRelativePatternBaseUri(base: string | Uri | WorkspaceFolder): Uri {
+  if (base instanceof Uri) {
+    return base;
+  }
+  if (typeof base === "string") {
+    return Uri.file(base);
+  }
+  return base.uri;
 }
 
 export class Position {
@@ -231,6 +338,12 @@ export enum ProgressLocation {
   Notification = 15
 }
 
+export enum ConfigurationTarget {
+  Global = 1,
+  Workspace = 2,
+  WorkspaceFolder = 3
+}
+
 export enum StatusBarAlignment {
   Left = 1,
   Right = 2
@@ -265,6 +378,12 @@ export enum CompletionItemKind {
 }
 
 export class CompletionItem {
+  detail?: string;
+  documentation?: string | MarkdownString;
+  insertText?: string;
+  sortText?: string;
+  filterText?: string;
+
   constructor(
     public label: string,
     public kind: CompletionItemKind = CompletionItemKind.Text
@@ -289,8 +408,52 @@ export class MarkdownString {
   }
 }
 
+export enum SymbolKind {
+  File = 0,
+  Module = 1,
+  Namespace = 2,
+  Package = 3,
+  Class = 4,
+  Method = 5,
+  Property = 6,
+  Field = 7,
+  Constructor = 8,
+  Enum = 9,
+  Interface = 10,
+  Function = 11,
+  Variable = 12,
+  Constant = 13,
+  String = 14,
+  Number = 15,
+  Boolean = 16,
+  Array = 17,
+  Object = 18,
+  Key = 19,
+  Null = 20,
+  EnumMember = 21,
+  Struct = 22,
+  Event = 23,
+  Operator = 24,
+  TypeParameter = 25
+}
+
+export class DocumentSymbol {
+  children: DocumentSymbol[] = [];
+
+  constructor(
+    public name: string,
+    public detail: string,
+    public kind: SymbolKind,
+    public range: Range,
+    public selectionRange: Range
+  ) {}
+}
+
 export class Hover {
-  constructor(public contents: Array<string | MarkdownString> | string | MarkdownString) {}
+  constructor(
+    public contents: Array<string | MarkdownString> | string | MarkdownString,
+    public range?: Range
+  ) {}
 }
 
 export class TextEdit {

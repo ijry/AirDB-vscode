@@ -6,10 +6,22 @@ import {
   type HostRequest,
   type HostResponse,
   type InvokeTreeItemCommandPayload,
+  type ProvideCompletionItemsPayload,
+  type ProvideDocumentRangeFormattingEditsPayload,
+  type ProvideDocumentSymbolsPayload,
+  type ProvideHoverPayload,
   type ResolveTreeChildrenPayload,
   type WebviewReceiveMessagePayload
 } from "@airdb-standalone/protocol";
-import type { CommandRegistry } from "@airdb-standalone/vscode-shim";
+import { textDocumentFromDto, type CommandRegistry, type LanguageProviderRegistry } from "@airdb-standalone/vscode-shim";
+import {
+  normalizeCompletionResults,
+  normalizeDocumentRangeFormattingResults,
+  normalizeDocumentSymbolResults,
+  normalizeHoverResults,
+  positionFromDto,
+  rangeFromDto
+} from "./languageProviderProtocol.js";
 import type { TreeViewRegistry } from "./treeViewRegistry.js";
 import type { WebviewRegistry } from "./webviewRegistry.js";
 
@@ -17,6 +29,7 @@ export interface ExtensionHostControllerOptions {
   commandRegistry: CommandRegistry;
   treeViewRegistry: TreeViewRegistry;
   webviewRegistry?: WebviewRegistry;
+  languageProviderRegistry?: LanguageProviderRegistry;
 }
 
 export class ExtensionHostController {
@@ -62,9 +75,51 @@ export class ExtensionHostController {
         const delivered = await this.options.webviewRegistry.receiveMessageFromIframe(payload.panelId, payload.message);
         return { delivered };
       }
+      case "language.provideCompletionItems": {
+        const registry = this.requireLanguageProviderRegistry();
+        const payload = request.payload as ProvideCompletionItemsPayload;
+        const results = await registry.provideCompletionItems(
+          textDocumentFromDto(payload.document),
+          positionFromDto(payload.position),
+          payload.context ?? {}
+        );
+        return normalizeCompletionResults(results);
+      }
+      case "language.provideHover": {
+        const registry = this.requireLanguageProviderRegistry();
+        const payload = request.payload as ProvideHoverPayload;
+        const results = await registry.provideHover(
+          textDocumentFromDto(payload.document),
+          positionFromDto(payload.position)
+        );
+        return normalizeHoverResults(results);
+      }
+      case "language.provideDocumentSymbols": {
+        const registry = this.requireLanguageProviderRegistry();
+        const payload = request.payload as ProvideDocumentSymbolsPayload;
+        const results = await registry.provideDocumentSymbols(textDocumentFromDto(payload.document));
+        return normalizeDocumentSymbolResults(results);
+      }
+      case "language.provideDocumentRangeFormattingEdits": {
+        const registry = this.requireLanguageProviderRegistry();
+        const payload = request.payload as ProvideDocumentRangeFormattingEditsPayload;
+        const results = await registry.provideDocumentRangeFormattingEdits(
+          textDocumentFromDto(payload.document),
+          rangeFromDto(payload.range),
+          payload.options
+        );
+        return normalizeDocumentRangeFormattingResults(results);
+      }
       default:
         throw new Error(`Unsupported extension host request group: ${request.group}`);
     }
+  }
+
+  private requireLanguageProviderRegistry(): LanguageProviderRegistry {
+    if (!this.options.languageProviderRegistry) {
+      throw new Error("Language provider registry is not available");
+    }
+    return this.options.languageProviderRegistry;
   }
 }
 

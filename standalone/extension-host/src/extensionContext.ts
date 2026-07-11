@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import type { Memento } from "@airdb-standalone/vscode-shim";
-import { Uri } from "@airdb-standalone/vscode-shim";
+import { FileSecretStorage, Uri } from "@airdb-standalone/vscode-shim";
 
 export interface ExtensionContextOptions {
   extensionPath: string;
@@ -56,7 +56,8 @@ export function createExtensionContext(options: ExtensionContextOptions) {
       return path.resolve(extensionPath, relativePath);
     },
     globalState: new PersistentMemento(path.join(globalStorageUri.fsPath, "state.json")),
-    workspaceState: new PersistentMemento(path.join(storageUri.fsPath, "state.json"))
+    workspaceState: new PersistentMemento(path.join(storageUri.fsPath, "state.json")),
+    secrets: new FileSecretStorage(path.join(globalStorageUri.fsPath, "secrets.json"))
   };
 }
 

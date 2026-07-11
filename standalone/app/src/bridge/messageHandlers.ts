@@ -1,7 +1,39 @@
-import type { HostMessage } from "@airdb-standalone/protocol";
+import type {
+  ExtensionDiagnosticPhase,
+  ExtensionDiagnosticStatus,
+  HostMessage
+} from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
-import type { NotificationItem } from "../workbench/types";
+import type {
+  ExtensionDiagnosticEventState,
+  ExtensionDiagnosticState,
+  MenuContributionState,
+  NotificationItem,
+  ProgressState,
+  WebviewState
+} from "../workbench/types";
 import { isHostTextDocumentDto } from "./textEditors";
+
+const DIAGNOSTIC_STATUSES = [
+  "discovered",
+  "loading",
+  "loaded",
+  "activating",
+  "activated",
+  "failed"
+] as const satisfies readonly ExtensionDiagnosticStatus[];
+
+const DIAGNOSTIC_PHASES = [
+  "discover",
+  "manifest",
+  "contributions",
+  "mainResolution",
+  "moduleImport",
+  "activation",
+  "unsupportedApi"
+] as const satisfies readonly ExtensionDiagnosticPhase[];
+
+const MAX_DIAGNOSTIC_EVENTS = 200;
 
 export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[] {
   if (message.kind !== "notification" && message.kind !== "request") {
@@ -35,8 +67,19 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
           contributes?.viewsContainers as Record<string, Array<{ id: string; title: string; icon?: string }>> | undefined;
         return Object.values(viewsContainers ?? {}).flat();
       });
-      return [{ type: "containers/register", containers }];
+      return [
+        { type: "containers/register", containers },
+        {
+          type: "menus/register",
+          menus: normalizeMenus(payload.menus, extensions),
+          contextKeys: normalizeContextKeys(payload.context)
+        }
+      ];
     }
+    case "extension.diagnostics":
+      return isDiagnosticsPayload(message.payload)
+        ? [{ type: "diagnostics/extensions", extensions: message.payload.extensions }]
+        : [];
     case "tree.create":
       return [{
         type: "tree/register",
@@ -49,19 +92,21 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
     case "webview.create":
       return [{
         type: "webview/open",
-        webview: {
-          id: String(payload.panelId),
-          title: String(payload.title ?? payload.viewType ?? "Webview"),
-          viewType: typeof payload.viewType === "string" ? payload.viewType : undefined,
-          extensionId: message.extensionId,
-          html: typeof payload.html === "string" ? payload.html : "",
-          localResourceRoots: normalizeStringArray(payload.localResourceRoots)
-        }
+        webview: normalizeWebviewPayload(payload, message.extensionId)
       }];
     case "webview.postMessage":
       return [{ type: "webview/message", id: String(payload.panelId), message: payload.message }];
     case "webview.setHtml":
       return [{ type: "webview/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
+    case "webviewView.create":
+      return [{
+        type: "webviewView/open",
+        webview: normalizeWebviewPayload(payload, message.extensionId)
+      }];
+    case "webviewView.postMessage":
+      return [{ type: "webviewView/message", id: String(payload.panelId), message: payload.message }];
+    case "webviewView.setHtml":
+      return [{ type: "webviewView/html", id: String(payload.panelId), html: String(payload.html ?? "") }];
     case "editor.showDocument": {
       const document = (payload.document ?? {}) as unknown;
       if (!isHostTextDocumentDto(document)) {
@@ -151,6 +196,19 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       return typeof payload.id === "string" ? [{ type: "terminal/hide", id: payload.id }] : [];
     case "workbench.terminal.dispose":
       return typeof payload.id === "string" ? [{ type: "terminal/dispose", id: payload.id }] : [];
+    case "workbench.progress.start": {
+      const progress = normalizeProgressStartPayload(payload, message.extensionId);
+      return progress ? [{ type: "progress/start", progress }] : [];
+    }
+    case "workbench.progress.report":
+      return typeof payload.id === "string" ? [{
+        type: "progress/report",
+        id: payload.id,
+        ...(typeof payload.message === "string" ? { message: payload.message } : {}),
+        ...(typeof payload.increment === "number" ? { increment: payload.increment } : {})
+      }] : [];
+    case "workbench.progress.end":
+      return typeof payload.id === "string" ? [{ type: "progress/end", id: payload.id }] : [];
     case "log": {
       const channel = typeof payload.channel === "string" ? payload.channel : "Log";
       const id = `legacy-log:${channel}`;
@@ -191,11 +249,165 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
 }
 
 function isStringRecord(value: unknown): value is Record<string, unknown> {
-  return Boolean(value && typeof value === "object");
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function isDiagnosticsPayload(value: unknown): value is { extensions: ExtensionDiagnosticState[] } {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+  return Array.isArray(value.extensions) && value.extensions.every(isDiagnosticExtension);
+}
+
+function isDiagnosticExtension(value: unknown): value is ExtensionDiagnosticState {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+
+  return Boolean(
+    typeof value.id === "string" &&
+      typeof value.extensionPath === "string" &&
+      isNonNegativeInteger(value.commandCount) &&
+      isDiagnosticStatus(value.status) &&
+      isOptionalString(value.displayName) &&
+      isOptionalString(value.version) &&
+      isOptionalString(value.publisher) &&
+      isOptionalString(value.main) &&
+      isOptionalString(value.resolvedMain) &&
+      isOptionalString(value.lastError) &&
+      isOptionalString(value.startedAt) &&
+      isOptionalString(value.activatedAt) &&
+      isOptionalStringArray(value.activationEvents) &&
+      isOptionalStringArray(value.contributedViews) &&
+      Array.isArray(value.events) &&
+      value.events.length <= MAX_DIAGNOSTIC_EVENTS &&
+      value.events.every(isDiagnosticEvent)
+  );
+}
+
+function isDiagnosticEvent(value: unknown): value is ExtensionDiagnosticEventState {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+
+  return Boolean(
+    typeof value.id === "string" &&
+      isOptionalString(value.extensionId) &&
+      typeof value.extensionPath === "string" &&
+      typeof value.timestamp === "string" &&
+      isDiagnosticPhase(value.phase) &&
+      isDiagnosticStatus(value.status) &&
+      typeof value.message === "string" &&
+      isOptionalString(value.error) &&
+      isOptionalRecord(value.details)
+  );
+}
+
+function isDiagnosticStatus(value: unknown): value is ExtensionDiagnosticStatus {
+  return typeof value === "string" && DIAGNOSTIC_STATUSES.includes(value as ExtensionDiagnosticStatus);
+}
+
+function isDiagnosticPhase(value: unknown): value is ExtensionDiagnosticPhase {
+  return typeof value === "string" && DIAGNOSTIC_PHASES.includes(value as ExtensionDiagnosticPhase);
+}
+
+function isOptionalString(value: unknown): boolean {
+  return value === undefined || typeof value === "string";
+}
+
+function isOptionalStringArray(value: unknown): boolean {
+  return value === undefined || (Array.isArray(value) && value.every((item) => typeof item === "string"));
+}
+
+function isNonNegativeInteger(value: unknown): boolean {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isOptionalRecord(value: unknown): boolean {
+  return value === undefined || isStringRecord(value);
 }
 
 function normalizeStringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
+}
+
+function normalizeWebviewPayload(payload: Record<string, unknown>, extensionId?: string): WebviewState {
+  return {
+    id: String(payload.panelId),
+    title: String(payload.title ?? payload.viewType ?? payload.viewId ?? "Webview"),
+    viewType: typeof payload.viewType === "string" ? payload.viewType : undefined,
+    extensionId,
+    html: typeof payload.html === "string" ? payload.html : "",
+    localResourceRoots: normalizeStringArray(payload.localResourceRoots)
+  };
+}
+
+function normalizeProgressStartPayload(payload: Record<string, unknown>, extensionId?: string): ProgressState | undefined {
+  if (typeof payload.id !== "string") {
+    return undefined;
+  }
+  return {
+    id: payload.id,
+    extensionId,
+    ...(typeof payload.title === "string" ? { title: payload.title } : {}),
+    ...(typeof payload.location === "number" ? { location: payload.location } : {}),
+    ...(typeof payload.cancellable === "boolean" ? { cancellable: payload.cancellable } : {})
+  };
+}
+
+function normalizeContextKeys(value: unknown): Record<string, unknown> {
+  return isStringRecord(value) ? { ...value } : {};
+}
+
+function normalizeMenus(
+  value: unknown,
+  extensions: Array<Record<string, unknown>>
+): Record<string, MenuContributionState[]> {
+  if (isStringRecord(value)) {
+    return normalizeMenusRecord(value);
+  }
+  return collectManifestMenus(extensions);
+}
+
+function normalizeMenusRecord(value: Record<string, unknown>): Record<string, MenuContributionState[]> {
+  return Object.fromEntries(
+    Object.entries(value).flatMap(([location, items]) =>
+      Array.isArray(items) ? [[location, normalizeMenuItems(items)]] : []
+    )
+  );
+}
+
+function normalizeMenuItems(items: unknown[]): MenuContributionState[] {
+  return items
+    .filter(isStringRecord)
+    .map((item) => ({ ...item }) as MenuContributionState);
+}
+
+function collectManifestMenus(extensions: Array<Record<string, unknown>>): Record<string, MenuContributionState[]> {
+  return extensions.reduce<Record<string, MenuContributionState[]>>((acc, extension) => {
+    const extensionId = typeof extension.extensionId === "string" ? extension.extensionId : undefined;
+    const manifest = isStringRecord(extension.manifest) ? extension.manifest : undefined;
+    const contributes = isStringRecord(manifest?.contributes) ? manifest.contributes : undefined;
+    const menus = isStringRecord(contributes?.menus) ? contributes.menus : undefined;
+    if (!menus) {
+      return acc;
+    }
+
+    for (const [location, items] of Object.entries(menus)) {
+      if (!Array.isArray(items)) {
+        continue;
+      }
+      acc[location] = [
+        ...(acc[location] ?? []),
+        ...normalizeMenuItems(items).map((item) => ({
+          ...item,
+          ...(extensionId ? { extensionId } : {})
+        }))
+      ];
+    }
+
+    return acc;
+  }, {});
 }
 
 function outputActions(payload: Record<string, unknown>, extensionId?: string): WorkbenchAction[] {

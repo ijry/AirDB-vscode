@@ -1,11 +1,18 @@
 import { CommandRegistry, createCommandsApi } from "./commands.js";
+import { AuthenticationRegistry, createAuthenticationApi } from "./authentication.js";
+import { WorkspaceConfigurationStore } from "./configuration.js";
 import { createEnvApi } from "./env.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
-import { createExtensionsApi, type ExtensionRecord } from "./extensions.js";
-import { createLanguagesApi } from "./languages.js";
+import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
+import { createLanguagesApi, type LanguageProviderRegistry } from "./languages.js";
 import { createL10nApi } from "./l10n.js";
+import { MemorySecretStorage } from "./secrets.js";
 import { MemoryMemento } from "./state.js";
 import * as types from "./types.js";
+import {
+  createUnsupportedNamespace,
+  type UnsupportedApiReporter
+} from "./unsupported.js";
 import { createWindowApi, type HostBridge } from "./window.js";
 import { createWorkspaceApi } from "./workspace.js";
 
@@ -14,8 +21,12 @@ export interface VscodeApiOptions {
   extensionPath: string;
   bridge: HostBridge;
   commandRegistry?: CommandRegistry;
-  extensions?: ExtensionRecord[];
+  authenticationRegistry?: AuthenticationRegistry;
+  extensions?: ExtensionRegistry | ExtensionRegistryRecordInput[];
   workspaceRoot?: string;
+  workspaceConfigurationStore?: WorkspaceConfigurationStore;
+  languageProviderRegistry?: LanguageProviderRegistry;
+  unsupportedApiReporter?: UnsupportedApiReporter;
 }
 
 export function createVscodeApi(options: VscodeApiOptions) {
@@ -25,14 +36,28 @@ export function createVscodeApi(options: VscodeApiOptions) {
     createExternalActionCommandHandler(options.extensionId, options.bridge)
   );
 
+  const reportUnsupportedApi = options.unsupportedApiReporter;
+  const windowApi = createWindowApi({
+    extensionId: options.extensionId,
+    extensionPath: options.extensionPath,
+    bridge: options.bridge
+  });
+  const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, {
+    workspaceRoot: options.workspaceRoot,
+    configurationStore: options.workspaceConfigurationStore
+  });
+
   return {
     ...types,
     commands,
-    window: createWindowApi({ extensionId: options.extensionId, extensionPath: options.extensionPath, bridge: options.bridge }),
-    workspace: createWorkspaceApi(options.extensionId, options.bridge, { workspaceRoot: options.workspaceRoot }),
-    languages: createLanguagesApi(),
+    window: windowApi,
+    workspace: workspaceApi,
+    languages: createLanguagesApi(options.languageProviderRegistry),
     env: createEnvApi(options.extensionId, options.bridge),
     extensions: createExtensionsApi(options.extensions ?? []),
+    authentication: createAuthenticationApi(options.authenticationRegistry, reportUnsupportedApi),
+    tasks: createUnsupportedNamespace("tasks", reportUnsupportedApi),
+    debug: createUnsupportedNamespace("debug", reportUnsupportedApi),
     l10n: createL10nApi(),
     createContext() {
       return {
@@ -42,7 +67,8 @@ export function createVscodeApi(options: VscodeApiOptions) {
         globalStorageUri: types.Uri.file(`${options.extensionPath}/.standalone/global`),
         storageUri: types.Uri.file(`${options.extensionPath}/.standalone/workspace`),
         globalState: new MemoryMemento(),
-        workspaceState: new MemoryMemento()
+        workspaceState: new MemoryMemento(),
+        secrets: new MemorySecretStorage()
       };
     }
   };

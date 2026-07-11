@@ -48,6 +48,65 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps webview view create notifications with local resource roots", () => {
+    const actions = mapHostMessageToActions(
+      createNotification("webviewView.create", {
+        panelId: "fixture.one:webviewView:fixture.sidebar",
+        viewId: "fixture.sidebar",
+        viewType: "fixture.sidebar",
+        title: "Fixture Sidebar",
+        html: "",
+        localResourceRoots: ["C:/fixture/media"]
+      }, "fixture.one")
+    );
+
+    expect(actions).toEqual([
+      {
+        type: "webviewView/open",
+        webview: {
+          id: "fixture.one:webviewView:fixture.sidebar",
+          title: "Fixture Sidebar",
+          viewType: "fixture.sidebar",
+          extensionId: "fixture.one",
+          html: "",
+          localResourceRoots: ["C:/fixture/media"]
+        }
+      }
+    ]);
+  });
+
+  it("maps webview view HTML and message notifications to workbench actions", () => {
+    expect(
+      mapHostMessageToActions(
+        createNotification("webviewView.setHtml", {
+          panelId: "fixture.one:webviewView:fixture.sidebar",
+          html: "<main>Sidebar</main>"
+        }, "fixture.one")
+      )
+    ).toEqual([
+      {
+        type: "webviewView/html",
+        id: "fixture.one:webviewView:fixture.sidebar",
+        html: "<main>Sidebar</main>"
+      }
+    ]);
+
+    expect(
+      mapHostMessageToActions(
+        createNotification("webviewView.postMessage", {
+          panelId: "fixture.one:webviewView:fixture.sidebar",
+          message: { type: "refresh" }
+        }, "fixture.one")
+      )
+    ).toEqual([
+      {
+        type: "webviewView/message",
+        id: "fixture.one:webviewView:fixture.sidebar",
+        message: { type: "refresh" }
+      }
+    ]);
+  });
+
   it("maps dialog requests to workbench dialog state", () => {
     expect(
       mapHostMessageToActions({
@@ -156,6 +215,39 @@ describe("mapHostMessageToActions", () => {
     });
   });
 
+  it("maps extension contribution menus and context keys", () => {
+    const actions = mapHostMessageToActions(
+      createNotification("extension.registerContributions", {
+        context: { "fixture.enabled": true },
+        menus: {
+          commandPalette: [
+            { command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }
+          ]
+        },
+        extensions: [{
+          extensionId: "fixture.one",
+          manifest: {
+            contributes: {
+              viewsContainers: {
+                activitybar: [{ id: "activitybar.fixture", title: "Fixture" }]
+              }
+            }
+          }
+        }]
+      })
+    );
+
+    expect(actions).toContainEqual({
+      type: "menus/register",
+      contextKeys: { "fixture.enabled": true },
+      menus: {
+        commandPalette: [
+          { command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }
+        ]
+      }
+    });
+  });
+
   it("maps workbench output notifications to output actions", () => {
     expect(
       mapHostMessageToActions(createNotification("workbench.output.create", {
@@ -236,6 +328,46 @@ describe("mapHostMessageToActions", () => {
     ]);
   });
 
+  it("maps progress notifications to workbench actions", () => {
+    expect(
+      mapHostMessageToActions(createNotification("workbench.progress.start", {
+        id: "progress-1",
+        title: "Loading",
+        location: 15,
+        cancellable: true
+      }, "fixture.one"))
+    ).toEqual([
+      {
+        type: "progress/start",
+        progress: {
+          id: "progress-1",
+          extensionId: "fixture.one",
+          title: "Loading",
+          location: 15,
+          cancellable: true
+        }
+      }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("workbench.progress.report", {
+        id: "progress-1",
+        message: "Half",
+        increment: 50
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "progress/report", id: "progress-1", message: "Half", increment: 50 }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("workbench.progress.end", {
+        id: "progress-1"
+      }, "fixture.one"))
+    ).toEqual([
+      { type: "progress/end", id: "progress-1" }
+    ]);
+  });
+
   it("maps workbench terminal notifications to terminal actions", () => {
     expect(
       mapHostMessageToActions(createNotification("workbench.terminal.create", {
@@ -256,5 +388,205 @@ describe("mapHostMessageToActions", () => {
     ).toEqual([
       { type: "terminal/append", id: "terminal-1", name: "Feedback Terminal", line: "select 1" }
     ]);
+  });
+
+  it("maps extension diagnostics snapshots", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([{
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 1,
+        status: "activated",
+        events: [{
+          id: "diagnostic-1",
+          extensionPath: "C:/extensions/fixture",
+          timestamp: "2026-07-08T00:00:00.000Z",
+          phase: "activation",
+          status: "activated",
+          message: "Activated extension"
+        }]
+      }]
+    }]);
+  });
+
+  it("ignores invalid extension diagnostics payloads", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", { extensions: "invalid" }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid command counts", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: -1,
+          status: "activated",
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid event payloads", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{ id: "diagnostic-1", status: "activated" }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with too many events", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: Array.from({ length: 201 }, (_, index) => ({
+            id: `diagnostic-${index}`,
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension"
+          }))
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid activation events", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          activationEvents: ["onStartupFinished", 123],
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid contributed views", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          contributedViews: ["fixture.view", {}],
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with invalid event details", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "activated",
+            message: "Activated extension",
+            details: "invalid"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown extension status", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "unknown",
+          events: []
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown event phase", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "unexpected",
+            status: "activated",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([]);
+  });
+
+  it("ignores extension diagnostics with unknown event status", () => {
+    expect(
+      mapHostMessageToActions(createNotification("extension.diagnostics", {
+        extensions: [{
+          id: "acme.fixture",
+          extensionPath: "C:/extensions/fixture",
+          commandCount: 1,
+          status: "activated",
+          events: [{
+            id: "diagnostic-1",
+            extensionPath: "C:/extensions/fixture",
+            timestamp: "2026-07-08T00:00:00.000Z",
+            phase: "activation",
+            status: "unexpected",
+            message: "Activated extension"
+          }]
+        }]
+      }))
+    ).toEqual([]);
   });
 });

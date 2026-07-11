@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { initialWorkbenchState, workbenchReducer } from "./workbenchStore";
+import type { ExtensionDiagnosticState } from "./types";
 
 describe("workbenchReducer", () => {
   it("registers containers and selects the first one", () => {
@@ -9,6 +10,26 @@ describe("workbenchReducer", () => {
     });
 
     expect(state.activeContainerId).toBe("activitybar.airdb.sql");
+  });
+
+  it("stores context keys and filtered menu contributions defensively", () => {
+    const menus = {
+      commandPalette: [{ command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }]
+    };
+    const contextKeys = { "fixture.enabled": true };
+    const state = workbenchReducer(initialWorkbenchState, {
+      type: "menus/register",
+      menus,
+      contextKeys
+    });
+
+    menus.commandPalette[0]!.command = "fixture.tampered";
+    contextKeys["fixture.enabled"] = false;
+
+    expect(state.contextKeys).toEqual({ "fixture.enabled": true });
+    expect(state.menus.commandPalette).toEqual([
+      { command: "fixture.run", when: "fixture.enabled", extensionId: "fixture.one" }
+    ]);
   });
 
   it("opens editors and updates active editor", () => {
@@ -78,6 +99,42 @@ describe("workbenchReducer", () => {
     });
 
     expect(state.webviews[0].messages).toEqual([{ type: "syncState" }]);
+  });
+
+  it("stores webview views and updates their HTML and queued messages", () => {
+    const opened = workbenchReducer(initialWorkbenchState, {
+      type: "webviewView/open",
+      webview: {
+        id: "fixture.one:webviewView:fixture.sidebar",
+        title: "Fixture Sidebar",
+        viewType: "fixture.sidebar",
+        extensionId: "fixture.one",
+        html: "",
+        localResourceRoots: ["C:/fixture/media"]
+      }
+    });
+    const withHtml = workbenchReducer(opened, {
+      type: "webviewView/html",
+      id: "fixture.one:webviewView:fixture.sidebar",
+      html: "<main>Sidebar</main>"
+    });
+    const withMessage = workbenchReducer(withHtml, {
+      type: "webviewView/message",
+      id: "fixture.one:webviewView:fixture.sidebar",
+      message: { type: "refresh" }
+    });
+
+    expect(withMessage.webviewViews).toEqual([
+      {
+        id: "fixture.one:webviewView:fixture.sidebar",
+        title: "Fixture Sidebar",
+        viewType: "fixture.sidebar",
+        extensionId: "fixture.one",
+        html: "<main>Sidebar</main>",
+        localResourceRoots: ["C:/fixture/media"],
+        messages: [{ type: "refresh" }]
+      }
+    ]);
   });
 
   it("stores webview render errors", () => {
@@ -194,6 +251,39 @@ describe("workbenchReducer", () => {
     expect(disposed.statusBarItems).toEqual([]);
   });
 
+  it("stores progress lifecycle state", () => {
+    const started = workbenchReducer(initialWorkbenchState, {
+      type: "progress/start",
+      progress: {
+        id: "progress-1",
+        extensionId: "fixture.one",
+        title: "Loading",
+        location: 15,
+        cancellable: true
+      }
+    });
+    const reported = workbenchReducer(started, {
+      type: "progress/report",
+      id: "progress-1",
+      message: "Half",
+      increment: 50
+    });
+    const ended = workbenchReducer(reported, { type: "progress/end", id: "progress-1" });
+
+    expect(reported.progresses).toEqual([
+      {
+        id: "progress-1",
+        extensionId: "fixture.one",
+        title: "Loading",
+        location: 15,
+        cancellable: true,
+        message: "Half",
+        increment: 50
+      }
+    ]);
+    expect(ended.progresses).toEqual([]);
+  });
+
   it("handles virtual terminal show, hide, append, and dispose", () => {
     const created = workbenchReducer(initialWorkbenchState, {
       type: "terminal/open",
@@ -213,5 +303,82 @@ describe("workbenchReducer", () => {
     expect(shown.terminals[0].visible).toBe(true);
     expect(hidden.terminals[0].visible).toBe(false);
     expect(disposed.terminals).toEqual([]);
+  });
+
+  it("replaces extension diagnostics snapshots idempotently", () => {
+    const first = workbenchReducer(initialWorkbenchState, {
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 1,
+        status: "activated",
+        events: []
+      }]
+    });
+    const second = workbenchReducer(first, {
+      type: "diagnostics/extensions",
+      extensions: [{
+        id: "acme.fixture",
+        extensionPath: "C:/extensions/fixture",
+        commandCount: 2,
+        status: "failed",
+        lastError: "boom",
+        events: []
+      }]
+    });
+
+    expect(second.diagnostics.extensions).toEqual([{
+      id: "acme.fixture",
+      extensionPath: "C:/extensions/fixture",
+      commandCount: 2,
+      status: "failed",
+      lastError: "boom",
+      events: []
+    }]);
+  });
+
+  it("stores extension diagnostics snapshots defensively", () => {
+    const extensions: ExtensionDiagnosticState[] = [{
+      id: "acme.fixture",
+      extensionPath: "C:/extensions/fixture",
+      activationEvents: ["onStartupFinished"],
+      contributedViews: ["fixture.view"],
+      commandCount: 1,
+      status: "activated",
+      events: [{
+        id: "diagnostic-1",
+        extensionPath: "C:/extensions/fixture",
+        timestamp: "2026-07-08T00:00:00.000Z",
+        phase: "activation",
+        status: "activated",
+        message: "Activated extension",
+        details: {
+          resolvedMain: "C:/extensions/fixture/extension.js",
+          nested: { path: "C:/extensions/fixture/extension.js" }
+        }
+      }]
+    }];
+
+    const state = workbenchReducer(initialWorkbenchState, {
+      type: "diagnostics/extensions",
+      extensions
+    });
+    const fixture = extensions[0]!;
+    const event = fixture.events[0]!;
+    fixture.activationEvents!.push("tampered");
+    fixture.contributedViews!.push("tampered.view");
+    event.message = "Tampered";
+    event.details!.resolvedMain = "C:/tampered.js";
+    (event.details!.nested as Record<string, unknown>).path = "C:/tampered-nested.js";
+
+    const extension = state.diagnostics.extensions[0];
+    expect(extension.activationEvents).toEqual(["onStartupFinished"]);
+    expect(extension.contributedViews).toEqual(["fixture.view"]);
+    expect(extension.events[0].message).toBe("Activated extension");
+    expect(extension.events[0].details).toEqual({
+      resolvedMain: "C:/extensions/fixture/extension.js",
+      nested: { path: "C:/extensions/fixture/extension.js" }
+    });
   });
 });

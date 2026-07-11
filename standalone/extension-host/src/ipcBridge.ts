@@ -6,6 +6,7 @@ import {
   type HostResponse
 } from "@airdb-standalone/protocol";
 import type { HostBridge, WebviewPanelBridgeRegistration } from "@airdb-standalone/vscode-shim";
+import type { WebviewViewBridgeRegistration } from "@airdb-standalone/vscode-shim";
 import type { TreeViewRegistry } from "./treeViewRegistry.js";
 import type { WebviewMessageReceiver, WebviewRegistry } from "./webviewRegistry.js";
 
@@ -43,6 +44,12 @@ export class IpcBridge implements HostBridge {
     this.notify("webview.create", payload, panel.extensionId);
   }
 
+  registerWebviewView(view: WebviewViewBridgeRegistration, receiveMessage: WebviewMessageReceiver): void {
+    this.webviewRegistry?.registerView(view, receiveMessage);
+    const payload = this.webviewRegistry?.getDto(view.panelId) ?? { ...view, html: "" };
+    this.notify("webviewView.create", payload, view.extensionId);
+  }
+
   setWebviewHtml(panelId: string, html: string, extensionId?: string): void {
     const payload = this.webviewRegistry?.setHtml(panelId, html) ?? { panelId, html };
     this.notify("webview.setHtml", payload, extensionId);
@@ -55,6 +62,21 @@ export class IpcBridge implements HostBridge {
   }
 
   disposeWebviewPanel(panelId: string): void {
+    this.webviewRegistry?.disposePanel(panelId);
+  }
+
+  setWebviewViewHtml(panelId: string, html: string, extensionId?: string): void {
+    const payload = this.webviewRegistry?.setHtml(panelId, html) ?? { panelId, html };
+    this.notify("webviewView.setHtml", payload, extensionId);
+  }
+
+  async postWebviewViewMessage(panelId: string, message: unknown, extensionId?: string): Promise<boolean> {
+    const payload = this.webviewRegistry?.postMessage(panelId, message) ?? { panelId, message };
+    this.notify("webviewView.postMessage", payload, extensionId);
+    return true;
+  }
+
+  disposeWebviewView(panelId: string): void {
     this.webviewRegistry?.disposePanel(panelId);
   }
 }

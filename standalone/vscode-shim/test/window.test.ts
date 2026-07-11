@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { HostMessageGroup, HostRequest } from "@airdb-standalone/protocol";
 import { createVscodeApi, type WebviewPanelBridgeRegistration } from "../src";
 
@@ -203,6 +203,70 @@ describe("window IPC API", () => {
 
     expect(uri).toContain("standalone-resource://");
     expect(uri).toContain("fixture.one%3Aconnect%3A");
+  });
+
+  it("registers and resolves webview view providers", async () => {
+    const registered: Array<{
+      view: {
+        panelId: string;
+        viewId: string;
+        viewType: string;
+        title: string;
+        extensionPath: string;
+        localResourceRoots?: string[];
+      };
+      receiver: (message: unknown) => void;
+    }> = [];
+    const htmlUpdates: Array<{ panelId: string; html: string }> = [];
+    const posted: Array<{ panelId: string; message: unknown }> = [];
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: vi.fn(),
+        registerWebviewView: (view, receiveMessage) => registered.push({ view, receiver: receiveMessage }),
+        setWebviewViewHtml: (panelId, html) => htmlUpdates.push({ panelId, html }),
+        postWebviewViewMessage: async (panelId, message) => {
+          posted.push({ panelId, message });
+          return true;
+        }
+      }
+    });
+    const received: unknown[] = [];
+
+    const disposable = api.window.registerWebviewViewProvider("fixture.sidebar", {
+      resolveWebviewView(view: {
+        webview: {
+          html: string;
+          postMessage(message: unknown): Thenable<boolean>;
+          onDidReceiveMessage(listener: (message: unknown) => void): { dispose(): void };
+        };
+      }) {
+        view.webview.onDidReceiveMessage((message) => received.push(message));
+        view.webview.html = "<main>Sidebar</main>";
+        return view.webview.postMessage({ type: "syncState" });
+      }
+    }, {
+      webviewOptions: {
+        localResourceRoots: [api.Uri.file("C:/fixture/media")]
+      }
+    });
+
+    registered[0].receiver({ type: "init" });
+
+    expect(disposable).toHaveProperty("dispose");
+    expect(registered[0].view).toMatchObject({
+      panelId: "fixture.one:webviewView:fixture.sidebar",
+      viewId: "fixture.sidebar",
+      viewType: "fixture.sidebar",
+      title: "fixture.sidebar",
+      extensionPath: "C:/fixture",
+      localResourceRoots: ["C:/fixture/media"]
+    });
+    expect(htmlUpdates).toEqual([{ panelId: "fixture.one:webviewView:fixture.sidebar", html: "<main>Sidebar</main>" }]);
+    expect(posted).toEqual([{ panelId: "fixture.one:webviewView:fixture.sidebar", message: { type: "syncState" } }]);
+    expect(received).toEqual([{ type: "init" }]);
   });
 
   it("creates disposable text editor decoration types", () => {
@@ -524,5 +588,35 @@ describe("window IPC API", () => {
       { group: "workbench.terminal.hide", extensionId: "fixture.one", payload: { id } },
       { group: "workbench.terminal.dispose", extensionId: "fixture.one", payload: { id } }
     ]);
+  });
+
+  it("passes progress and cancellation token objects to withProgress tasks", async () => {
+    const notify = vi.fn();
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify
+      }
+    });
+
+    const result = await api.window.withProgress({ title: "Loading", cancellable: true }, async (progress, token) => {
+      expect(token.isCancellationRequested).toBe(false);
+      expect(typeof token.onCancellationRequested).toBe("function");
+      progress.report({ message: "Half", increment: 50 });
+      return "done";
+    });
+
+    expect(result).toBe("done");
+    expect(notify).toHaveBeenCalledWith("workbench.progress.start", expect.objectContaining({
+      title: "Loading",
+      cancellable: true
+    }), "fixture.one");
+    expect(notify).toHaveBeenCalledWith("workbench.progress.report", expect.objectContaining({
+      message: "Half",
+      increment: 50
+    }), "fixture.one");
+    expect(notify).toHaveBeenCalledWith("workbench.progress.end", expect.objectContaining({}), "fixture.one");
   });
 });

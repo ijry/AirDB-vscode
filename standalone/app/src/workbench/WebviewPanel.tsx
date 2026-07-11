@@ -30,7 +30,7 @@ export function isWebviewMessageFromPanel(
   );
 }
 
-function WebviewFrame({ panel }: { panel: WebviewState }) {
+export function WebviewFrame({ panel }: { panel: WebviewState }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const deliveredCount = useRef(0);
   const [preparedHtml, setPreparedHtml] = useState("");

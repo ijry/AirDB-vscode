@@ -2,6 +2,7 @@ import {
   createRequest,
   type HostFileUriDto,
   type HostMessageGroup,
+  type HostProgressDto,
   type HostRequest,
   type HostTextEditorDto,
   type ShowTextDocumentPayload
@@ -31,6 +32,10 @@ export interface WebviewPanelBridgeRegistration {
   localResourceRoots?: string[];
 }
 
+export interface WebviewViewBridgeRegistration extends WebviewPanelBridgeRegistration {
+  viewId: string;
+}
+
 export interface HostBridge {
   request<TResponse>(request: HostRequest): Promise<TResponse>;
   notify(group: HostMessageGroup, payload: unknown, extensionId?: string): void;
@@ -39,6 +44,10 @@ export interface HostBridge {
   setWebviewHtml?(panelId: string, html: string, extensionId?: string): void;
   postWebviewMessage?(panelId: string, message: unknown, extensionId?: string): Promise<boolean>;
   disposeWebviewPanel?(panelId: string, extensionId?: string): void;
+  registerWebviewView?(view: WebviewViewBridgeRegistration, receiveMessage: (message: unknown) => void): void;
+  setWebviewViewHtml?(panelId: string, html: string, extensionId?: string): void;
+  postWebviewViewMessage?(panelId: string, message: unknown, extensionId?: string): Promise<boolean>;
+  disposeWebviewView?(panelId: string, extensionId?: string): void;
 }
 
 export interface WindowApiOptions {
@@ -94,6 +103,13 @@ function normalizeLocalResourceRoots(panelOptions: unknown, extensionPath: strin
   });
 }
 
+function normalizeWebviewViewLocalResourceRoots(providerOptions: unknown, extensionPath: string): string[] {
+  const webviewOptions = providerOptions && typeof providerOptions === "object"
+    ? (providerOptions as { webviewOptions?: unknown }).webviewOptions
+    : undefined;
+  return normalizeLocalResourceRoots(webviewOptions ?? providerOptions, extensionPath);
+}
+
 function normalizeLocalResourceRoot(root: unknown): string | undefined {
   if (root instanceof Uri) {
     return root.scheme === "file" ? normalizeFsPath(root.fsPath) : undefined;
@@ -105,6 +121,36 @@ function normalizeLocalResourceRoot(root: unknown): string | undefined {
     }
   }
   return typeof root === "string" ? normalizeFsPath(root) : undefined;
+}
+
+function createCancellationToken() {
+  const emitter = new EventEmitter<unknown>();
+  return {
+    token: {
+      isCancellationRequested: false,
+      onCancellationRequested: emitter.event
+    },
+    dispose: () => emitter.dispose()
+  };
+}
+
+function normalizeProgressOptions(id: string, options: unknown): HostProgressDto {
+  const value = options && typeof options === "object" ? options as Record<string, unknown> : {};
+  return {
+    id,
+    ...(typeof value.title === "string" ? { title: value.title } : {}),
+    ...(typeof value.location === "number" ? { location: value.location } : {}),
+    ...(typeof value.cancellable === "boolean" ? { cancellable: value.cancellable } : {})
+  };
+}
+
+function normalizeProgressReport(id: string, report: unknown): HostProgressDto {
+  const value = report && typeof report === "object" ? report as Record<string, unknown> : {};
+  return {
+    id,
+    ...(typeof value.message === "string" ? { message: value.message } : {}),
+    ...(typeof value.increment === "number" ? { increment: value.increment } : {})
+  };
 }
 
 function normalizeFsPath(value: string): string {
@@ -150,6 +196,7 @@ export function createWindowApi(options: WindowApiOptions) {
   let activeTerminal: unknown;
   let activeTextEditor: StandaloneTextEditor | undefined;
   let nextDecorationTypeId = 1;
+  let nextProgressId = 1;
 
   return {
     get activeTextEditor() {
@@ -259,6 +306,83 @@ export function createWindowApi(options: WindowApiOptions) {
       };
     },
 
+    registerWebviewViewProvider(viewId: string, provider: {
+      resolveWebviewView?: (view: unknown, context: unknown, token: unknown) => unknown;
+    }, providerOptions?: unknown) {
+      const panelId = `${options.extensionId}:webviewView:${viewId}`;
+      const htmlState = { value: "" };
+      const messageEmitter = new EventEmitter<unknown>();
+      const disposeEmitter = new EventEmitter<unknown>();
+      const visibilityEmitter = new EventEmitter<unknown>();
+      const cancellation = createCancellationToken();
+      const localResourceRoots = normalizeWebviewViewLocalResourceRoots(providerOptions, options.extensionPath);
+      const registration: WebviewViewBridgeRegistration = {
+        panelId,
+        viewId,
+        viewType: viewId,
+        title: viewId,
+        extensionId: options.extensionId,
+        extensionPath: options.extensionPath,
+        localResourceRoots
+      };
+
+      if (options.bridge.registerWebviewView) {
+        options.bridge.registerWebviewView(registration, (message) => messageEmitter.fire(message));
+      } else {
+        options.bridge.notify("webviewView.create", { ...registration, html: "" }, options.extensionId);
+      }
+
+      const view = {
+        viewType: viewId,
+        title: viewId,
+        visible: true,
+        webview: {
+          get html() {
+            return htmlState.value;
+          },
+          set html(value: string) {
+            htmlState.value = value;
+            if (options.bridge.setWebviewViewHtml) {
+              options.bridge.setWebviewViewHtml(panelId, value, options.extensionId);
+            } else {
+              options.bridge.notify("webviewView.setHtml", { panelId, html: value }, options.extensionId);
+            }
+          },
+          postMessage(message: unknown) {
+            if (options.bridge.postWebviewViewMessage) {
+              return options.bridge.postWebviewViewMessage(panelId, message, options.extensionId);
+            }
+            options.bridge.notify("webviewView.postMessage", { panelId, message }, options.extensionId);
+            return Promise.resolve(true);
+          },
+          onDidReceiveMessage: messageEmitter.event,
+          asWebviewUri(uri: Uri) {
+            return Uri.parse(
+              `standalone-resource://${encodeURIComponent(panelId)}/${Buffer.from(uri.fsPath, "utf8").toString("base64url")}`
+            );
+          }
+        },
+        onDidDispose: disposeEmitter.event,
+        onDidChangeVisibility: visibilityEmitter.event,
+        show() {
+          visibilityEmitter.fire({ visible: true });
+          options.bridge.notify("webviewView.create", { ...registration, html: htmlState.value, reveal: true }, options.extensionId);
+        }
+      };
+
+      void Promise.resolve(provider.resolveWebviewView?.(view, { state: undefined }, cancellation.token));
+
+      return new Disposable(() => {
+        options.bridge.disposeWebviewView?.(panelId, options.extensionId);
+        options.bridge.notify("webviewView.setHtml", { panelId, html: "" }, options.extensionId);
+        disposeEmitter.fire(undefined);
+        messageEmitter.dispose();
+        disposeEmitter.dispose();
+        visibilityEmitter.dispose();
+        cancellation.dispose();
+      });
+    },
+
     async showInformationMessage(message: string, ...items: string[]) {
       const response = await options.bridge.request<string | null | undefined>(
         createRequest("notification.show", { level: "info", message, items }, options.extensionId)
@@ -341,8 +465,22 @@ export function createWindowApi(options: WindowApiOptions) {
       return terminal;
     },
 
-    withProgress(_options: unknown, task: () => Promise<unknown>) {
-      return task();
+    async withProgress(optionsValue: unknown, task: (progress: { report(value: unknown): void }, token: unknown) => unknown) {
+      const progressId = `${options.extensionId}:progress:${nextProgressId++}`;
+      const cancellation = createCancellationToken();
+      const progress = {
+        report(value: unknown) {
+          options.bridge.notify("workbench.progress.report", normalizeProgressReport(progressId, value), options.extensionId);
+        }
+      };
+
+      options.bridge.notify("workbench.progress.start", normalizeProgressOptions(progressId, optionsValue), options.extensionId);
+      try {
+        return await Promise.resolve(task(progress, cancellation.token));
+      } finally {
+        options.bridge.notify("workbench.progress.end", { id: progressId }, options.extensionId);
+        cancellation.dispose();
+      }
     },
 
     __fireActiveTextEditor(editor: unknown) {

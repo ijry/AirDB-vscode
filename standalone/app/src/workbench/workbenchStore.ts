@@ -2,8 +2,11 @@ import type {
   ActivityContainer,
   DialogState,
   EditorTab,
+  ExtensionDiagnosticState,
+  MenuContributionState,
   NotificationState,
   OutputChannelState,
+  ProgressState,
   StatusBarItemState,
   TerminalState,
   TreeViewState,
@@ -13,6 +16,7 @@ import type {
 
 export type WorkbenchAction =
   | { type: "containers/register"; containers: ActivityContainer[] }
+  | { type: "menus/register"; menus: Record<string, MenuContributionState[]>; contextKeys: Record<string, unknown> }
   | { type: "container/select"; id: string }
   | { type: "tree/register"; tree: TreeViewState }
   | { type: "tree/update"; id: string; nodes: TreeViewState["nodes"] }
@@ -23,6 +27,9 @@ export type WorkbenchAction =
   | { type: "webview/html"; id: string; html: string }
   | { type: "webview/message"; id: string; message: unknown }
   | { type: "webview/error"; id: string; error: string }
+  | { type: "webviewView/open"; webview: WebviewState }
+  | { type: "webviewView/html"; id: string; html: string }
+  | { type: "webviewView/message"; id: string; message: unknown }
   | { type: "dialog/open"; dialog: DialogState }
   | { type: "dialog/close"; requestId: string }
   | { type: "notification/show"; notification: NotificationState }
@@ -40,18 +47,29 @@ export type WorkbenchAction =
   | { type: "terminal/append"; id: string; name?: string; line: string }
   | { type: "terminal/show"; id: string }
   | { type: "terminal/hide"; id: string }
-  | { type: "terminal/dispose"; id: string };
+  | { type: "terminal/dispose"; id: string }
+  | { type: "progress/start"; progress: ProgressState }
+  | { type: "progress/report"; id: string; message?: string; increment?: number }
+  | { type: "progress/end"; id: string }
+  | { type: "diagnostics/extensions"; extensions: ExtensionDiagnosticState[] };
 
 export const initialWorkbenchState: WorkbenchState = {
   containers: [],
+  contextKeys: {},
+  menus: {},
   treeViews: {},
   editors: [],
   webviews: [],
+  webviewViews: [],
   dialogs: [],
   notifications: [],
   outputs: [],
   statusBarItems: [],
-  terminals: []
+  terminals: [],
+  progresses: [],
+  diagnostics: {
+    extensions: []
+  }
 };
 
 export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction): WorkbenchState {
@@ -61,6 +79,12 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         ...state,
         containers: action.containers,
         activeContainerId: state.activeContainerId ?? action.containers[0]?.id
+      };
+    case "menus/register":
+      return {
+        ...state,
+        contextKeys: copyContextKeys(action.contextKeys),
+        menus: copyMenus(action.menus)
       };
     case "container/select":
       return { ...state, activeContainerId: action.id };
@@ -97,18 +121,16 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         activeEditorId: action.editor.id
       };
     case "webview/open":
-      return { ...state, webviews: [...state.webviews.filter((panel) => panel.id !== action.webview.id), action.webview] };
+      return { ...state, webviews: upsertWebview(state.webviews, action.webview) };
     case "webview/html":
       return {
         ...state,
-        webviews: state.webviews.map((panel) => panel.id === action.id ? { ...panel, html: action.html } : panel)
+        webviews: updateWebviewHtml(state.webviews, action.id, action.html)
       };
     case "webview/message":
       return {
         ...state,
-        webviews: state.webviews.map((panel) =>
-          panel.id === action.id ? { ...panel, messages: [...(panel.messages ?? []), action.message] } : panel
-        )
+        webviews: appendWebviewMessage(state.webviews, action.id, action.message)
       };
     case "webview/error":
       return {
@@ -116,6 +138,18 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         webviews: state.webviews.map((panel) =>
           panel.id === action.id ? { ...panel, loading: false, error: action.error } : panel
         )
+      };
+    case "webviewView/open":
+      return { ...state, webviewViews: upsertWebview(state.webviewViews, action.webview) };
+    case "webviewView/html":
+      return {
+        ...state,
+        webviewViews: updateWebviewHtml(state.webviewViews, action.id, action.html)
+      };
+    case "webviewView/message":
+      return {
+        ...state,
+        webviewViews: appendWebviewMessage(state.webviewViews, action.id, action.message)
       };
     case "dialog/open":
       return {
@@ -210,9 +244,90 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
         ...state,
         terminals: state.terminals.filter((terminal) => terminal.id !== action.id)
       };
+    case "progress/start":
+      return {
+        ...state,
+        progresses: upsertProgress(state.progresses, action.progress)
+      };
+    case "progress/report":
+      return {
+        ...state,
+        progresses: reportProgress(state.progresses, action)
+      };
+    case "progress/end":
+      return {
+        ...state,
+        progresses: state.progresses.filter((progress) => progress.id !== action.id)
+      };
+    case "diagnostics/extensions":
+      return {
+        ...state,
+        diagnostics: {
+          extensions: copyDiagnosticsExtensions(action.extensions)
+        }
+      };
     default:
       return state;
   }
+}
+
+function copyDiagnosticsExtensions(extensions: ExtensionDiagnosticState[]): ExtensionDiagnosticState[] {
+  return extensions.map((extension) => ({
+    ...extension,
+    ...(extension.activationEvents ? { activationEvents: [...extension.activationEvents] } : {}),
+    ...(extension.contributedViews ? { contributedViews: [...extension.contributedViews] } : {}),
+    events: extension.events.map((event) => ({
+      ...event,
+      ...(event.details ? { details: copyDiagnosticDetails(event.details) } : {})
+    }))
+  }));
+}
+
+function copyContextKeys(contextKeys: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(contextKeys).map(([key, value]) => [key, copyStateValue(value)])
+  );
+}
+
+function copyMenus(menus: Record<string, MenuContributionState[]>): Record<string, MenuContributionState[]> {
+  return Object.fromEntries(
+    Object.entries(menus).map(([location, items]) => [
+      location,
+      items.map((item) => copyStateValue(item) as MenuContributionState)
+    ])
+  );
+}
+
+function copyDiagnosticDetails(details: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(details).map(([key, value]) => [key, copyStateValue(value)])
+  );
+}
+
+function copyStateValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(copyStateValue);
+  }
+
+  if (value && typeof value === "object") {
+    return copyDiagnosticDetails(value as Record<string, unknown>);
+  }
+
+  return value;
+}
+
+function upsertWebview(webviews: WebviewState[], webview: WebviewState): WebviewState[] {
+  return [...webviews.filter((candidate) => candidate.id !== webview.id), webview];
+}
+
+function updateWebviewHtml(webviews: WebviewState[], id: string, html: string): WebviewState[] {
+  return webviews.map((webview) => webview.id === id ? { ...webview, html } : webview);
+}
+
+function appendWebviewMessage(webviews: WebviewState[], id: string, message: unknown): WebviewState[] {
+  return webviews.map((webview) =>
+    webview.id === id ? { ...webview, messages: [...(webview.messages ?? []), message] } : webview
+  );
 }
 
 function upsertOutput(outputs: OutputChannelState[], output: OutputChannelState): OutputChannelState[] {
@@ -282,6 +397,25 @@ function appendTerminal(
   }
   return terminals.map((terminal) =>
     terminal.id === id ? { ...terminal, lines: [...terminal.lines, line] } : terminal
+  );
+}
+
+function upsertProgress(progresses: ProgressState[], progress: ProgressState): ProgressState[] {
+  return [...progresses.filter((candidate) => candidate.id !== progress.id), progress];
+}
+
+function reportProgress(
+  progresses: ProgressState[],
+  report: { id: string; message?: string; increment?: number }
+): ProgressState[] {
+  return progresses.map((progress) =>
+    progress.id === report.id
+      ? {
+          ...progress,
+          ...(report.message !== undefined ? { message: report.message } : {}),
+          ...(report.increment !== undefined ? { increment: report.increment } : {})
+        }
+      : progress
   );
 }
 

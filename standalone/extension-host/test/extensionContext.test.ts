@@ -54,6 +54,32 @@ describe("createExtensionContext", () => {
     }
   });
 
+  it("persists secrets under global storage and emits changes", async () => {
+    const extensionPath = path.resolve("C:/fixture/extensions/context-test");
+    const storageRoot = fs.mkdtempSync(path.join(os.tmpdir(), "airdb-context-secrets-"));
+
+    try {
+      const context = createExtensionContext({ extensionPath, storageRoot });
+      const changedKeys: string[] = [];
+      context.secrets.onDidChange((event) => changedKeys.push(event.key));
+
+      await context.secrets.store("token", "secret-value");
+      await expect(context.secrets.get("token")).resolves.toBe("secret-value");
+
+      const reloadedContext = createExtensionContext({ extensionPath, storageRoot });
+      await expect(reloadedContext.secrets.get("token")).resolves.toBe("secret-value");
+
+      await context.secrets.delete("token");
+      const deletedContext = createExtensionContext({ extensionPath, storageRoot });
+      await expect(deletedContext.secrets.get("token")).resolves.toBeUndefined();
+
+      expect(changedKeys).toEqual(["token", "token"]);
+      expect(fs.existsSync(path.join(storageRoot, "global", "secrets.json"))).toBe(true);
+    } finally {
+      fs.rmSync(storageRoot, { recursive: true, force: true });
+    }
+  });
+
   it("keeps workspace state isolated by workspace root", async () => {
     const extensionPath = path.resolve("C:/fixture/extensions/context-test");
     const storageRoot = fs.mkdtempSync(path.join(os.tmpdir(), "airdb-context-test-"));

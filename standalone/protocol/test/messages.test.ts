@@ -15,6 +15,14 @@ import {
   type HostWebviewPanelDto,
   type OpenExternalUriPayload,
   type OutputChannelAppendPayload,
+  type ProvideCompletionItemsPayload,
+  type ProvideCompletionItemsResponse,
+  type ProvideDocumentRangeFormattingEditsPayload,
+  type ProvideDocumentRangeFormattingEditsResponse,
+  type ProvideDocumentSymbolsPayload,
+  type ProvideDocumentSymbolsResponse,
+  type ProvideHoverPayload,
+  type ProvideHoverResponse,
   type ResolveTreeChildrenPayload,
   type ResolveTreeChildrenResponse,
   type ShowTextDocumentPayload,
@@ -128,6 +136,80 @@ describe("tree protocol DTOs", () => {
       document,
       viewColumn: 2
     });
+  });
+
+  it("supports typed language provider request and response payloads", () => {
+    const document: HostTextDocumentDto = {
+      id: "document-1",
+      uri: "file:///C:/fixture/query.sql",
+      fsPath: "C:/fixture/query.sql",
+      fileName: "C:/fixture/query.sql",
+      title: "query.sql",
+      languageId: "sql",
+      content: "select 1",
+      isUntitled: false,
+      version: 1
+    };
+
+    const completionRequest = createRequest<ProvideCompletionItemsPayload>("language.provideCompletionItems", {
+      document,
+      position: { line: 0, character: 3 },
+      context: { triggerKind: 1 }
+    });
+    const completionResponse = createResponse<ProvideCompletionItemsResponse>(completionRequest, {
+      items: [{
+        label: "select",
+        kind: 13,
+        detail: "SQL keyword",
+        documentation: { value: "Select rows" },
+        insertText: "select",
+        sortText: "0001",
+        filterText: "sel"
+      }],
+      isIncomplete: false
+    });
+
+    const hoverRequest = createRequest<ProvideHoverPayload>("language.provideHover", {
+      document,
+      position: { line: 0, character: 1 }
+    });
+    const hoverResponse = createResponse<ProvideHoverResponse>(hoverRequest, {
+      hovers: [{ contents: [{ value: "SQL hover" }] }]
+    });
+
+    const symbolsRequest = createRequest<ProvideDocumentSymbolsPayload>("language.provideDocumentSymbols", {
+      document
+    });
+    const symbolsResponse = createResponse<ProvideDocumentSymbolsResponse>(symbolsRequest, {
+      symbols: [{
+        name: "query",
+        detail: "fixture",
+        kind: 11,
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        selectionRange: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } },
+        children: []
+      }]
+    });
+
+    const formattingRequest = createRequest<ProvideDocumentRangeFormattingEditsPayload>(
+      "language.provideDocumentRangeFormattingEdits",
+      {
+        document,
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        options: { tabSize: 2, insertSpaces: true }
+      }
+    );
+    const formattingResponse = createResponse<ProvideDocumentRangeFormattingEditsResponse>(formattingRequest, {
+      edits: [{
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        newText: "SELECT 1"
+      }]
+    });
+
+    expect(completionResponse.payload?.items[0].label).toBe("select");
+    expect(hoverResponse.payload?.hovers[0].contents).toEqual([{ value: "SQL hover" }]);
+    expect(symbolsResponse.payload?.symbols[0].name).toBe("query");
+    expect(formattingResponse.payload?.edits[0].newText).toBe("SELECT 1");
   });
 
   it("supports typed external action DTOs", () => {

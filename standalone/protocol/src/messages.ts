@@ -10,7 +10,14 @@ export type HostMessageGroup =
   | "webview.create"
   | "webview.setHtml"
   | "webview.postMessage"
+  | "webviewView.create"
+  | "webviewView.setHtml"
+  | "webviewView.postMessage"
   | "webview.receiveMessage"
+  | "language.provideCompletionItems"
+  | "language.provideHover"
+  | "language.provideDocumentSymbols"
+  | "language.provideDocumentRangeFormattingEdits"
   | "editor.openDocument"
   | "editor.showDocument"
   | "external.openUri"
@@ -31,6 +38,9 @@ export type HostMessageGroup =
   | "workbench.terminal.show"
   | "workbench.terminal.hide"
   | "workbench.terminal.dispose"
+  | "workbench.progress.start"
+  | "workbench.progress.report"
+  | "workbench.progress.end"
   | "dialog.showInputBox"
   | "dialog.showQuickPick"
   | "dialog.showOpenDialog"
@@ -41,6 +51,7 @@ export type HostMessageGroup =
   | "state.update"
   | "extension.registerContributions"
   | "extension.activated"
+  | "extension.diagnostics"
   | "log";
 
 export interface HostMessageBase {
@@ -83,6 +94,96 @@ export interface HostTextDocumentDto {
   content: string;
   isUntitled: boolean;
   version: number;
+}
+
+export interface LanguagePositionDto {
+  line: number;
+  character: number;
+}
+
+export interface LanguageRangeDto {
+  start: LanguagePositionDto;
+  end: LanguagePositionDto;
+}
+
+export interface ProvideCompletionItemsPayload {
+  document: HostTextDocumentDto;
+  position: LanguagePositionDto;
+  context?: {
+    triggerKind?: number;
+    triggerCharacter?: string;
+  };
+}
+
+export interface LanguageMarkdownDto {
+  value: string;
+}
+
+export interface LanguageCompletionItemDto {
+  label: string;
+  kind?: number;
+  detail?: string;
+  documentation?: string | LanguageMarkdownDto;
+  insertText?: string;
+  sortText?: string;
+  filterText?: string;
+}
+
+export interface ProvideCompletionItemsResponse {
+  items: LanguageCompletionItemDto[];
+  isIncomplete: boolean;
+}
+
+export interface ProvideHoverPayload {
+  document: HostTextDocumentDto;
+  position: LanguagePositionDto;
+}
+
+export interface LanguageHoverDto {
+  contents: Array<string | LanguageMarkdownDto>;
+  range?: LanguageRangeDto;
+}
+
+export interface ProvideHoverResponse {
+  hovers: LanguageHoverDto[];
+}
+
+export interface ProvideDocumentSymbolsPayload {
+  document: HostTextDocumentDto;
+}
+
+export interface LanguageDocumentSymbolDto {
+  name: string;
+  detail?: string;
+  kind: number;
+  range: LanguageRangeDto;
+  selectionRange: LanguageRangeDto;
+  children: LanguageDocumentSymbolDto[];
+}
+
+export interface ProvideDocumentSymbolsResponse {
+  symbols: LanguageDocumentSymbolDto[];
+}
+
+export interface ProvideDocumentRangeFormattingEditsPayload {
+  document: HostTextDocumentDto;
+  range: LanguageRangeDto;
+  options: {
+    tabSize: number;
+    insertSpaces: boolean;
+    trimTrailingWhitespace?: boolean;
+    insertFinalNewline?: boolean;
+    trimFinalNewlines?: boolean;
+  };
+}
+
+export interface LanguageTextEditDto {
+  range: LanguageRangeDto;
+  newText: string;
+}
+
+export interface ProvideDocumentRangeFormattingEditsResponse {
+  edits: LanguageTextEditDto[];
 }
 
 export interface HostTextEditorDto {
@@ -145,6 +246,66 @@ export interface HostTerminalDto {
   visible: boolean;
 }
 
+export interface HostProgressDto {
+  id: string;
+  title?: string;
+  location?: number;
+  cancellable?: boolean;
+  message?: string;
+  increment?: number;
+}
+
+export type ExtensionDiagnosticStatus =
+  | "discovered"
+  | "loading"
+  | "loaded"
+  | "activating"
+  | "activated"
+  | "failed";
+
+export type ExtensionDiagnosticPhase =
+  | "discover"
+  | "manifest"
+  | "contributions"
+  | "mainResolution"
+  | "moduleImport"
+  | "activation"
+  | "unsupportedApi";
+
+export interface ExtensionDiagnosticEventDto {
+  id: string;
+  extensionId?: string;
+  extensionPath: string;
+  timestamp: string;
+  phase: ExtensionDiagnosticPhase;
+  status: ExtensionDiagnosticStatus;
+  message: string;
+  error?: string;
+  details?: Record<string, unknown>;
+}
+
+export interface ExtensionDiagnosticDto {
+  id: string;
+  extensionPath: string;
+  displayName?: string;
+  version?: string;
+  publisher?: string;
+  main?: string;
+  resolvedMain?: string;
+  activationEvents?: string[];
+  contributedViews?: string[];
+  commandCount: number;
+  status: ExtensionDiagnosticStatus;
+  lastError?: string;
+  startedAt?: string;
+  activatedAt?: string;
+  events: ExtensionDiagnosticEventDto[];
+}
+
+export interface ExtensionDiagnosticsPayload {
+  extensions: ExtensionDiagnosticDto[];
+}
+
 export interface TerminalAppendPayload {
   id: string;
   name: string;
@@ -205,6 +366,10 @@ export interface HostWebviewPanelDto {
   extensionId?: string;
   html: string;
   localResourceRoots?: string[];
+}
+
+export interface HostWebviewViewDto extends HostWebviewPanelDto {
+  viewId: string;
 }
 
 export interface WebviewSetHtmlPayload {
