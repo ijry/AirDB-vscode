@@ -55,7 +55,7 @@
 - [x] Task 1: `vscode-shim` registry, selector matching, and language value types.
 - [x] Task 2: protocol DTOs and extension-host invocation dispatch.
 - [x] Task 3: app bridge helper for language provider requests.
-- [ ] Task 4: compat fixture, smoke coverage, docs, final verification.
+- [x] Task 4: compat fixture, smoke coverage, docs, final verification.
 
 ---
 
@@ -1600,7 +1600,7 @@ git commit -m "feat: add app language provider bridge"
 - Produces: real extension-host IPC smoke assertions for completion, hover, document symbols, and range formatting edits
 - Produces: updated docs that keep language providers in Partial and do not claim full VS Code editor lifecycle parity
 
-- [ ] **Step 1: Extend the compat fixture with language providers**
+- [x] **Step 1: Extend the compat fixture with language providers**
 
 In `standalone/extension-host/test/fixtures-compat/compat-extension/extension.js`, call a new helper from `activate` after `registerPhase3Compatibility(context)`:
 
@@ -1654,7 +1654,7 @@ function registerLanguageProviderCompatibility(context) {
 }
 ```
 
-- [ ] **Step 2: Extend the compatibility smoke script**
+- [x] **Step 2: Extend the compatibility smoke script**
 
 In `standalone/scripts/smoke-vscode-api-compat-ipc.mjs`, add a reusable SQL document DTO after `commandRequest`:
 
@@ -1849,7 +1849,7 @@ sawDocumentSymbols ? "" : "language.provideDocumentSymbols",
 sawFormatting ? "" : "language.provideDocumentRangeFormattingEdits",
 ```
 
-- [ ] **Step 3: Update coverage docs**
+- [x] **Step 3: Update coverage docs**
 
 In `standalone/docs/vscode-api-coverage.md`, keep `Languages` in Implemented only for registration/value types if that row already exists, and update the `Partial` row for language providers to this wording:
 
@@ -1865,7 +1865,7 @@ Provides value types and registration storage used by the language provider IPC 
 
 Do not move language providers to full implemented support.
 
-- [ ] **Step 4: Update README smoke coverage**
+- [x] **Step 4: Update README smoke coverage**
 
 In `standalone/README.md`, update the `VS Code API Compatibility IPC Smoke Test` paragraph to include language providers:
 
@@ -1873,7 +1873,7 @@ In `standalone/README.md`, update the `VS Code API Compatibility IPC Smoke Test`
 The smoke test starts the Node extension host with the separate `extension-host/test/fixtures-compat` fixture and verifies configuration updates, file watchers, URI/RelativePattern helpers, sidebar webview views, progress IPC, completion/hover/document-symbol/range-formatting provider IPC, extension exports, context-key-filtered menus, secret storage, and command discovery. It does not change the default AirDB-only prepared extension set.
 ```
 
-- [ ] **Step 5: Verify Task 4**
+- [x] **Step 5: Verify Task 4**
 
 Run:
 
@@ -1888,7 +1888,7 @@ npm --prefix standalone run smoke:vscode-api-compat-ipc
 
 Expected: all commands exit with code 0.
 
-- [ ] **Step 6: Commit Task 4**
+- [x] **Step 6: Commit Task 4**
 
 ```bash
 git add standalone/extension-host/test/fixtures-compat/compat-extension/extension.js standalone/scripts/smoke-vscode-api-compat-ipc.mjs standalone/docs/vscode-api-coverage.md standalone/README.md docs/superpowers/plans/2026-07-11-standalone-language-provider-invocation.md
@@ -1900,11 +1900,11 @@ git commit -m "test: cover language provider ipc compatibility"
 ## Final Review
 
 - [ ] `git status --short --branch` shows only intentional changes before each commit.
-- [ ] Plan checkboxes reflect completed tasks after every task commit.
-- [ ] `standalone/docs/vscode-api-coverage.md` says language provider invocation is partial IPC support, not full VS Code compatibility.
-- [ ] Default prepared extensions remain AirDB-only.
-- [ ] `feature/extension-diagnostics-panel` remains historical context only; no branch juggling is required for this phase.
-- [ ] Final verification commands pass:
+- [x] Plan checkboxes reflect completed tasks after every task commit.
+- [x] `standalone/docs/vscode-api-coverage.md` says language provider invocation is partial IPC support, not full VS Code compatibility.
+- [x] Default prepared extensions remain AirDB-only.
+- [x] `feature/extension-diagnostics-panel` remains historical context only; no branch juggling is required for this phase.
+- [x] Final verification commands pass:
 
 ```bash
 npm --prefix standalone run test

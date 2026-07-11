@@ -18,7 +18,7 @@ This matrix tracks the generic VS Code API surface implemented by the Tauri stan
 | Extension context | `subscriptions`, storage URIs, storage path aliases, `logUri`, `globalState`, `workspaceState`, `secrets` | Storage is scoped per extension under standalone data roots. Secrets use local JSON file storage under the extension global storage root, not OS keychain storage. |
 | Extensions | `extensions.getExtension`, `extensions.all` | Exposes live registry metadata, active state, and activated exports for loaded extensions. |
 | Workbench feedback | `window.createOutputChannel`, `window.createStatusBarItem`, `window.createTerminal` | Provides frontend-visible virtual output/status/terminal surfaces. |
-| Languages | Basic provider registration for completions, code lens, hover, range formatting, and document symbols | Registrations are stored, but providers are not yet invoked by a full editor lifecycle. |
+| Languages | Basic provider registration for completions, code lens, hover, range formatting, and document symbols | Provides value types and registration storage used by the language provider IPC path; full VS Code editor lifecycle parity is not claimed. |
 | Value types | `Disposable`, `EventEmitter`, `Uri`, `RelativePattern`, `Position`, `Range`, `Selection`, `TreeItem`, `ThemeIcon`, `ThemeColor`, `MarkdownString`, `Hover`, `TextEdit`, common enums | `Uri` includes `joinPath`, `with`, `toString(skipEncoding?)`, file parsing, and `fsPath` behavior needed by the standalone fixture suite. |
 | Localization | `l10n.t` | Returns direct strings with simple placeholder replacement. |
 | Environment | `env.language`, `env.openExternal`, `env.clipboard` | External and clipboard calls route through host IPC. |
@@ -27,7 +27,7 @@ This matrix tracks the generic VS Code API surface implemented by the Tauri stan
 
 | Area | APIs | Gap |
 | --- | --- | --- |
-| Language providers | `languages.register*Provider` | Registrations are accepted, but the workbench does not invoke providers. |
+| Language providers | `languages.registerCompletionItemProvider`, `registerHoverProvider`, `registerDocumentSymbolProvider`, `registerDocumentRangeFormattingEditProvider`, `registerCodeLensProvider` | Completion, hover, document symbol, and range formatting providers can be invoked through standalone IPC. CodeLens remains registration-only, and full editor lifecycle integration is pending. |
 | Text editor lifecycle | `window.activeTextEditor`, editor change events | Events exist as shim hooks; full VS Code editor lifecycle parity is not implemented. |
 | Activation events | Manifest activation events | Bundled extensions are still eagerly loaded; VS Code-style semantic activation is pending. |
 | Progress | `window.withProgress` | Passes `progress.report` and a cancellation token shape, emits progress IPC, and stores workbench progress state. It does not render cancellable progress UI yet. |

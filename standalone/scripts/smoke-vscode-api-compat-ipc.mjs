@@ -16,6 +16,54 @@ const commandRequest = {
   group: "command.execute",
   payload: { command: "compat.fixture.run" }
 };
+const sqlDocument = {
+  id: "smoke-language-sql",
+  uri: "file:///C:/workspace/query.sql",
+  fsPath: "C:/workspace/query.sql",
+  fileName: "C:/workspace/query.sql",
+  title: "query.sql",
+  languageId: "sql",
+  content: "select 1",
+  isUntitled: false,
+  version: 1
+};
+const languageRequests = [
+  {
+    kind: "request",
+    id: "smoke-vscode-api-compat-language-completion",
+    group: "language.provideCompletionItems",
+    payload: {
+      document: sqlDocument,
+      position: { line: 0, character: 3 },
+      context: { triggerKind: 1 }
+    }
+  },
+  {
+    kind: "request",
+    id: "smoke-vscode-api-compat-language-hover",
+    group: "language.provideHover",
+    payload: {
+      document: sqlDocument,
+      position: { line: 0, character: 1 }
+    }
+  },
+  {
+    kind: "request",
+    id: "smoke-vscode-api-compat-language-symbols",
+    group: "language.provideDocumentSymbols",
+    payload: { document: sqlDocument }
+  },
+  {
+    kind: "request",
+    id: "smoke-vscode-api-compat-language-formatting",
+    group: "language.provideDocumentRangeFormattingEdits",
+    payload: {
+      document: sqlDocument,
+      range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+      options: { tabSize: 2, insertSpaces: true }
+    }
+  }
+];
 
 await fs.access(hostEntry);
 await fs.access(path.join(extensionsDir, "compat-extension", "package.json"));
@@ -34,6 +82,7 @@ const child = spawn(process.execPath, [hostEntry], {
 });
 
 let sentCommand = false;
+let sentLanguageRequests = false;
 let sawActivated = false;
 let sawContextMenu = false;
 let sawWebviewViewCreate = false;
@@ -41,6 +90,10 @@ let sawWebviewViewHtml = false;
 let sawProgressStart = false;
 let sawProgressReport = false;
 let sawProgressEnd = false;
+let sawCompletion = false;
+let sawHover = false;
+let sawDocumentSymbols = false;
+let sawFormatting = false;
 let resolved = false;
 let stderr = "";
 let stdoutBuffer = "";
@@ -53,6 +106,7 @@ child.stderr.on("data", (chunk) => {
   stderr += chunk.toString();
   if (stderr.includes("Loaded 1 extension(s).")) {
     sendCommandRequest();
+    sendLanguageRequests();
   }
 });
 
@@ -92,9 +146,19 @@ function sendCommandRequest() {
   }
 }
 
+function sendLanguageRequests() {
+  if (!sentLanguageRequests) {
+    for (const request of languageRequests) {
+      child.stdin.write(`${JSON.stringify(request)}\n`);
+    }
+    sentLanguageRequests = true;
+  }
+}
+
 function handleStdoutLine(line) {
   if (line.includes("Loaded 1 extension(s).")) {
     sendCommandRequest();
+    sendLanguageRequests();
     return;
   }
   if (!line.startsWith("{")) {
@@ -150,9 +214,36 @@ function handleStdoutLine(line) {
     finishIfReady();
     return;
   }
+  if (message.kind === "response" && message.id.startsWith("smoke-vscode-api-compat-language-")) {
+    handleLanguageResponse(message);
+    return;
+  }
   if (message.kind === "response" && message.id === commandRequest.id) {
     handleCommandResponse(message);
   }
+}
+
+function handleLanguageResponse(message) {
+  if (!message.ok) {
+    void fail(message.error ?? "Language provider smoke request failed.");
+    return;
+  }
+
+  switch (message.id) {
+    case "smoke-vscode-api-compat-language-completion":
+      sawCompletion = isValidCompletionPayload(message.payload);
+      break;
+    case "smoke-vscode-api-compat-language-hover":
+      sawHover = isValidHoverPayload(message.payload);
+      break;
+    case "smoke-vscode-api-compat-language-symbols":
+      sawDocumentSymbols = isValidDocumentSymbolsPayload(message.payload);
+      break;
+    case "smoke-vscode-api-compat-language-formatting":
+      sawFormatting = isValidFormattingPayload(message.payload);
+      break;
+  }
+  finishIfReady();
 }
 
 function handleCommandResponse(message) {
@@ -201,6 +292,47 @@ function isValidCompatibilityPayload(payload) {
   );
 }
 
+function isValidCompletionPayload(payload) {
+  const item = Array.isArray(payload?.items)
+    ? payload.items.find((entry) => entry.label === "compat_select")
+    : undefined;
+  return Boolean(item) &&
+    item.kind === 13 &&
+    item.detail === "Compat SQL completion" &&
+    item.documentation?.value === "Completion from compat fixture" &&
+    item.insertText === "select" &&
+    item.sortText === "0001" &&
+    item.filterText === "compat_select" &&
+    payload.isIncomplete === false;
+}
+
+function isValidHoverPayload(payload) {
+  const hover = Array.isArray(payload?.hovers) ? payload.hovers[0] : undefined;
+  return Boolean(hover) &&
+    Array.isArray(hover.contents) &&
+    hover.contents[0]?.value === "Compat SQL hover" &&
+    hover.range?.start?.line === 0 &&
+    hover.range?.end?.character === 8;
+}
+
+function isValidDocumentSymbolsPayload(payload) {
+  const symbol = Array.isArray(payload?.symbols) ? payload.symbols[0] : undefined;
+  return Boolean(symbol) &&
+    symbol.name === "compatQuery" &&
+    symbol.detail === "fixture" &&
+    symbol.kind === 11 &&
+    symbol.range?.start?.line === 0 &&
+    Array.isArray(symbol.children);
+}
+
+function isValidFormattingPayload(payload) {
+  const edit = Array.isArray(payload?.edits) ? payload.edits[0] : undefined;
+  return Boolean(edit) &&
+    edit.newText === "  SELECT 1" &&
+    edit.range?.start?.character === 0 &&
+    edit.range?.end?.character === 8;
+}
+
 function isValidUriCompatibilityPayload(uri) {
   return (
     typeof uri?.mediaUri === "string" &&
@@ -238,10 +370,14 @@ function finishIfReady() {
     sawWebviewViewHtml &&
     sawProgressStart &&
     sawProgressReport &&
-    sawProgressEnd
+    sawProgressEnd &&
+    sawCompletion &&
+    sawHover &&
+    sawDocumentSymbols &&
+    sawFormatting
   ) {
     clearTimeout(timeout);
-    console.log("Resolved VS Code API compatibility fixture through extension-host command IPC, webview view IPC, and progress IPC.");
+    console.log("Resolved VS Code API compatibility fixture through command IPC, webview view IPC, progress IPC, and language provider IPC.");
     child.kill();
   }
 }
@@ -268,6 +404,7 @@ function normalizePath(value) {
 function missingCheckpoints() {
   return [
     sentCommand ? "" : "command.execute",
+    sentLanguageRequests ? "" : "language provider requests",
     sawActivated ? "" : "extension.activated",
     sawContextMenu ? "" : "context-filtered menu contribution",
     sawWebviewViewCreate ? "" : "webviewView.create",
@@ -275,6 +412,10 @@ function missingCheckpoints() {
     sawProgressStart ? "" : "workbench.progress.start",
     sawProgressReport ? "" : "workbench.progress.report",
     sawProgressEnd ? "" : "workbench.progress.end",
+    sawCompletion ? "" : "language.provideCompletionItems",
+    sawHover ? "" : "language.provideHover",
+    sawDocumentSymbols ? "" : "language.provideDocumentSymbols",
+    sawFormatting ? "" : "language.provideDocumentRangeFormattingEdits",
     resolved ? "" : "compat command response"
   ].filter(Boolean);
 }

@@ -4,6 +4,7 @@ const vscode = require("vscode");
 
 exports.activate = function activate(context) {
   const phase3 = registerPhase3Compatibility(context);
+  registerLanguageProviderCompatibility(context);
   const activatedExports = { activated: true, fixture: "compat-extension", phase3 };
 
   context.subscriptions.push(
@@ -91,6 +92,48 @@ function registerPhase3Compatibility(context) {
     webviewViewId: "compat.webviewView",
     changedUri: uri.changedUri
   };
+}
+
+function registerLanguageProviderCompatibility(context) {
+  const range = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 8));
+
+  context.subscriptions.push(
+    vscode.languages.registerCompletionItemProvider("sql", {
+      provideCompletionItems() {
+        const item = new vscode.CompletionItem("compat_select", vscode.CompletionItemKind.Keyword);
+        item.detail = "Compat SQL completion";
+        item.documentation = new vscode.MarkdownString("Completion from compat fixture");
+        item.insertText = "select";
+        item.sortText = "0001";
+        item.filterText = "compat_select";
+        return new vscode.CompletionList([item], false);
+      }
+    }),
+    vscode.languages.registerHoverProvider({ language: "sql", scheme: "file", pattern: "**/*.sql" }, {
+      provideHover() {
+        return new vscode.Hover(new vscode.MarkdownString("Compat SQL hover"), range);
+      }
+    }),
+    vscode.languages.registerDocumentSymbolProvider("sql", {
+      provideDocumentSymbols() {
+        return [
+          new vscode.DocumentSymbol(
+            "compatQuery",
+            "fixture",
+            vscode.SymbolKind.Function,
+            range,
+            new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, 6))
+          )
+        ];
+      }
+    }),
+    vscode.languages.registerDocumentRangeFormattingEditProvider("sql", {
+      provideDocumentRangeFormattingEdits(_document, requestedRange, options) {
+        const prefix = options.insertSpaces ? "  " : "\t";
+        return [vscode.TextEdit.replace(requestedRange, `${prefix}SELECT 1`)];
+      }
+    })
+  );
 }
 
 function createUriCompatibility(context) {
