@@ -34,6 +34,13 @@ module.exports = [
       devtoolModuleFilenameTemplate: '[absoluteResourcePath]'
     },
     externals: extensionExternals,
+    // mongodb@3.x uses optional-require(require); critical-dependency noise is harmless
+    ignoreWarnings: [
+      {
+        module: /node_modules[\\/]mongodb[\\/]/,
+        message: /Critical dependency/
+      }
+    ],
     resolve: {
       extensions: ['.ts', '.js'],
       alias: {
