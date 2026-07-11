@@ -16,7 +16,7 @@
                 'menu_item', 'menu_item__disabled',
                 item.divided?'menu_item__divided':null
               ]"
-              :key="index"
+              :key="`disabled-${index}`"
               v-if="item.disabled"
             >
               <div class="menu_item_icon" v-if="hasIcon">
@@ -32,7 +32,7 @@
                 activeSubmenu.index===index? 'menu_item_expand':null,
                 item.divided?'menu_item__divided':null
               ]"
-              :key="index"
+              :key="`children-${index}`"
               @mouseenter="($event)=>enterItem($event,item,index)"
               v-else-if="item.children"
             >
@@ -41,6 +41,16 @@
               </div>
               <span class="menu_item_label" :title="item.label">{{item.label}}</span>
               <div class="menu_item_expand_icon">▶</div>
+              <Submenu
+                v-if="activeSubmenu.index === index && activeSubmenu.item"
+                :items="activeSubmenu.item.children"
+                :position="activeSubmenu.position"
+                :style-config="{ minWidth: typeof item.minWidth === 'number' ? item.minWidth : style.minWidth, zIndex: style.zIndex }"
+                :custom-class="typeof item.customClass === 'string' ? item.customClass : customClass"
+                :common-class="commonClass"
+                :open-trend-value="openTrend"
+                @close="$emit('close')"
+              />
             </div>
             <div
               :class="[
@@ -48,7 +58,7 @@
                 'menu_item', 'menu_item__available',
                 item.divided?'menu_item__divided':null
               ]"
-              :key="index"
+              :key="`item-${index}`"
               @mouseenter="($event)=>enterItem($event,item,index)"
               @click="itemClick(item)"
               v-else
@@ -67,7 +77,6 @@
 </template>
 
 <script>
-import Vue from "vue";
 import {
   SUBMENU_X_OFFSET,
   SUBMENU_Y_OFFSET,
@@ -77,45 +86,36 @@ import {
 } from "../constant";
 export default {
   name: COMPONENT_NAME,
+  props: {
+    items: { type: Array, default: () => [] },
+    position: { type: Object, required: true },
+    styleConfig: { type: Object, required: true },
+    customClass: { type: String, default: null },
+    commonClass: { type: Object, required: true },
+    openTrendValue: { type: String, default: SUBMENU_OPEN_TREND_RIGHT }
+  },
+  emits: ['close'],
   data() {
     return {
-      commonClass: {
-        menu: null,
-        menuItem: null,
-        clickableMenuItem: null,
-        unclickableMenuItem: null
-      },
       activeSubmenu: {
         index: null,
-        instance: null
-      },
-      items: [],
-      position: {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0
+        item: null,
+        position: null
       },
       style: {
         left: 0,
         top: 0,
-        zIndex: 2,
-        minWidth: 150
+        zIndex: this.styleConfig.zIndex,
+        minWidth: this.styleConfig.minWidth
       },
-      customClass: null,
       visible: false,
       hasIcon: false,
-      openTrend: SUBMENU_OPEN_TREND_RIGHT
+      openTrend: this.openTrendValue
     };
   },
   mounted() {
     this.visible = true;
-    for (let item of this.items) {
-      if (item.icon) {
-        this.hasIcon = true;
-        break;
-      }
-    }
+    this.hasIcon = this.items.some(item => item.icon);
     this.$nextTick(() => {
       const windowWidth = document.documentElement.clientWidth;
       const windowHeight = document.documentElement.clientHeight;
@@ -163,65 +163,40 @@ export default {
       }
     },
     enterItem(e, item, index) {
-      if (!this.visible) {
+      if (!this.visible || !item.children) {
+        this.activeSubmenu = { index: null, item: null, position: null };
         return;
       }
-      if (this.activeSubmenu.instance) {
-        if (this.activeSubmenu.index === index) {
-          return;
-        } else {
-          this.activeSubmenu.instance.close();
-          this.activeSubmenu.instance = null;
-          this.activeSubmenu.index = null;
+      if (this.activeSubmenu.index === index) {
+        return;
+      }
+      const rect = e.target.getBoundingClientRect();
+      this.activeSubmenu = {
+        index,
+        item,
+        position: {
+          x: rect.x + SUBMENU_X_OFFSET,
+          y: rect.y + SUBMENU_Y_OFFSET,
+          width: rect.width - 2 * SUBMENU_X_OFFSET,
+          height: rect.width
         }
-      }
-      if (!item.children) {
-        return;
-      }
-      const menuItemClientRect = e.target.getBoundingClientRect();
-      const SubmenuConstructor = Vue.component(COMPONENT_NAME);
-      this.activeSubmenu.index = index;
-      this.activeSubmenu.instance = new SubmenuConstructor();
-      this.activeSubmenu.instance.items = item.children;
-      this.activeSubmenu.instance.openTrend = this.openTrend;
-      this.activeSubmenu.instance.commonClass = this.commonClass;
-      this.activeSubmenu.instance.position = {
-        x: menuItemClientRect.x + SUBMENU_X_OFFSET,
-        y: menuItemClientRect.y + SUBMENU_Y_OFFSET,
-        width: menuItemClientRect.width - 2 * SUBMENU_X_OFFSET,
-        height: menuItemClientRect.width
       };
-      this.activeSubmenu.instance.style.minWidth =
-        typeof item.minWidth === "number" ? item.minWidth : this.style.minWidth;
-      this.activeSubmenu.instance.style.zIndex = this.style.zIndex;
-      this.activeSubmenu.instance.customClass =
-        typeof item.customClass === "string"
-          ? item.customClass
-          : this.customClass;
-      this.activeSubmenu.instance.$mount();
-      document.body.appendChild(this.activeSubmenu.instance.$el);
     },
     itemClick(item) {
-      if (!this.visible) {
-        return;
-      }
       if (
+        this.visible &&
         item &&
         !item.disabled &&
         !item.hidden &&
-        typeof item.onClick === "function"
+        typeof item.onClick === 'function'
       ) {
-        return item.onClick();
+        item.onClick();
+        this.$emit('close');
       }
     },
     close() {
       this.visible = false;
-      if (this.activeSubmenu.instance) {
-        this.activeSubmenu.instance.close();
-      }
-      this.$nextTick(() => {
-        this.$destroy();
-      });
+      this.$emit('close');
     }
   }
 };
@@ -298,7 +273,7 @@ export default {
 .contextmenu-submenu-fade-leave-active {
   transition: opacity 0.1s;
 }
-.contextmenu-submenu-fade-enter,
+.contextmenu-submenu-fade-enter-from,
 .contextmenu-submenu-fade-leave-to {
   opacity: 0;
 }

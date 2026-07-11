@@ -1,43 +1,63 @@
+import { createApp, h } from 'vue';
+import Contextmenu from './components/Contextmenu';
+import Submenu from './components/Submenu';
+import { COMPONENT_NAME } from './constant';
 
-import Vue from 'vue';
-import Contextmenu from "./components/Contextmenu";
-import Submenu from "./components/Submenu";
-import { COMPONENT_NAME } from "./constant";
+function mountContextmenu(options, onUnmount) {
+  const container = document.createElement('div');
+  document.body.appendChild(container);
 
-const ContextmenuConstructor = Vue.extend(Contextmenu);
-Vue.component(COMPONENT_NAME, Submenu);
+  let mounted = true;
+  const app = createApp({
+    render() {
+      return h(Contextmenu, {
+        items: options.items || [],
+        x: options.event ? options.event.clientX : options.x || 0,
+        y: options.event ? options.event.clientY : options.y || 0,
+        customClass: options.customClass || null,
+        minWidth: options.minWidth,
+        zIndex: options.zIndex,
+        onClose: close
+      });
+    }
+  });
 
-function install(Vue) {
-  let lastInstance = null;
+  function close() {
+    if (!mounted) {
+      return;
+    }
+    mounted = false;
+    app.unmount();
+    if (container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+    if (typeof onUnmount === 'function') {
+      onUnmount();
+    }
+  }
+
+  app.component(COMPONENT_NAME, Submenu);
+  app.mount(container);
+  return { close };
+}
+
+function install(app) {
+  let lastContextmenu = null;
   const ContextmenuProxy = function (options) {
-    let instance = new ContextmenuConstructor();
-    instance.items = options.items;
-    instance.position.x = options.x || 0;
-    instance.position.y = options.y || 0;
-    if (options.event) {
-      instance.position.x = options.event.clientX;
-      instance.position.y = options.event.clientY;
-    }
-    instance.customClass = options.customClass;
-    options.minWidth && (instance.style.minWidth = options.minWidth);
-    options.zIndex && (instance.style.zIndex = options.zIndex);
     ContextmenuProxy.destroy();
-    lastInstance = instance;
-    instance.$mount();
-  }
+    lastContextmenu = mountContextmenu(options || {}, () => {
+      lastContextmenu = null;
+    });
+  };
+
   ContextmenuProxy.destroy = function () {
-    if (lastInstance) {
-      lastInstance.$destroy();
-      lastInstance = null;
+    if (lastContextmenu) {
+      lastContextmenu.close();
+      lastContextmenu = null;
     }
-  }
-  Vue.prototype.$contextmenu = ContextmenuProxy;
+  };
+
+  app.config.globalProperties.$contextmenu = ContextmenuProxy;
 }
 
-if (window && window.Vue) {
-  install(window.Vue)
-}
-
-export default {
-  install
-}
+export default { install };

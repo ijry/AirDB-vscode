@@ -1,71 +1,47 @@
 <template>
-  <div></div>
+  <Submenu
+    :items="items"
+    :position="{ x: position.x, y: position.y, width: 0, height: 0 }"
+    :style-config="style"
+    :custom-class="customClass"
+    :common-class="{
+      menu: $style.menu,
+      menuItem: $style.menu_item,
+      clickableMenuItem: $style.menu_item__clickable,
+      unclickableMenuItem: $style.menu_item__unclickable
+    }"
+    @close="$emit('close')"
+  />
 </template>
 
 <script>
-import Vue from "vue";
-import { getElementsByClassName } from "../util";
-import { COMPONENT_NAME } from "../constant";
+import Submenu from './Submenu.vue';
+import { getElementsByClassName } from '../util';
+
 export default {
+  props: {
+    items: { type: Array, default: () => [] },
+    x: { type: Number, default: 0 },
+    y: { type: Number, default: 0 },
+    customClass: { type: String, default: null },
+    minWidth: { type: Number, default: 150 },
+    zIndex: { type: Number, default: 2 }
+  },
+  emits: ['close'],
   data() {
     return {
-      items: [],
-      position: {
-        x: 0,
-        y: 0
-      },
-      style: {
-        zIndex: 2,
-        minWidth: 150
-      },
-      mainMenuInstance: null,
-      customClass: null,
+      position: { x: this.x, y: this.y },
+      style: { zIndex: this.zIndex, minWidth: this.minWidth },
       mouseListening: false
     };
   },
   mounted() {
-    const SubmenuConstructor = Vue.component(COMPONENT_NAME);
-    this.mainMenuInstance = new SubmenuConstructor();
-    this.mainMenuInstance.items = this.items;
-    this.mainMenuInstance.commonClass = {
-      menu: this.$style.menu,
-      menuItem: this.$style.menu_item,
-      clickableMenuItem: this.$style.menu_item__clickable,
-      unclickableMenuItem: this.$style.menu_item__unclickable
-    };
-    this.mainMenuInstance.position = {
-      x: this.position.x,
-      y: this.position.y,
-      width: 0,
-      height: 0
-    };
-    this.mainMenuInstance.style.minWidth = this.style.minWidth;
-    this.mainMenuInstance.style.zIndex = this.style.zIndex;
-    this.mainMenuInstance.customClass = this.customClass;
-    this.mainMenuInstance.$mount();
-    document.body.appendChild(this.mainMenuInstance.$el);
     this.addListener();
   },
-  destroyed() {
+  beforeUnmount() {
     this.removeListener();
-    if (this.mainMenuInstance) {
-      this.mainMenuInstance.close();
-    }
   },
   methods: {
-    mousewheelListener() {
-      this.$destroy();
-    },
-    mouseDownListener(e) {
-      let el = e.target;
-      const menus = getElementsByClassName(this.$style.menu);
-      while (!menus.find(m => m === el) && el.parentElement) {
-        el = el.parentElement;
-      }
-      if (!menus.find(m => m === el)) {
-        this.$destroy();
-      }
-    },
     mouseClickListener(e) {
       let el = e.target;
       const menus = getElementsByClassName(this.$style.menu);
@@ -84,30 +60,27 @@ export default {
         if (e.button !== 0 || unclickableMenuItems.find(m => m === el)) {
           return;
         }
-        this.$destroy();
+        this.$emit('close');
         return;
       }
       if (!menus.find(m => m === el)) {
-        this.$destroy();
+        this.$emit('close');
       }
     },
     addListener() {
       if (!this.mouseListening) {
-        document.addEventListener("click", this.mouseClickListener);
-        // document.addEventListener("mousedown", this.mouseDownListener);
-        // document.addEventListener("mousewheel", this.mousewheelListener);
+        document.addEventListener('click', this.mouseClickListener);
         this.mouseListening = true;
       }
     },
     removeListener() {
       if (this.mouseListening) {
-        window.removeEventListener("click", this.mouseClickListener);
-        // window.removeEventListener("mousedown", this.mouseDownListener);
-        // window.removeEventListener("mousewheel", this.mousewheelListener);
+        document.removeEventListener('click', this.mouseClickListener);
         this.mouseListening = false;
       }
     }
-  }
+  },
+  components: { Submenu }
 };
 </script>
 
