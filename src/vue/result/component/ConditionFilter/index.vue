@@ -10,7 +10,7 @@
 
       <el-select
         v-model="row.field"
-        size="mini"
+        size="small"
         class="condition-filter__field"
         filterable
         @change="onFieldChange(row)"
@@ -26,7 +26,7 @@
       <el-select
         v-if="row.field !== RAW_SQL_FIELD"
         v-model="row.operator"
-        size="mini"
+        size="small"
         class="condition-filter__operator"
         @change="emitFilters"
       >
@@ -41,53 +41,59 @@
 
       <el-input
         v-model="row.value"
-        size="mini"
+        size="small"
         class="condition-filter__value"
         :placeholder="row.field === RAW_SQL_FIELD ? 'Raw SQL' : '值'"
         @input="emitFilters"
-        @keyup.enter.native="applyRow(index)"
-        @keyup.ctrl.enter.native="applyAll"
+        @keyup.enter="applyRow(index)"
+        @keyup.ctrl.enter="applyAll"
       ></el-input>
 
       <el-tooltip content="应用" placement="bottom" :open-delay="350">
-        <el-button size="mini" icon="el-icon-caret-right" @click="applyRow(index)"></el-button>
+        <el-button size="small" @click="applyRow(index)"><el-icon><CaretRight /></el-icon></el-button>
       </el-tooltip>
       <el-tooltip content="删除条件" placement="bottom" :open-delay="350">
-        <el-button size="mini" icon="el-icon-minus" @click="removeRow(index)"></el-button>
+        <el-button size="small" @click="removeRow(index)"><el-icon><Minus /></el-icon></el-button>
       </el-tooltip>
       <el-tooltip content="添加条件" placement="bottom" :open-delay="350">
-        <el-button size="mini" icon="el-icon-plus" @click="addRow(index + 1)"></el-button>
+        <el-button size="small" @click="addRow(index + 1)"><el-icon><Plus /></el-icon></el-button>
       </el-tooltip>
     </div>
 
     <div class="condition-filter__footer">
       <el-tooltip content="添加条件" placement="bottom" :open-delay="350">
-        <el-button size="mini" icon="el-icon-s-operation" @click="addRow(localFilters.length)"></el-button>
+        <el-button size="small" @click="addRow(localFilters.length)"><el-icon><Operation /></el-icon></el-button>
       </el-tooltip>
-      <el-button size="mini" @click="$emit('clear')">清除过滤器</el-button>
+      <el-button size="small" @click="$emit('clear')">清除过滤器</el-button>
       <el-popover placement="bottom-start" width="520" trigger="click">
         <pre class="condition-filter__sql">{{ generatedSql }}</pre>
-        <el-button slot="reference" size="mini">SQL</el-button>
+        <template #reference>
+          <el-button size="small">SQL</el-button>
+        </template>
       </el-popover>
       <span class="condition-filter__spacer"></span>
-      <el-button size="mini" type="primary" @click="applyAll">全部应用</el-button>
+      <el-button size="small" type="primary" @click="applyAll">全部应用</el-button>
     </div>
   </div>
 </template>
 
 <script>
+import { CaretRight, Minus, Operation, Plus } from '@element-plus/icons-vue';
+
 const {
   RAW_SQL_FIELD,
   createDefaultFilterRow,
 } = require("../../util/tableFilterSql");
 
 export default {
+  components: { CaretRight, Minus, Operation, Plus },
   props: {
     fields: { type: Array, default: () => [] },
     columnList: { type: Array, default: () => [] },
     filters: { type: Array, default: () => [] },
     generatedSql: { type: String, default: "" },
   },
+  emits: ["update:filters", "apply-row", "apply-all", "clear"],
   data() {
     return {
       RAW_SQL_FIELD,
@@ -212,11 +218,11 @@ export default {
   background: var(--vscode-editor-background);
 }
 
-.condition-filter >>> .el-button--mini {
+.condition-filter :deep(.el-button--small) {
   padding: 6px 8px;
 }
 
-.condition-filter >>> .el-button [class*=el-icon-] {
+.condition-filter :deep(.el-button .el-icon) {
   margin: 0;
 }
 </style>

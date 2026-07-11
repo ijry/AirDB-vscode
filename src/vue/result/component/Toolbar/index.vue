@@ -2,45 +2,47 @@
   <div class="toolbar" style="display: flex;justify-content: space-between;align-items: center;">
     <div class="left" style="flex: 1;">
         <el-button v-if="showFullBtn" @click="()=>$emit('sendToVscode','full')"
-          type="primary" title="Full Result View" icon="el-icon-rank" size="small" circle>
+          type="primary" title="Full Result View" size="small" circle>
+          <el-icon><FullScreen /></el-icon>
         </el-button>
         <el-button @click="$emit('insert')" size="small">
-          <i class="el-icon-circle-plus-outline"></i>
+          <el-icon><CirclePlus /></el-icon>
           <span style="">{{$t('Insert')}}</span>
         </el-button>
         <el-button class="delete-button" size="small"
           @click="$emit('deleteConfirm');">
-          <i class="el-icon-delete"></i>
+          <el-icon><Delete /></el-icon>
           <span style="">{{$t('delete')}}</span>
         </el-button>
         <el-button @click="$emit('export');" size="small"
           style="margin-left: 7px;">
-          <i class="el-icon-download"></i>
+          <el-icon><Download /></el-icon>
           <span>{{$t('Export')}}</span>
         </el-button>
         <el-button v-if="showOpenDesignBtn" @click='()=>$emit("sendToVscode", "designTable")' size="small"
           style="margin-left: 7px;">
-            <i class="el-icon-edit"></i>
+            <el-icon><Edit /></el-icon>
             <span style="">{{$t('Struct')}}</span>
         </el-button>
-        <!-- <el-button icon="el-icon-caret-right" :title="$t('Execute Sql')"
-          style="color: #54ea54;" @click="$emit('run');"></el-button>
-        <div style="display:inline-block;font-size:14px;padding-left: 8px;" class="el-pagination__total">
-          {{ $t('Cost') }}: {{costTime}}ms
-        </div> -->
     </div>
     <div class="right" style="display: flex;">
       <el-input class="left-search-input" v-model="searchInput" size="small" style="width:200px;margin-right: 10px;" 
           :placeholder="$t('Input To Search Data')" :clearable="true" />
-       <el-button size="mini" icon="icon-github" :title="$t('Star the project to represent support.')"
-          @click='()=>$emit("sendToVscode", "openGithub")'></el-button>
+       <el-button size="small" :title="$t('Star the project to represent support.')"
+          @click='()=>$emit("sendToVscode", "openGithub")'>
+          <i class="icon-github"></i>
+       </el-button>
     </div>
   </div>
 </template>
 
 <script>
+import { CirclePlus, Delete, Download, Edit, FullScreen } from '@element-plus/icons-vue';
+
 export default {
+  components: { CirclePlus, Delete, Download, Edit, FullScreen },
   props: ["costTime", "search", "showFullBtn", "showOpenDesignBtn"],
+  emits: ["sendToVscode", "insert", "deleteConfirm", "export", "run", "update:search"],
   data() {
     return {
       searchInput: null,
@@ -50,7 +52,7 @@ export default {
   },
   watch: {
     searchInput: function () {
-      this.$emit("update:search", this.searchInput); // 将子组件的输入框的值传递给父组件 父组件需要用.sync
+      this.$emit("update:search", this.searchInput);
     },
   },
 };
@@ -62,14 +64,14 @@ export default {
   margin-bottom: 3px;
 }
 
-.el-button--mini.is-circle {
+.el-button--small.is-circle {
   padding: 6px;
 }
 
 .el-button--small {
   display: inline-flex;
   align-items: center;
-  [class*=el-icon-] + span {
+  .el-icon + span {
     margin-left: 0px;
   }
 }
@@ -82,7 +84,7 @@ export default {
 .el-pagination {
   padding: 0;
 }
->>> .left-search-input .el-input--mini .el-input__inner{
+:deep(.left-search-input .el-input--small .el-input__inner) {
   height: 29px;
 }
 

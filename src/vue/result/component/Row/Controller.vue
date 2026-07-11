@@ -6,14 +6,20 @@
         {{ column.name }}
       </el-checkbox>
     </el-checkbox-group>
-    <el-button icon="el-icon-search" circle title="Select columns to show" size="mini" slot="reference">
-    </el-button>
+    <template #reference>
+      <el-button circle title="Select columns to show" size="small">
+        <el-icon><Search /></el-icon>
+      </el-button>
+    </template>
   </el-popover>
 </div>
 </template>
 
 <script>
+import { Search } from '@element-plus/icons-vue';
+
 export default {
+    components: { Search },
     props:['result','toolbar'],
     mounted(){
         console.log(this.result)

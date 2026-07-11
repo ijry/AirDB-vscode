@@ -4,7 +4,8 @@
             @current-change="page=>$emit('changePage',page,true)"
             @next-click="()=>$emit('changePage',1)"
             @prev-click="()=>$emit('changePage',-1)"
-            :current-page.sync="page.pageNum"
+            :current-page="page.pageNum"
+            @update:current-page="value => page.pageNum = value"
             :page-size="page.pageSize"
             :layout="page.total!=null?'prev,pager, next, total':'prev, next'"
             :total="page.total">
@@ -33,7 +34,7 @@
   
   <style scoped>
   
-  .el-button--mini.is-circle {
+.el-button--small.is-circle {
     padding: 6px;
   }
   
@@ -42,7 +43,7 @@
     align-items: center;
     font-size: 13px;
     margin-left: 7px;
-    [class*=el-icon-] + span {
+    .el-icon + span {
       margin-left: 0px;
     }
   }
@@ -55,7 +56,7 @@
   .el-pagination {
     padding: 0;
   }
-  >>> .left-search-input .el-input--mini .el-input__inner{
+  :deep(.left-search-input .el-input--small .el-input__inner) {
     height: 29px;
   }
   

@@ -23,7 +23,7 @@
         v-if="isTableResult"
         :fields="result.fields || []"
         :columnList="result.columnList || []"
-        :filters.sync="toolbar.conditionFilters"
+        v-model:filters="toolbar.conditionFilters"
         :generatedSql="generatedFilterSql"
         @apply-row="applyConditionFilters"
         @apply-all="applyConditionFilters"
@@ -31,7 +31,7 @@
       />
       <div v-else class="relative" style="width:100%;margin-top: 0px;margin-bottom: 6px;position: relative;">
         <el-input class="sql-pannel" type="textarea" :autosize="{ minRows:2, maxRows:8}"
-          v-model="toolbar.sql" @keypress.native="panelInput" />
+          v-model="toolbar.sql" @keypress="panelInput" />
           <div style="position: absolute;bottom: 5px;right: 10px;">
           </div>
       </div>
@@ -57,13 +57,13 @@
             {{ $t('Execute Sql') }}
           </el-button>
         </div>
-        <Toolbar style="flex: 1;" :showFullBtn="showFullBtn" :search.sync="table.search"
+        <Toolbar style="flex: 1;" :showFullBtn="showFullBtn" v-model:search="table.search"
           :costTime="result.costTime" :showOpenDesignBtn="result.showOpenDesignBtn"
           @sendToVscode="sendToVscode" @export="exportOption.visible = true"
           @insert="$refs.editor.openInsert()" @deleteConfirm="deleteConfirm"
           @run="info.message = false;execute(toolbar.sql);" />
       </div>
-      <el-dialog :title="$t('Result')" :visible.sync="resultDialog" top="5vh" size="default" @close="closeResult">
+      <el-dialog :title="$t('Result')" v-model="resultDialog" top="5vh" @close="closeResult">
         <div v-if="info.message ">
           <div class="info-panel" style="color:red !important;line-height: 1.4;"
             :style="{color: info.error ? 'red !important' : 'green !important'}">
@@ -74,27 +74,58 @@
       </el-dialog>
     </div>
     <!-- trigger when click -->
-    <ux-grid ref="dataTable" :data="filterData" v-loading='table.loading'
-      size='small' :cell-style="{height: '24px', 'overflow': 'hidden'}" @sort-change="sort" :height="remainHeight"
-      width="100vw" stripe :checkboxConfig="{ checkMethod: selectable}">
-      <ux-table-column type="checkbox" width="40" fixed="left" align="center"></ux-table-column>
-      <ux-table-column type="index" width="40"  align="center" :seq-method="({row,rowIndex})=>(rowIndex||!row.isFilter)?rowIndex:undefined">
-        <Controller slot="header" :result="result" :toolbar="toolbar" />
-      </ux-table-column>
-      <ux-table-column v-for="(field,index) in (result.fields||[]).filter(field=>toolbar.showColumns.includes(field.name.toLowerCase()))"
-        :key="index" :resizable="true" :field="field.name" :title="field.name" :sortable="true" :minWidth="computeWidth(field,0)" edit-render>
-        <Header slot="header" slot-scope="scope" :result="result" :scope="scope" :index="index" />
-        <Row slot-scope="scope" :scope="scope" :result="result" :filterObj="toolbar.filter" @execute="execute"
-          :editList.sync="update.editList" @sendToVscode="sendToVscode" @openEditor="openEditor" />
-      </ux-table-column>
-    </ux-grid>
+    <vxe-table
+      ref="dataTable"
+      :data="filterData"
+      v-loading="table.loading"
+      size="small"
+      :row-config="{ isHover: true }"
+      :column-config="{ resizable: true }"
+      :checkbox-config="{ checkMethod: selectable }"
+      :height="remainHeight"
+      width="100vw"
+      stripe
+      border
+      @sort-change="sort"
+    >
+      <vxe-column type="checkbox" width="40" fixed="left" align="center"></vxe-column>
+      <vxe-column type="seq" width="40" align="center">
+        <template #header>
+          <Controller :result="result" :toolbar="toolbar" />
+        </template>
+      </vxe-column>
+      <vxe-column
+        v-for="(field, index) in (result.fields || []).filter(field => toolbar.showColumns.includes(field.name.toLowerCase()))"
+        :key="field.name || index"
+        :field="field.name"
+        :title="field.name"
+        sortable
+        :min-width="computeWidth(field, 0)"
+      >
+        <template #header="scope">
+          <Header :result="result" :scope="scope" :index="index" />
+        </template>
+        <template #default="scope">
+          <Row
+            :scope="scope"
+            :result="result"
+            :filterObj="toolbar.filter"
+            :editList="update.editList"
+            @update:editList="update.editList = $event"
+            @execute="execute"
+            @sendToVscode="sendToVscode"
+            @openEditor="openEditor"
+          />
+        </template>
+      </vxe-column>
+    </vxe-table>
     <div style="margin-top: 2px;display: flex;background: var(--vscode-editor-background);border-top: 1px solid var(--vscode-textBlockQuote-background);padding: 0px;">
       <Pagination :page="page"  @changePage="changePage"></Pagination>
     </div>
     <EditDialog ref="editor" :dbType="result.dbType" :result="result"
       :database="result.database" :table="result.table" :primaryKey="result.primaryKey"
       :primaryKeyList="result.primaryKeyList" :columnList="result.columnList" @execute="execute" />
-    <ExportDialog :visible.sync="exportOption.visible" @exportHandle="confirmExport" />
+    <ExportDialog v-model:visible="exportOption.visible" @exportHandle="confirmExport" />
   </div>
 </template>
 
@@ -177,7 +208,7 @@ export default {
         needRefresh: true,
       },
       update: {
-        editList: {},
+        editList: [],
         lock: false,
       },
       // hasChanged: false,
@@ -339,6 +370,12 @@ export default {
       }
     });
   },
+  beforeUnmount() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+      this.resizeObserver = null;
+    }
+  },
   methods: {
     closeResult() {
       this.resultDialog = false;
@@ -350,7 +387,7 @@ export default {
     },
     resetChange() {
       this.update = {
-        editList: {},
+        editList: [],
         lock: false,
       }
       // this.hasChanged = false;
@@ -388,11 +425,7 @@ export default {
       });
 
       observer.observe(element);
-
-      // 销毁时移除监听
-      this.$once('hook:beforeDestroy', () => {
-        observer.disconnect();
-      });
+      this.resizeObserver = observer;
     },
     panelInput(event){
       if(event.code=='Enter' && event.ctrlKey){
@@ -512,15 +545,19 @@ export default {
       });
     },
     sort(row) {
+      const sortField = row.prop || row.property || row.field || (row.column && row.column.field);
+      if (!sortField || !row.order) {
+        return;
+      }
       if (this.result.dbType == "ElasticSearch") {
-        vscodeEvent.emit("esSort", [{ [row.prop]: { order: row.order } }]);
+        vscodeEvent.emit("esSort", [{ [sortField]: { order: row.order } }]);
         return;
       }
       let sortSql = this.result.sql
         .replace(/\n/, " ")
         .replace(";", "")
         .replace(/order by .+? (desc|asc)?/gi, "")
-        .replace(/\s?(limit.+)?$/i, ` ORDER BY ${row.prop} ${row.order} \$1 `);
+        .replace(/\s?(limit.+)?$/i, ` ORDER BY ${sortField} ${row.order} \$1 `);
       this.execute(sortSql + ";");
     },
     getTypeByColumn(key) {
@@ -531,8 +568,21 @@ export default {
         }
       }
     },
+    getSelectedRows() {
+      const table = this.$refs.dataTable;
+      if (!table) {
+        return [];
+      }
+      if (typeof table.getCheckboxRecords === "function") {
+        return table.getCheckboxRecords();
+      }
+      if (typeof table.getSelectRecords === "function") {
+        return table.getSelectRecords();
+      }
+      return [];
+    },
     deleteConfirm() {
-      const datas = this.$refs.dataTable.getCheckboxRecords();
+      const datas = this.getSelectedRows();
       if (!datas || datas.length == 0) {
         this.$message({
           type: "warning",

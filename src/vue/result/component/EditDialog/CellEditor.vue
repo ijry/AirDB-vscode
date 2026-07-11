@@ -1,24 +1,35 @@
 <template>
   <div class="cell-content">
     <template v-if="type=='date'">
-      <el-date-picker value-format="yyyy-MM-dd" :value="value" @input="sync"></el-date-picker>
+      <el-date-picker value-format="YYYY-MM-DD" v-model="innerValue"></el-date-picker>
     </template>
     <template v-else-if="type=='time'">
-      <el-time-picker value-format="HH:mm:ss" :value="value" @input="sync"></el-time-picker>
+      <el-time-picker value-format="HH:mm:ss" v-model="innerValue"></el-time-picker>
     </template>
     <template v-else-if="isDateTime(type)">
-      <el-date-picker value-format="yyyy-MM-dd HH:mm:ss" type="datetime" :value="value" @input="sync"></el-date-picker>
+      <el-date-picker value-format="YYYY-MM-DD HH:mm:ss" type="datetime" v-model="innerValue"></el-date-picker>
     </template>
-    <template v-else-if="isText(type, value) > 0">
-      <el-input class="w-full" :rows="isText(type, value)" type="textarea" :value="value" @input="sync"></el-input>
+    <template v-else-if="isText(type, innerValue) > 0">
+      <el-input class="w-full" :rows="isText(type, innerValue)" type="textarea" v-model="innerValue"></el-input>
     </template>
-    <el-input v-else :value="value" @input="sync"></el-input>
+    <el-input v-else v-model="innerValue"></el-input>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["type", "value"],
+  props: ["type", "modelValue"],
+  emits: ["update:modelValue"],
+  computed: {
+    innerValue: {
+      get() {
+        return this.modelValue;
+      },
+      set(value) {
+        this.$emit("update:modelValue", value);
+      },
+    },
+  },
   methods: {
     isDateTime(type){
       if(!type)return false;
@@ -38,26 +49,18 @@ export default {
       }
       return rows
     },
-    sync(value) {
-      // console.log(value)
-      this.$emit("input", value)
-    },
   },
 }
 </script>
 
 <style scoped>
-.el-icon-time {
-  line-height: 35px;
-}
-
 .el-date-editor {
   width: 100% !important;
 }
 .el-date-editor input {
   text-align: center;
 }
-::v-deep .el-textarea__inner {
+:deep(.el-textarea__inner) {
   min-height: 24px !important;
   line-height: 1.1;
 }

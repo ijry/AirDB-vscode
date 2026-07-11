@@ -3,7 +3,7 @@
     <template v-if="scope.row.isFilter">
       <el-input class='edit-filter' v-model="filterObj[scope.column.title]"
         :clearable='true' :placeholder="$t('Filter')" @clear="filter(null,scope.column.title)"
-        @keyup.enter.native="filter($event,scope.column.title)">
+        @keyup.enter="filter($event,scope.column.title)">
       </el-input>
     </template>
     <template v-else-if="!scope.row.isFilter && result.dbType=='ElasticSearch'">
@@ -44,14 +44,16 @@ export default {
     },
     // 单元格变动事件
     editListen(event, scope) {
-      const { row, column, rowIndex } = scope;
+      const { row, column } = scope;
+      const rowIndex = scope.rowIndex != null ? scope.rowIndex : scope.$rowIndex;
+      const columnName = column.title || column.field;
       const editList = this.editList.concat([]);
       if (!editList[rowIndex]) {
         editList[rowIndex] = { ...row };
         delete editList[rowIndex]._XID;
         console.log(editList[rowIndex]);
       }
-      editList[rowIndex][column.title] = event.target.textContent;
+      editList[rowIndex][columnName] = event.target.textContent;
       this.$emit("sendToVscode", "dataModify");
       this.$emit("update:editList", editList);
     },

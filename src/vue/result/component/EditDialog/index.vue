@@ -1,6 +1,6 @@
 <template>
-  <el-dialog ref="editDialog" :title="editorTilte" :visible.sync="visible"
-    width="70%" top="50px" size="mini" :closeOnClickModal="false">
+  <el-dialog ref="editDialog" :title="editorTilte" v-model="visible"
+    width="70%" top="50px" :close-on-click-modal="false">
     <el-form ref="infoForm" :model="editModel" :inline="false">
       <el-form-item :prop="column.name" :key="column.name" v-for="column in columnList" size="small">
         <template>
@@ -14,15 +14,17 @@
         </template>
       </el-form-item>
     </el-form>
-    <span slot="footer" class="dialog-footer">
-      <el-button size="medium" @click="visible = false">{{$t('Cancel')}}</el-button>
-      <el-button v-if="model=='update'" type="primary" size="medium" :loading="loading" @click="confirmUpdate(editModel)">
-        {{$t('Update')}}
-      </el-button>
-      <el-button v-if="model=='insert'||model=='copy'" size="medium" type="primary" :loading="loading" @click="confirmInsert(editModel)">
-         {{$t('Insert')}}
-      </el-button>
-    </span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button size="default" @click="visible = false">{{ $t('Cancel') }}</el-button>
+        <el-button v-if="model == 'update'" type="primary" size="default" :loading="loading" @click="confirmUpdate(editModel)">
+          {{ $t('Update') }}
+        </el-button>
+        <el-button v-if="model == 'insert' || model == 'copy'" size="default" type="primary" :loading="loading" @click="confirmInsert(editModel)">
+          {{ $t('Insert') }}
+        </el-button>
+      </span>
+    </template>
   </el-dialog>
 </template>
 
@@ -237,15 +239,15 @@ export default {
 </script>
 
 <style scoped>
-::v-deep .el-dialog__body {
+:deep(.el-dialog__body) {
   padding: 10px 20px;
   max-height: calc(100vh - 230px);
   overflow-y: scroll;
 }
-::v-deep .el-form-item {
+:deep(.el-form-item) {
   margin-bottom: 10px;
 }
-::v-deep .el-form-item__content {
+:deep(.el-form-item__content) {
   line-height: normal !important;
 }
 </style>
