@@ -1,16 +1,15 @@
-import Vue from "vue";
-import VueI18n from "vue-i18n";
- 
-Vue.use(VueI18n); // 全局挂载
+import { createI18n } from 'vue-i18n';
 
-let locale = 'en'
- 
-export const i18n = new VueI18n({
-  locale: locale,
+const locale = 'en';
+
+export const i18n = createI18n({
+  legacy: true,
+  globalInjection: true,
+  locale,
   messages: {
-    zh: require("./lang/zh").default, // 中文语言包
-    en: require("./lang/en").default // 英文语言包
+    zh: require('./lang/zh').default,
+    en: require('./lang/en').default
   }
 });
- 
+
 export default i18n;
