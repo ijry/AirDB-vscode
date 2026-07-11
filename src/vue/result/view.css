@@ -43,3 +43,136 @@ overflow: unset;
 .el-popover__reference{
   background-color: #409EFF;
 }
+
+/* vxe-table sort icons: CSS triangles (avoid iconfont glyphs in webview) */
+.vxe-table .vxe-cell--sort {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+.vxe-table .vxe-cell--sort-vertical-layout {
+  height: 1.5em;
+  justify-content: center;
+  gap: 1px;
+}
+
+.vxe-table .vxe-sort--asc-btn,
+.vxe-table .vxe-sort--desc-btn {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.65em;
+  position: relative;
+  font-size: 12px;
+  color: var(--vscode-descriptionForeground, #c0c4cc);
+  line-height: 1;
+  overflow: hidden;
+}
+
+/* Force pure CSS triangles even if iconfont class fails */
+.vxe-table .vxe-sort--asc-btn:before,
+.vxe-table .vxe-sort--desc-btn:before {
+  content: "" !important;
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-color: transparent;
+  font-family: inherit !important;
+  transform: translateX(-50%);
+}
+
+.vxe-table .vxe-sort--asc-btn:before {
+  top: 0.08em;
+  border-width: 0 0.32em 0.38em 0.32em;
+  border-bottom-color: currentColor;
+}
+
+.vxe-table .vxe-sort--desc-btn:before {
+  bottom: 0.08em;
+  border-width: 0.38em 0.32em 0 0.32em;
+  border-top-color: currentColor;
+}
+
+/* Hide nested icon nodes so iconfont glyphs cannot stack */
+.vxe-table .vxe-sort--asc-btn i,
+.vxe-table .vxe-sort--desc-btn i,
+.vxe-table .vxe-sort--asc-btn .vxe-icon--caret-top,
+.vxe-table .vxe-sort--desc-btn .vxe-icon--caret-bottom,
+.vxe-table .vxe-sort--asc-btn [class*="vxe-table-icon"],
+.vxe-table .vxe-sort--desc-btn [class*="vxe-table-icon"] {
+  display: none !important;
+}
+
+.vxe-table .vxe-sort--asc-btn:hover,
+.vxe-table .vxe-sort--desc-btn:hover {
+  color: var(--vscode-editor-foreground, #515a6e);
+}
+
+.vxe-table .vxe-sort--asc-btn.sort--active,
+.vxe-table .vxe-sort--desc-btn.sort--active {
+  color: var(--vscode-button-background, #409eff);
+}
+
+/* Element Plus SVG icons must not inherit Element UI2 iconfont */
+.el-button .el-icon,
+.el-button [class*="el-icon"],
+.el-icon {
+  font-family: inherit !important;
+}
+
+.el-button .el-icon svg {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+
+/* Element Plus form/dialog overrides for legacy Element UI2 auto.css */
+.el-dialog {
+  --el-dialog-bg-color: var(--vscode-editor-background, #fff);
+  --el-dialog-title-font-size: 16px;
+  background: var(--vscode-editor-background, #fff);
+  color: var(--vscode-editor-foreground, inherit);
+}
+
+.el-dialog__body {
+  color: var(--vscode-editor-foreground, inherit);
+  max-height: calc(100vh - 200px);
+  overflow: auto;
+}
+
+.el-form-item__label {
+  float: none !important;
+  display: inline-flex !important;
+  height: auto !important;
+  line-height: 1.4 !important;
+  text-align: left !important;
+  color: var(--vscode-editor-foreground, inherit) !important;
+}
+
+.el-form--label-top .el-form-item__label {
+  float: none !important;
+  display: inline-block !important;
+  width: 100% !important;
+  margin-bottom: 4px !important;
+  padding: 0 !important;
+}
+
+.el-form-item__content {
+  line-height: normal !important;
+  display: block !important;
+  margin-left: 0 !important;
+}
+
+.el-form-item__content::before,
+.el-form-item__content::after {
+  display: none !important;
+  content: none !important;
+}
+
+.el-form-item {
+  display: block;
+}
+

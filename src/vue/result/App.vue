@@ -1,4 +1,12 @@
 <style>
+.result-cost-after-sql {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--vscode-descriptionForeground, #909399);
+}
 .el-textarea__inner {
   line-height: 1.1;
   padding-bottom: 18px;
@@ -25,6 +33,8 @@
         :columnList="result.columnList || []"
         v-model:filters="toolbar.conditionFilters"
         :generatedSql="generatedFilterSql"
+        :costTime="result.costTime"
+        :costLabel="$t('Cost')"
         @apply-row="applyConditionFilters"
         @apply-all="applyConditionFilters"
         @clear="clearConditionFilters"
@@ -48,7 +58,6 @@
                 Error
               </span>
             </span>
-            <span>{{ $t('Cost') }}: {{result.costTime}}ms</span>
           </div>
           <el-button v-if="hasChanged" size="small" :title="$t('Save')" @click="save" type="warning">
             {{ $t('Save') }}{{ $t('Changes') }}
@@ -56,6 +65,9 @@
           <el-button v-if="!isTableResult" size="small" :title="$t('Execute Sql')" @click="result.data=[];info.message = false;execute(toolbar.sql);">
             {{ $t('Execute Sql') }}
           </el-button>
+          <span v-if="!isTableResult" class="result-cost-after-sql">
+            {{ $t('Cost') }}: {{ result.costTime || 0 }}ms
+          </span>
         </div>
         <Toolbar style="flex: 1;" :showFullBtn="showFullBtn" v-model:search="table.search"
           :costTime="result.costTime" :showOpenDesignBtn="result.showOpenDesignBtn"
@@ -124,7 +136,7 @@
     </div>
     <EditDialog ref="editor" :dbType="result.dbType" :result="result"
       :database="result.database" :table="result.table" :primaryKey="result.primaryKey"
-      :primaryKeyList="result.primaryKeyList" :columnList="result.columnList" @execute="execute" />
+      :primaryKeyList="result.primaryKeyList || []" :columnList="result.columnList || []" @execute="execute" />
     <ExportDialog v-model:visible="exportOption.visible" @exportHandle="confirmExport" />
   </div>
 </template>

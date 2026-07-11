@@ -84,7 +84,7 @@ assert.strictEqual(
     wrapColumn,
     quoteValue
   ),
-  "SELECT * FROM `demo` WHERE `name` = 'AirDB' LIMIT 100;"
+  "SELECT * FROM `demo` WHERE `uid` = 1 AND `name` = 'AirDB' LIMIT 100;"
 );
 
 assert.strictEqual(
@@ -96,6 +96,39 @@ assert.strictEqual(
     quoteValue
   ),
   "SELECT * FROM `demo` LIMIT 100;"
+);
+
+assert.strictEqual(
+  buildTableFilterSql(
+    "SELECT * FROM xy_circle_user_profile ORDER BY id asc LIMIT 100;",
+    [{ enabled: true, field: "gid", operator: "=", value: "1", type: "int" }],
+    "MySQL",
+    wrapColumn,
+    quoteValue
+  ),
+  "SELECT * FROM xy_circle_user_profile WHERE `gid` = 1 ORDER BY id asc LIMIT 100;"
+);
+
+assert.strictEqual(
+  buildTableFilterSql(
+    "SELECT * FROM `demo` WHERE status = 1 ORDER BY id desc LIMIT 50;",
+    [{ enabled: true, field: "uid", operator: "=", value: "2", type: "int" }],
+    "MySQL",
+    wrapColumn,
+    quoteValue
+  ),
+  "SELECT * FROM `demo` WHERE status = 1 AND `uid` = 2 ORDER BY id desc LIMIT 50;"
+);
+
+assert.strictEqual(
+  buildTableFilterSql(
+    "SELECT name, COUNT(*) AS c FROM `demo` WHERE status = 1 GROUP BY name HAVING COUNT(*) > 1 ORDER BY c desc LIMIT 20;",
+    [{ enabled: true, field: "type", operator: "=", value: "A", type: "varchar" }],
+    "MySQL",
+    wrapColumn,
+    quoteValue
+  ),
+  "SELECT name, COUNT(*) AS c FROM `demo` WHERE status = 1 AND `type` = 'A' GROUP BY name HAVING COUNT(*) > 1 ORDER BY c desc LIMIT 20;"
 );
 
 const mixedConditionRows = [

@@ -10,11 +10,11 @@
       />
       <div class="query-workspace__actions">
         <el-button size="small" type="primary" @click="runSql"><el-icon><CaretRight /></el-icon>执行</el-button>
+        <span class="query-workspace__cost">Cost: {{ result.costTime || 0 }}ms</span>
         <el-button size="small" @click="exportOption.visible = true" :disabled="!result.data.length"><el-icon><Download /></el-icon>导出</el-button>
         <span class="query-workspace__status" v-if="info.message" :class="{ error: info.error }" @click="resultDialog = true">
           {{ info.error ? "Error" : "Success" }}
         </span>
-        <span class="query-workspace__cost">Cost: {{ result.costTime || 0 }}ms</span>
       </div>
     </div>
 

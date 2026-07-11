@@ -71,6 +71,9 @@
           <el-button size="small">SQL</el-button>
         </template>
       </el-popover>
+      <span v-if="costTime != null && costTime !== ''" class="condition-filter__cost">
+        {{ costLabel }}: {{ costTime }}ms
+      </span>
       <span class="condition-filter__spacer"></span>
       <el-button size="small" type="primary" @click="applyAll">全部应用</el-button>
     </div>
@@ -92,6 +95,8 @@ export default {
     columnList: { type: Array, default: () => [] },
     filters: { type: Array, default: () => [] },
     generatedSql: { type: String, default: "" },
+    costTime: { type: [Number, String], default: null },
+    costLabel: { type: String, default: "Cost" },
   },
   emits: ["update:filters", "apply-row", "apply-all", "clear"],
   data() {
@@ -218,11 +223,77 @@ export default {
   background: var(--vscode-editor-background);
 }
 
+.condition-filter__cost {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 2px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  color: var(--vscode-descriptionForeground, #909399);
+}
+
+/* Keep tooltip triggers inside 32px grid tracks */
+.condition-filter__row :deep(.el-tooltip__trigger),
+.condition-filter__row > :deep(.el-tooltip),
+.condition-filter__row > :deep(span) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+}
+
 .condition-filter :deep(.el-button--small) {
   padding: 6px 8px;
 }
 
-.condition-filter :deep(.el-button .el-icon) {
-  margin: 0;
+/* Icon-only row actions: override Element UI2 leftovers in auto.css */
+.condition-filter__row :deep(.el-button),
+.condition-filter__row :deep(.el-button.el-button--small) {
+  width: 28px !important;
+  min-width: 28px !important;
+  max-width: 28px !important;
+  height: 28px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.condition-filter__row :deep(.el-button + .el-button),
+.condition-filter__row :deep(.el-tooltip__trigger + .el-tooltip__trigger .el-button),
+.condition-filter__footer :deep(.el-button + .el-button) {
+  margin-left: 0 !important;
+}
+
+.condition-filter :deep(.el-button .el-icon),
+.condition-filter :deep(.el-button [class*="el-icon"]) {
+  margin: 0 !important;
+  font-family: inherit !important;
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.condition-filter :deep(.el-button .el-icon svg) {
+  width: 1em;
+  height: 1em;
+  display: block;
+}
+
+/* Prevent legacy [class^=el-icon-] font rules from blanking SVG icons */
+.condition-filter :deep(.el-button .el-icon::before),
+.condition-filter :deep(.el-button .el-icon::after) {
+  content: none !important;
+  display: none !important;
 }
 </style>
