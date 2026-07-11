@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 2.0.0 20260711
+
+升级 Webpack 5 + Vue 3 + Element Plus + vxe-table，统一 Node 20 构建发布
+
 # 1.2.16 20260711
 
 发布新版本
