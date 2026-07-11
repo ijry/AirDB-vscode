@@ -1,24 +1,16 @@
-import Vue from 'vue'
-import App from './App'
-import ElementUI from 'element-ui';
-import locale from 'element-ui/lib/locale/lang/en'
-Vue.use(ElementUI, { locale });
-import Contextmenu from "./component/Contextmenu"
-Vue.use(Contextmenu);
-import { i18n } from './i18n/index' //国际化
-import UmyTable from 'umy-table'
-import 'umy-table/lib/theme-chalk/index.css';
-import '@/../public/theme/auto.css'
-import '@/../public/theme/umyui.css'
-import './view.css'
-import './icon/iconfont.css'
-Vue.use(UmyTable);
+import { createApp } from 'vue';
+import App from './App';
+import Contextmenu from './component/Contextmenu';
+import { i18n } from './i18n/index';
+import { installUi } from '../bootstrap/installUi';
 
-Vue.config.productionTip = false
+import '@/../public/theme/auto.css';
+import '@/../public/theme/umyui.css';
+import './view.css';
+import './icon/iconfont.css';
 
-new Vue({
-  el: '#app',
-  components: { App },
-  i18n, // 使用国际化
-  template: '<App/>'
-})
+const app = createApp(App);
+installUi(app, { locale: i18n.global.locale });
+app.use(Contextmenu);
+app.use(i18n);
+app.mount('#app');
