@@ -5,7 +5,6 @@ import { i18n } from './i18n/index';
 import { installUi } from './bootstrap/installUi';
 
 import '@/../public/theme/auto.css';
-import '@/../public/theme/umyui.css';
 import 'tailwindcss/tailwind.css';
 
 import connect from './connect';
@@ -44,7 +43,8 @@ const router = createRouter({
 });
 
 const app = createApp(App);
-installUi(app, { locale: i18n.global.locale });
+const locale = typeof i18n.global.locale === 'string' ? i18n.global.locale : i18n.global.locale.value;
+installUi(app, { locale });
 app.use(router);
 app.use(i18n);
 app.mount('#app');

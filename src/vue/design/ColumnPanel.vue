@@ -46,7 +46,7 @@
       </vxe-column>
       <vxe-column align="center" :title="$t('Allow Null')" width="80" show-overflow>
         <template #default="scope">
-          <el-checkbox disabled1 @change="(e) => {scope.row.allowNull = e ;changeColumn(scope);}" :model-value="scope.row.nullable == 'YES'"></el-checkbox>
+          <el-checkbox @change="(e) => {scope.row.allowNull = e ;changeColumn(scope);}" :model-value="scope.row.nullable == 'YES'"></el-checkbox>
         </template>
       </vxe-column>
       <vxe-column align="center" width="60" :title="$t('Primary Key')" show-overflow>
