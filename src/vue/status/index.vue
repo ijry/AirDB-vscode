@@ -20,19 +20,19 @@
         </el-row>
       </el-tab-pane>
       <el-tab-pane :label="$t('processList')" name="processList">
-        <ux-grid :data="process.rows" size='small' :cell-style="{height: '35px'}" style="width: 100%" :height="remainHeight()">
-          <ux-table-column :field="field.name" :title="field.name" v-for="(field,index) in process.fields" :key="index" align="center" show-overflow-tooltip="true" />
-        </ux-grid>
+        <vxe-table :data="process.rows" size="small" :row-config="{ height: 35 }" style="width: 100%" :height="remainHeight()" border stripe>
+          <vxe-column :field="field.name" :title="field.name" v-for="(field,index) in process.fields" :key="index" align="center" show-overflow />
+        </vxe-table>
       </el-tab-pane>
       <el-tab-pane :label="$t('variableList')" name="variableList" v-if="info.dbType!='SqlServer'">
-        <ux-grid :data="variableList.rows" size='small' :cell-style="{height: '35px'}" style="width: 100%" :height="remainHeight()">
-          <ux-table-column :field="field.name" :title="field.name" v-for="(field,index) in variableList.fields" :key="index" align="center" show-overflow-tooltip="true" />
-        </ux-grid>
+        <vxe-table :data="variableList.rows" size="small" :row-config="{ height: 35 }" style="width: 100%" :height="remainHeight()" border stripe>
+          <vxe-column :field="field.name" :title="field.name" v-for="(field,index) in variableList.fields" :key="index" align="center" show-overflow />
+        </vxe-table>
       </el-tab-pane>
       <el-tab-pane :label="$t('statusList')" name="statusList" v-if="info.dbType!='SqlServer'">
-        <ux-grid :data="statusList.rows" size='small' :cell-style="{height: '35px'}" style="width: 100%" :height="remainHeight()">
-          <ux-table-column :field="field.name" :title="field.name" v-for="(field,index) in statusList.fields" :key="index" align="center" show-overflow-tooltip="true" />
-        </ux-grid>
+        <vxe-table :data="statusList.rows" size="small" :row-config="{ height: 35 }" style="width: 100%" :height="remainHeight()" border stripe>
+          <vxe-column :field="field.name" :title="field.name" v-for="(field,index) in statusList.fields" :key="index" align="center" show-overflow />
+        </vxe-table>
       </el-tab-pane>
     </el-tabs>
   </div>

@@ -4,46 +4,37 @@
   <div>
     <InfoPanel/>
     <div class="design-toolbar mb-3">
-      <el-button @click="saveDesign" type="primary"
-        icon="el-icon-check" size="small">
+      <el-button @click="saveDesign" type="primary" size="small">
+        <el-icon><Check /></el-icon>
         {{ $t('Design.Update') }}
       </el-button>
-      <el-button cclick="column.visible=true"  @click="addColumnInline" type="default"
-        icon="el-icon-circle-plus-outline" size="small">
+      <el-button @click="addColumnInline" type="default" size="small">
+        <el-icon><CirclePlus /></el-icon>
         {{ $t('Add Column') }}
       </el-button>
     </div>
-    <ux-grid ref="uxGrid" :data="designData.editColumnList" stripe keep-source style="width: 100%" :edit-config="{trigger: 'click', mode: 'cell'}"
-      :cell-style="{height: '25px'}" :row-style="rowStyle" :height="remainHeight()">
-      <!-- <ux-table-column align="left" field="editState" minWidth="70" :title="$t('Design.Column.editState')"
-        show-overflow-tooltip="true">
-      </ux-table-column> -->
-      <ux-table-column align="left" field="newColumnName" minWidth="110" :title="$t('Design.Column.Name')" edit-render
-        show-overflow-tooltip="true">
-        <template v-slot:edit="scope">
+    <vxe-table ref="uxGrid" :data="designData.editColumnList" stripe border keep-source style="width: 100%"
+      :row-style="rowStyle" :height="remainHeight()">
+      <vxe-column align="left" field="newColumnName" min-width="110" :title="$t('Design.Column.Name')" show-overflow>
+        <template #default="scope">
           <el-input v-model="scope.row.newColumnName" size="small" @change="changeColumn(scope)"></el-input>
         </template>
-      </ux-table-column>
-      <ux-table-column align="left" field="type" minWidth="90" :title="$t('Design.Column.Type')" edit-render
-        show-overflow-tooltip="true">
-        <template v-slot:edit="scope">
+      </vxe-column>
+      <vxe-column align="left" field="type" min-width="90" :title="$t('Design.Column.Type')" show-overflow>
+        <template #default="scope">
           <el-input v-model="scope.row.type" size="small" @change="changeColumn(scope)"></el-input>
         </template>
-      </ux-table-column>
-      <ux-table-column align="left" field="comment" minWidth="150" :title="$t('Design.Column.Comment')" edit-render
-        show-overflow-tooltip="true">
-        <template v-slot:edit="scope">
+      </vxe-column>
+      <vxe-column align="left" field="comment" min-width="150" :title="$t('Design.Column.Comment')" show-overflow>
+        <template #default="scope">
           <el-input v-model="scope.row.comment" size="small" @change="changeColumn(scope)"></el-input>
         </template>
-      </ux-table-column>
-      <!-- <ux-table-column align="center" field="maxLength" width="60" :title="$t('Design.Column.Length')"
-        show-overflow-tooltip="true"></ux-table-column> -->
-      <ux-table-column align="left" field="defaultValue" minWidth="150" :title="$t('Design.Column.Default')" edit-render
-        show-overflow-tooltip="true">
-        <template v-slot:edit="scope">
+      </vxe-column>
+      <vxe-column align="left" field="defaultValue" min-width="150" :title="$t('Design.Column.Default')" show-overflow>
+        <template #default="scope">
           <el-input v-model="scope.row.defaultValue" size="small">
             <template #suffix>
-              <el-select class="w-30" style="width: 60px;" :value="$t('Design.Column.Select')" @change="changeColumn(scope, 'defaultValue', $event)">
+              <el-select class="w-30" style="width: 60px;" :model-value="$t('Design.Column.Select')" @change="changeColumn(scope, 'defaultValue', $event)">
                 <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
                 <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
                 <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
@@ -52,39 +43,41 @@
             </template>
           </el-input>
         </template>
-      </ux-table-column>
-      <ux-table-column align="center" :title="$t('Allow Null')" width="80" show-overflow-tooltip="true">
-        <template v-slot="scope">
-          <el-checkbox disabled1 @change="(e) => {scope.row.allowNull = e ;changeColumn(scope);}" :checked="scope.row.nullable == 'YES'"></el-checkbox>
+      </vxe-column>
+      <vxe-column align="center" :title="$t('Allow Null')" width="80" show-overflow>
+        <template #default="scope">
+          <el-checkbox disabled1 @change="(e) => {scope.row.allowNull = e ;changeColumn(scope);}" :model-value="scope.row.nullable == 'YES'"></el-checkbox>
         </template>
-      </ux-table-column>
-      <ux-table-column align="center" width="60" :title="$t('Primary Key')"
-        show-overflow-tooltip="true">
-        <template v-slot="{ row }">
-          <el-checkbox disabled :checked="row.isPrimary"></el-checkbox>
+      </vxe-column>
+      <vxe-column align="center" width="60" :title="$t('Primary Key')" show-overflow>
+        <template #default="{ row }">
+          <el-checkbox disabled :model-value="row.isPrimary"></el-checkbox>
         </template>
-      </ux-table-column>
-      <ux-table-column align="center" :title="$t('Unique')" width="60" show-overflow-tooltip="true">
-        <template v-slot="{ row }">
-          <el-checkbox disabled :checked="row.isUnique"></el-checkbox>
+      </vxe-column>
+      <vxe-column align="center" :title="$t('Unique')" width="60" show-overflow>
+        <template #default="{ row }">
+          <el-checkbox disabled :model-value="row.isUnique"></el-checkbox>
         </template>
-      </ux-table-column>
-      <ux-table-column align="center" :title="$t('Auto Incrment')" width="60" show-overflow-tooltip="true">
-        <template v-slot="{ row }">
-          <el-checkbox disabled :checked="row.isAutoIncrement"></el-checkbox>
+      </vxe-column>
+      <vxe-column align="center" :title="$t('Auto Incrment')" width="60" show-overflow>
+        <template #default="{ row }">
+          <el-checkbox disabled :model-value="row.isAutoIncrement"></el-checkbox>
         </template>
-      </ux-table-column>
-      <ux-table-column :title="$t('Operation')" minWidth="120">
-        <template v-slot="scope">
+      </vxe-column>
+      <vxe-column :title="$t('Operation')" min-width="120">
+        <template #default="scope">
           <div style="padding: 0px 0px;">
-            <el-button @click="openEdit(scope)" title="edit" size="mini" icon="el-icon-edit" circle> </el-button>
-            <el-button @click="deleteConfirm(scope)" :title="$t('delete')" type="danger"
-              size="mini" icon="el-icon-delete" circle> </el-button>
+            <el-button @click="openEdit(scope)" title="edit" size="small" circle>
+              <el-icon><Edit /></el-icon>
+            </el-button>
+            <el-button @click="deleteConfirm(scope)" :title="$t('delete')" type="danger" size="small" circle>
+              <el-icon><Delete /></el-icon>
+            </el-button>
           </div>
         </template>
-      </ux-table-column>
-    </ux-grid>
-    <el-dialog :title="$t('Update Column')" :visible.sync="column.editVisible" top="5vh" size="default">
+      </vxe-column>
+    </vxe-table>
+    <el-dialog :title="$t('Update Column')" v-model="column.editVisible" top="5vh">
       <el-form :inline='false' label-width="100px" label-suffix=":" size="small">
         <!-- 字段名称 -->
         <el-form-item :label="$t('Design.Column.Name')" required>
@@ -94,7 +87,7 @@
         <el-form-item :label="$t('Design.Column.Type')" required>
           <el-input :placeholder="$t('Design.Column.Type')" v-model="editColumn.type">
             <template #suffix>
-              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {editColumn.type = e}" filterable>
+              <el-select class="w-30" :model-value="$t('Design.Column.Select')" @change="(e) => {editColumn.type = e}" filterable>
                 <template v-for="item in typeList">
                   <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
                     :label="item.label" :value="item.label"></el-option>
@@ -108,7 +101,7 @@
           <el-input :placeholder="$t('Design.Column.Default')"
             v-model="editColumn.defaultValue">
             <template #suffix>
-              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="editColumnDefault">
+              <el-select class="w-30" :model-value="$t('Design.Column.Select')" @change="editColumnDefault">
                 <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
                 <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
                 <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
@@ -129,16 +122,18 @@
           <el-checkbox v-model="editColumn.allowNull"></el-checkbox>
         </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" size="medium" :loading="column.editloading" @click="updateColumn">
+      <template #footer>
+        <span class="dialog-footer">
+        <el-button type="primary" size="default" :loading="column.editLoading" @click="updateColumn">
             {{ $t('Design.Update') }}
         </el-button>
-        <el-button  size="medium" @click="column.editVisible=false">
+        <el-button  size="default" @click="column.editVisible=false">
           {{ $t('Cancel') }}
         </el-button>
-      </span>
+        </span>
+      </template>
     </el-dialog>
-    <el-dialog :title="$t('Add Column')" :visible.sync="column.visible" top="5vh" size="default">
+    <el-dialog :title="$t('Add Column')" v-model="column.visible" top="5vh">
       <el-form :inline='false' label-width="100px" label-suffix=":" size="small">
         <el-form-item :label="$t('Design.Column.Name')" :placeholder="$t('Design.Column.Name')" required>
           <el-input v-model="column.name" :placeholder="$t('Design.Column.Name')"></el-input>
@@ -146,7 +141,7 @@
         <el-form-item :label="$t('Design.Column.Type')" required>
           <el-input :placeholder="$t('Design.Column.Type')" v-model="column.type">
             <template #suffix>
-              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {column.type = e}" filterable>
+              <el-select class="w-30" :model-value="$t('Design.Column.Select')" @change="(e) => {column.type = e}" filterable>
                 <template v-for="item in typeList">
                   <el-option  v-if="!item.onlyType || (item.onlyType && item.onlyType.includes(designData.dbType))"
                     :label="item.label" :value="item.label"></el-option>
@@ -159,7 +154,7 @@
           <el-input :placeholder="$t('Design.Column.Default')"
             v-model="column.defaultValue">
             <template #suffix>
-              <el-select class="w-30" :value="$t('Design.Column.Select')" @change="(e) => {column.defaultValue = e}">
+              <el-select class="w-30" :model-value="$t('Design.Column.Select')" @change="(e) => {column.defaultValue = e}">
                 <el-option :label="$t('Design.Column.DefaultValue')" value=""></el-option>
                 <el-option :label="$t('Design.Column.NullValue')" value="null"></el-option>
                 <el-option :label="$t('Design.Column.EmptyString')" value="''"></el-option>
@@ -170,32 +165,35 @@
         </el-form-item>
         <el-form-item :label="$t('Design.Column.Comment')">
           <el-input type="textarea"  :placeholder="$t('Design.Column.Comment')"
-            v-model="editColumn.comment"></el-input>
+            v-model="column.comment"></el-input>
         </el-form-item>
         <el-form-item :label="$t('Allow Null')">
           <el-checkbox v-model="column.allowNull"></el-checkbox>
         </el-form-item>
       </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button size="medium" type="primary" :loading="column.loading" @click="createcolumn">
+      <template #footer>
+        <span class="dialog-footer">
+        <el-button size="default" type="primary" :loading="column.loading" @click="createcolumn">
           {{ $t('Design.Create') }}
         </el-button>
-        <el-button size="medium" @click="column.visible=false">
+        <el-button size="default" @click="column.visible=false">
           {{ $t('Cancel') }}
         </el-button>
-      </span>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { Loading } from 'element-ui';
+import { ElLoading } from 'element-plus';
+import { Check, CirclePlus, Delete, Edit } from '@element-plus/icons-vue';
 import { inject } from "../mixin/vscodeInject";
 import { wrapByDb } from "@/common/wrapper";
 import InfoPanel from "./InfoPanel";
 export default {
   mixins: [inject],
-  components:{InfoPanel},
+  components:{InfoPanel, Check, CirclePlus, Delete, Edit},
   data() {
     return {
       batchMode: true,
@@ -227,6 +225,7 @@ export default {
         newColumnName: '',
         type: null,
         defaultValue: '',
+        comment: '',
         allowNull: true,
         nullable: false,
       },
@@ -251,7 +250,7 @@ export default {
   },
   methods: {
     saveDesign() {
-      let loadingInstance = Loading.service({
+      let loadingInstance = ElLoading.service({
         text: 'saveing...'
       });
       // 保存表结构设计
@@ -306,20 +305,14 @@ export default {
     },
     changeColumn(scope, field = '', newValue = '') {
       console.log(scope)
+      const rowIndex = scope.rowIndex != null ? scope.rowIndex : scope.$rowIndex;
       if (field) {
         scope.row[field] = newValue;
-        // this.$set(scope.items, scope.rowIndex, scope.row)
       }
       this.$forceUpdate();
       if (scope.row.editState == 1) {
-      } else {
-        // if (this.$refs.uxGrid.isUpdateByRow(scope.row)) {
-          scope.items[scope.rowIndex].editState = 2;
-        // } else {
-        //   if (scope.row.editState == 2) {
-        //     scope.items[scope.rowIndex].editState = 0;
-        //   }
-        // }
+      } else if (rowIndex != null && this.designData.editColumnList[rowIndex]) {
+        this.designData.editColumnList[rowIndex].editState = 2;
       }
     },
     rowStyle({row}) {
@@ -367,12 +360,9 @@ export default {
         this.designData.editColumnList[this.editColumn.index].comment = this.editColumn.comment;
         this.designData.editColumnList[this.editColumn.index].allowNull = this.editColumn.allowNull;
         this.designData.editColumnList[this.editColumn.index].defaultValue = this.editColumn.defaultValue;
-        if (this.designData.editColumnList[this.editColumn.index] == 1) {
-        } else {
-          // 不是新增字段才将状态设置为2
-          if (this.$refs.uxGrid.isUpdateByRow(this.designData.editColumnList[this.editColumn.index])) {
-            this.designData.editColumnList[this.editColumn.index].editState = 2;
-          }
+        const targetColumn = this.designData.editColumnList[this.editColumn.index];
+        if (targetColumn && targetColumn.editState !== 1) {
+          targetColumn.editState = 2;
         }
         this.column.editVisible = false;
       } else {
@@ -407,10 +397,11 @@ export default {
       // );
     },
     openEdit(scope) {
+      const rowIndex = scope.rowIndex != null ? scope.rowIndex : scope.$rowIndex;
       this.column.name = scope.row.name;
       this.editColumn = {
         ...scope.row,
-        index: scope.rowIndex
+        index: rowIndex
       };
       this.column.editVisible = true;
       this.column.editLoading = false;
@@ -420,10 +411,10 @@ export default {
       this.$forceUpdate();
     },
     deleteConfirm(scope) {
+      const rowIndex = scope.rowIndex != null ? scope.rowIndex : scope.$rowIndex;
       if (this.batchMode) {
         if (scope.row.editState == 1) {
-          // 新增的字段如果点击删除直接从数组删除就行
-          this.$refs.uxGrid.remove(scope.row);
+          this.designData.editColumnList.splice(rowIndex, 1);
         } else {
           // 其它状态置为删除状态等待保存变更
           scope.row.editState = -1

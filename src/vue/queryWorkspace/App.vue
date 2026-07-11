@@ -6,11 +6,11 @@
         type="textarea"
         :autosize="{ minRows: 6, maxRows: 12 }"
         v-model="sql"
-        @keypress.native="panelInput"
+        @keypress="panelInput"
       />
       <div class="query-workspace__actions">
-        <el-button size="small" type="primary" icon="el-icon-caret-right" @click="runSql">执行</el-button>
-        <el-button size="small" icon="el-icon-download" @click="exportOption.visible = true" :disabled="!result.data.length">导出</el-button>
+        <el-button size="small" type="primary" @click="runSql"><el-icon><CaretRight /></el-icon>执行</el-button>
+        <el-button size="small" @click="exportOption.visible = true" :disabled="!result.data.length"><el-icon><Download /></el-icon>导出</el-button>
         <span class="query-workspace__status" v-if="info.message" :class="{ error: info.error }" @click="resultDialog = true">
           {{ info.error ? "Error" : "Success" }}
         </span>
@@ -18,7 +18,7 @@
       </div>
     </div>
 
-    <ux-grid
+    <vxe-table
       ref="dataTable"
       :data="filterData"
       v-loading="loading"
@@ -26,22 +26,23 @@
       :height="remainHeight"
       width="100vw"
       stripe
+      border
     >
-      <ux-table-column type="index" width="48" align="center"></ux-table-column>
-      <ux-table-column
+      <vxe-column type="seq" width="48" align="center"></vxe-column>
+      <vxe-column
         v-for="field in result.fields || []"
         :key="field.name"
         :field="field.name"
         :title="field.name"
-        :minWidth="computeWidth(field, 0)"
+        :min-width="computeWidth(field, 0)"
         :resizable="true"
       >
-        <template slot-scope="scope">
+        <template #default="scope">
           <span v-if="scope.row[field.name] === null || scope.row[field.name] === undefined" class="null-column">(NULL)</span>
           <span v-else>{{ formatValue(scope.row[field.name]) }}</span>
         </template>
-      </ux-table-column>
-    </ux-grid>
+      </vxe-column>
+    </vxe-table>
 
     <div class="query-workspace__footer">
       <el-pagination
@@ -54,23 +55,24 @@
       ></el-pagination>
     </div>
 
-    <el-dialog title="Result" :visible.sync="resultDialog" top="5vh">
+    <el-dialog title="Result" v-model="resultDialog" top="5vh">
       <div v-html="info.message"></div>
       <div class="query-workspace__dialog-sql">SQL: {{ info.sql }}</div>
     </el-dialog>
 
-    <ExportDialog :visible.sync="exportOption.visible" @exportHandle="confirmExport" />
+    <ExportDialog v-model:visible="exportOption.visible" @exportHandle="confirmExport" />
   </div>
 </template>
 
 <script>
 import { getVscodeEvent } from "../util/vscode";
 import ExportDialog from "../result/component/ExportDialog.vue";
+import { CaretRight, Download } from "@element-plus/icons-vue";
 
 let vscodeEvent;
 
 export default {
-  components: { ExportDialog },
+  components: { ExportDialog, CaretRight, Download },
   data() {
     return {
       sql: "",
@@ -91,7 +93,7 @@ export default {
     window.addEventListener("message", this.handleMessage);
     vscodeEvent.emit("init");
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("message", this.handleMessage);
   },
