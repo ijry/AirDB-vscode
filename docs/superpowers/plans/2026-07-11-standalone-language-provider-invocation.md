@@ -54,7 +54,7 @@
 - [x] Phase 4 design committed as `01bff40 docs: design standalone language provider invocation`.
 - [x] Task 1: `vscode-shim` registry, selector matching, and language value types.
 - [x] Task 2: protocol DTOs and extension-host invocation dispatch.
-- [ ] Task 3: app bridge helper for language provider requests.
+- [x] Task 3: app bridge helper for language provider requests.
 - [ ] Task 4: compat fixture, smoke coverage, docs, final verification.
 
 ---
@@ -1393,7 +1393,7 @@ git commit -m "feat: invoke language providers through extension host ipc"
 - Consumes: `sendHostRequest` from `standalone/app/src/bridge/hostBridge.ts`
 - Consumes: protocol DTOs from Task 2
 
-- [ ] **Step 1: Add failing app bridge tests**
+- [x] **Step 1: Add failing app bridge tests**
 
 Create `standalone/app/src/bridge/languageProviders.test.ts`:
 
@@ -1496,7 +1496,7 @@ Run: `npm --prefix standalone run test --workspace @airdb-standalone/app -- lang
 
 Expected: FAIL because `languageProviders.ts` does not exist.
 
-- [ ] **Step 2: Implement the app bridge helper**
+- [x] **Step 2: Implement the app bridge helper**
 
 Create `standalone/app/src/bridge/languageProviders.ts`:
 
@@ -1566,7 +1566,7 @@ export function createLanguageProviderBridge(transport: LanguageProviderBridgeTr
 export const languageProviderBridge = createLanguageProviderBridge();
 ```
 
-- [ ] **Step 3: Verify Task 3**
+- [x] **Step 3: Verify Task 3**
 
 Run:
 
@@ -1577,7 +1577,7 @@ npm --prefix standalone run typecheck --workspace @airdb-standalone/app
 
 Expected: PASS.
 
-- [ ] **Step 4: Commit Task 3**
+- [x] **Step 4: Commit Task 3**
 
 ```bash
 git add standalone/app/src/bridge/languageProviders.ts standalone/app/src/bridge/languageProviders.test.ts docs/superpowers/plans/2026-07-11-standalone-language-provider-invocation.md
