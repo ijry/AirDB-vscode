@@ -1205,7 +1205,7 @@
 		"dev": "webpack --progress",
 		"clean": "rimraf out",
 		"build": "npm run clean && webpack --progress --mode=production",
-		"lib": "webpack --config webpack.config.lib.js --progress -p",
+		"lib": "webpack --config webpack.config.lib.js --progress --mode=production",
 		"package": "npx vsce package",
 		"publish": "npx vsce publish"
 	},
