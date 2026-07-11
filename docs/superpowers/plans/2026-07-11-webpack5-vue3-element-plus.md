@@ -6,7 +6,7 @@
 
 **Architecture:** Keep the existing extension bundle plus multi-entry webview bundle in Webpack. The extension host remains `target: "node"` and emits `out/extension.js`; webviews remain `target: "web"` and emit the same HTML/JS paths under `out/webview`. Vue 3 apps continue to communicate through the existing VS Code postMessage bridge.
 
-**Tech Stack:** Node 20.20.2, Webpack 5.108.4, webpack-cli 7.2.1, Vue 3.5.39, Vue Router 4.6.3, Vue I18n 11.4.6, Element Plus 2.14.3, vxe-table 4.19.25, xe-utils 4.0.11, TypeScript 5.6.2.
+**Tech Stack:** Node 20.20.2, Webpack 5.108.4, webpack-cli 7.2.1, Vue 3.5.39, Vue Router 4.6.3, Vue I18n 9.14.5, Element Plus 2.14.3, vxe-table 4.19.25, xe-utils 4.0.11, TypeScript 5.6.2.
 
 ## Global Constraints
 
@@ -97,7 +97,7 @@ Expected: npm removes the Vue 2 UI/table/compiler packages and updates `package.
 Run:
 
 ```powershell
-npm install vue@3.5.39 vue-router@4.6.3 vue-i18n@11.4.6 element-plus@2.14.3 @element-plus/icons-vue@2.3.2 vxe-table@4.19.25 xe-utils@4.0.11
+npm install vue@3.5.39 vue-router@4.6.3 vue-i18n@9.14.5 element-plus@2.14.3 @element-plus/icons-vue@2.3.2 vxe-table@4.19.25 xe-utils@4.0.11
 ```
 
 Expected: `package.json` dependencies include these versions.
@@ -125,7 +125,7 @@ Expected:
 ```text
 vue ^3.5.39
 vue-router ^4.6.3
-vue-i18n ^11.4.6
+vue-i18n ^9.14.5
 element-plus ^2.14.3
 @element-plus/icons-vue ^2.3.2
 vxe-table ^4.19.25
