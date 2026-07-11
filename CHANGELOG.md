@@ -1,5 +1,10 @@
 # CHANGELOG
 
+# 1.2.13 20260711
+
+发布新版本
+
+
 # 1.2.12 20260711
 
 新增 Apache Doris、Amazon S3、Redshift、Snowflake、TDengine、Neo4j、ZooKeeper 支持
