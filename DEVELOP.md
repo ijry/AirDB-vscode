@@ -11,24 +11,20 @@ https://code.visualstudio.com/api/working-with-extensions/publishing-extension
 
 ### 代码打包
 
-node版本需要20+
+构建、打包、发布统一使用 Node 20+。
 
-$env:NODE_OPTIONS="--openssl-legacy-provider" 
-或
-set NODE_OPTIONS=--openssl-legacy-provider
- 
-补充:
-在终端输入一次只能本次生效，如果想永久生效可以在 package.json 文件中修改对应的 scripts 节点的内容如下：
- 
-"serve": "SET NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service serve",
-"build": "SET NODE_OPTIONS=--openssl-legacy-provider && vue-cli-service build",
-
+```bash
+nvm use 20.20.2
+npm ci
+npm run build
+npx @vscode/vsce package --allow-star-activation
 ```
-nvm use 20
-npm i -g @vscode/vsce
-vsce login [ms-userid]
-vsce package
-vsce publish
+
+发布脚本会自动切换到 `NODE_VERSION`，默认 `20.20.2`：
+
+```bash
+PUBLISH_DRY_RUN=1 bash ./publish.sh
+bash ./publish.sh
 ```
 
 ## pg-native
