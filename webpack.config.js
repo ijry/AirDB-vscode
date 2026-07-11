@@ -42,7 +42,7 @@ module.exports = [
     },
     plugins: [
       new webpack.IgnorePlugin({
-        resourceRegExp: /^(pg-native|cardinal|encoding|aws4)$/
+        resourceRegExp: /^(pg-native|cardinal|encoding|aws4|snappy|snappyjs)$/
       })
     ],
     module: {
