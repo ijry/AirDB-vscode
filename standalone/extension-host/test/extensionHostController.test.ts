@@ -3,11 +3,12 @@ import {
   CommandRegistry,
   CompletionItem,
   CompletionItemKind,
+  EditorSessionRegistry,
   LanguageProviderRegistry,
   Position,
   createLanguagesApi
 } from "@airdb-standalone/vscode-shim";
-import { createRequest, type HostTextDocumentDto } from "@airdb-standalone/protocol";
+import { createNotification, createRequest, type HostTextDocumentDto } from "@airdb-standalone/protocol";
 import { ExtensionHostController } from "../src/extensionHostController";
 import { TreeViewRegistry } from "../src/treeViewRegistry";
 import { WebviewRegistry } from "../src/webviewRegistry";
@@ -72,6 +73,33 @@ describe("ExtensionHostController", () => {
 
     expect(response).toMatchObject({ kind: "response", ok: true, payload: { delivered: true } });
     expect(received).toEqual([{ type: "init" }]);
+  });
+
+  it("dispatches editor UI lifecycle notifications into the shared registry", async () => {
+    const editorSessionRegistry = new EditorSessionRegistry();
+    const editorOne = editorSessionRegistry.openOrShowDocument(sqlDocument("document-one"));
+    const editorTwo = editorSessionRegistry.openOrShowDocument(sqlDocument("document-two"));
+    const controller = new ExtensionHostController({
+      commandRegistry: new CommandRegistry(),
+      treeViewRegistry: new TreeViewRegistry(),
+      editorSessionRegistry
+    });
+
+    expect(editorSessionRegistry.activeTextEditor).toBe(editorTwo);
+
+    await expect(controller.handleMessage(createNotification("editor.ui.activate", {
+      editorId: editorOne.id
+    }))).resolves.toBeUndefined();
+    await expect(controller.handleMessage(createNotification("editor.ui.selection", {
+      editorId: editorOne.id,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+    }))).resolves.toBeUndefined();
+    await expect(controller.handleMessage(createNotification("editor.ui.activate", {
+      editorId: "editor:missing"
+    }))).resolves.toBeUndefined();
+
+    expect(editorSessionRegistry.activeTextEditor).toBe(editorOne);
+    expect(editorOne.selection.end).toEqual(new Position(0, 6));
   });
 
   it("dispatches language completion requests", async () => {
@@ -153,13 +181,13 @@ describe("ExtensionHostController", () => {
   });
 });
 
-function sqlDocument(): HostTextDocumentDto {
+function sqlDocument(id = "document-sql"): HostTextDocumentDto {
   return {
-    id: "document-sql",
-    uri: "file:///C:/workspace/query.sql",
+    id,
+    uri: `file:///C:/workspace/${id}.sql`,
     fsPath: "C:/workspace/query.sql",
     fileName: "C:/workspace/query.sql",
-    title: "query.sql",
+    title: `${id}.sql`,
     languageId: "sql",
     content: "select 1",
     isUntitled: false,

@@ -2,7 +2,15 @@ import fs from "node:fs/promises";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { AuthenticationRegistry, CommandRegistry, ExtensionRegistry, LanguageProviderRegistry, WorkspaceConfigurationStore, createVscodeApi } from "@airdb-standalone/vscode-shim";
+import {
+  AuthenticationRegistry,
+  CommandRegistry,
+  EditorSessionRegistry,
+  ExtensionRegistry,
+  LanguageProviderRegistry,
+  WorkspaceConfigurationStore,
+  createVscodeApi
+} from "@airdb-standalone/vscode-shim";
 import type { HostBridge } from "@airdb-standalone/vscode-shim";
 import { ContributionRegistry } from "./contributionRegistry.js";
 import { createExtensionContext } from "./extensionContext.js";
@@ -27,6 +35,7 @@ export interface ExtensionLoaderOptions {
   extensionRegistry?: ExtensionRegistry;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
   languageProviderRegistry?: LanguageProviderRegistry;
+  editorSessionRegistry?: EditorSessionRegistry;
   contributionRegistry?: ContributionRegistry;
   diagnostics?: ExtensionDiagnosticsRegistry;
   workspaceRoot?: string;
@@ -111,6 +120,7 @@ export class ExtensionLoader {
         commandRegistry: this.commandRegistry,
         authenticationRegistry: this.authenticationRegistry,
         languageProviderRegistry: this.languageProviderRegistry,
+        editorSessionRegistry: this.options.editorSessionRegistry,
         extensions: this.extensionRegistry,
         workspaceRoot: this.options.workspaceRoot,
         workspaceConfigurationStore: this.workspaceConfigurationStore,

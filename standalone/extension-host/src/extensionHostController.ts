@@ -1,8 +1,11 @@
 import {
   createErrorResponse,
   createResponse,
+  type EditorUiActivatePayload,
+  type EditorUiSelectionPayload,
   type ExecuteCommandPayload,
   type HostMessage,
+  type HostNotification,
   type HostRequest,
   type HostResponse,
   type InvokeTreeItemCommandPayload,
@@ -13,7 +16,12 @@ import {
   type ResolveTreeChildrenPayload,
   type WebviewReceiveMessagePayload
 } from "@airdb-standalone/protocol";
-import { textDocumentFromDto, type CommandRegistry, type LanguageProviderRegistry } from "@airdb-standalone/vscode-shim";
+import {
+  textDocumentFromDto,
+  type CommandRegistry,
+  type EditorSessionRegistry,
+  type LanguageProviderRegistry
+} from "@airdb-standalone/vscode-shim";
 import {
   normalizeCompletionResults,
   normalizeDocumentRangeFormattingResults,
@@ -30,6 +38,7 @@ export interface ExtensionHostControllerOptions {
   treeViewRegistry: TreeViewRegistry;
   webviewRegistry?: WebviewRegistry;
   languageProviderRegistry?: LanguageProviderRegistry;
+  editorSessionRegistry?: EditorSessionRegistry;
 }
 
 export class ExtensionHostController {
@@ -37,6 +46,9 @@ export class ExtensionHostController {
 
   async handleMessage(message: HostMessage): Promise<HostResponse | undefined> {
     if (message.kind !== "request") {
+      if (message.kind === "notification") {
+        this.handleNotification(message);
+      }
       return undefined;
     }
 
@@ -44,6 +56,23 @@ export class ExtensionHostController {
       return createResponse(message, await this.handleRequest(message));
     } catch (error) {
       return createErrorResponse(message, error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  private handleNotification(notification: HostNotification): void {
+    switch (notification.group) {
+      case "editor.ui.activate": {
+        const payload = notification.payload as EditorUiActivatePayload;
+        this.options.editorSessionRegistry?.activateEditor(payload.editorId, "ui");
+        break;
+      }
+      case "editor.ui.selection": {
+        const payload = notification.payload as EditorUiSelectionPayload;
+        this.options.editorSessionRegistry?.setSelection(payload.editorId, payload.selection, "ui");
+        break;
+      }
+      default:
+        break;
     }
   }
 
