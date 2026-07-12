@@ -48,10 +48,10 @@
 ## Current Completion
 
 - [x] Design committed as `69a9f2f docs: design standalone text editor lifecycle`.
-- [ ] Task 1: Protocol DTOs and message groups.
-- [ ] Task 2: `vscode-shim` editor session registry + document model events.
-- [ ] Task 3: Extension-host wiring for UI notifications and shared registry.
-- [ ] Task 4: App projection, interactive tabs, smoke, docs, final verification.
+- [x] Task 1: Protocol DTOs and message groups. Committed as `76028b5 feat(standalone): add editor lifecycle protocol messages`.
+- [x] Task 2: `vscode-shim` editor session registry + document model events. Committed as `f27f747 feat(standalone): add editor session registry in vscode-shim`.
+- [x] Task 3: Extension-host wiring for UI notifications and shared registry. Committed as `0109e66 feat(standalone): wire editor UI lifecycle into extension host`.
+- [x] Task 4: App projection, interactive tabs, smoke, docs, final verification.
 
 ---
 
@@ -113,30 +113,30 @@ export interface EditorUiSelectionPayload {
 }
 ```
 
-- [ ] **Step 1: Write the failing protocol test**
+- [x] **Step 1: Write the failing protocol test**
 
 Add a test that constructs notifications for all six groups and asserts an extended editor DTO with `id` + `selection`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `npm --prefix standalone/protocol test -- messages.test.ts`
 
 Expected: FAIL because groups/types do not exist.
 
-- [ ] **Step 3: Implement protocol changes**
+- [x] **Step 3: Implement protocol changes**
 
 1. Extend `HostMessageGroup` with the six groups.
 2. Require `HostTextEditorDto.id` and optional `selection`.
 3. Add payload interfaces above.
 4. Keep `ShowTextDocumentPayload` unchanged.
 
-- [ ] **Step 4: Run protocol tests**
+- [x] **Step 4: Run protocol tests**
 
 Run: `npm --prefix standalone/protocol test`
 
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add standalone/protocol/src/messages.ts standalone/protocol/test/messages.test.ts
@@ -186,7 +186,7 @@ Rules:
 - One editor session per document
 - Identical activate/selection updates do not rebroadcast
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 Cover:
 - open/show sets active editor and emits session/active notifications
@@ -196,13 +196,13 @@ Cover:
 - `showTextDocument` uses shared registry
 - workspace document-change subscription receives model updates
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 ```bash
 npm --prefix standalone/vscode-shim test -- editorSessions.test.ts window.test.ts workspace.test.ts
 ```
 
-- [ ] **Step 3: Implement registry and shim wiring**
+- [x] **Step 3: Implement registry and shim wiring**
 
 1. Add `StandaloneTextDocument.replaceContent(content, version?)`.
 2. Add stable `StandaloneTextEditor.id`.
@@ -211,11 +211,11 @@ npm --prefix standalone/vscode-shim test -- editorSessions.test.ts window.test.t
 5. Default missing response editor ids to `editor:${document.id}`.
 6. Keep `edit()` non-applying.
 
-- [ ] **Step 4: Run shim tests**
+- [x] **Step 4: Run shim tests**
 
 Run: `npm --prefix standalone/vscode-shim test`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add standalone/vscode-shim
@@ -246,23 +246,23 @@ case "editor.ui.selection":
 
 Unknown editor ids must not throw.
 
-- [ ] **Step 1: Write failing controller test**
+- [x] **Step 1: Write failing controller test**
 
 Route activate/selection notifications into registry and assert active editor + selection updates.
 
-- [ ] **Step 2: Run failing test**
+- [x] **Step 2: Run failing test**
 
 `npm --prefix standalone/extension-host test -- extensionHostController.test.ts`
 
-- [ ] **Step 3: Implement host wiring**
+- [x] **Step 3: Implement host wiring**
 
 Handle notifications in controller, share registry from `main.ts`, thread into loader.
 
-- [ ] **Step 4: Run extension-host tests**
+- [x] **Step 4: Run extension-host tests**
 
 `npm --prefix standalone/extension-host test`
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add standalone/extension-host standalone/vscode-shim
@@ -296,12 +296,12 @@ git commit -m "feat(standalone): wire editor UI lifecycle into extension host"
 9. Smoke executes lifecycle command, sends UI notifications, asserts event growth.
 10. Coverage matrix marks partial real lifecycle support and keeps editable-buffer gaps explicit.
 
-- [ ] **Step 1: Write failing app/bridge tests**
-- [ ] **Step 2: Run app tests to verify failures**
-- [ ] **Step 3: Implement app projection and interactive tabs**
-- [ ] **Step 4: Extend compat fixture and smoke**
-- [ ] **Step 5: Update coverage docs**
-- [ ] **Step 6: Full verification**
+- [x] **Step 1: Write failing app/bridge tests**
+- [x] **Step 2: Run app tests to verify failures**
+- [x] **Step 3: Implement app projection and interactive tabs**
+- [x] **Step 4: Extend compat fixture and smoke**
+- [x] **Step 5: Update coverage docs**
+- [x] **Step 6: Full verification**
 
 ```bash
 npm --prefix standalone run test
@@ -312,7 +312,7 @@ npm --prefix standalone run smoke:vscode-api-compat-ipc
 
 Also rerun `smoke:text-document-ipc` if response shape changes break it.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add standalone/app standalone/extension-host/test/fixtures-compat standalone/scripts/smoke-vscode-api-compat-ipc.mjs standalone/docs/vscode-api-coverage.md standalone/README.md docs/superpowers/plans/2026-07-12-standalone-text-editor-lifecycle.md

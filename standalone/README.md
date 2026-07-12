@@ -201,7 +201,7 @@ npm run build
 npm run smoke:vscode-api-compat-ipc
 ```
 
-The smoke test starts the Node extension host with the separate `extension-host/test/fixtures-compat` fixture and verifies configuration updates, file watchers, URI/RelativePattern helpers, sidebar webview views, progress IPC, completion/hover/document-symbol/range-formatting provider IPC, extension exports, context-key-filtered menus, secret storage, and command discovery. It does not change the default AirDB-only prepared extension set.
+The smoke test starts the Node extension host with the separate `extension-host/test/fixtures-compat` fixture and verifies configuration updates, file watchers, URI/RelativePattern helpers, sidebar webview views, progress IPC, completion/hover/document-symbol/range-formatting provider IPC, text editor lifecycle IPC, extension exports, context-key-filtered menus, secret storage, and command discovery. It does not change the default AirDB-only prepared extension set.
 
 ## Extension Diagnostics Troubleshooting
 

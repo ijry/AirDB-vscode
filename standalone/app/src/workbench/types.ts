@@ -1,7 +1,8 @@
 import type {
   ExtensionDiagnosticPhase,
   ExtensionDiagnosticStatus,
-  HostCommandDto
+  HostCommandDto,
+  LanguageRangeDto
 } from "@airdb-standalone/protocol";
 
 export interface ActivityContainer {
@@ -41,9 +42,12 @@ export interface TreeViewState {
 
 export interface EditorTab {
   id: string;
+  documentId: string;
   title: string;
   language?: string;
   content: string;
+  version?: number;
+  selection?: LanguageRangeDto;
 }
 
 export interface WebviewState {

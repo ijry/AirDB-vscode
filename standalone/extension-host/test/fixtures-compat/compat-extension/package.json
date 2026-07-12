@@ -13,6 +13,14 @@
       {
         "command": "compat.fixture.extra",
         "title": "Compatibility Fixture Extra"
+      },
+      {
+        "command": "compat.fixture.editorLifecycle",
+        "title": "Compatibility Fixture Editor Lifecycle"
+      },
+      {
+        "command": "compat.fixture.editorLifecycleStatus",
+        "title": "Compatibility Fixture Editor Lifecycle Status"
       }
     ],
     "menus": {

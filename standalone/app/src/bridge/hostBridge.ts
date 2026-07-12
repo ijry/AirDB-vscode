@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import {
   RequestStore,
+  createNotification,
   createRequest,
   type HostMessage,
   type HostMessageGroup,
@@ -48,6 +49,10 @@ export function createHostBridge(transport: HostBridgeTransport = createTauriTra
 
     async sendHostResponse(response: HostResponse): Promise<void> {
       await transport.send(JSON.stringify(response));
+    },
+
+    async sendHostNotification(group: HostMessageGroup, payload: unknown, extensionId?: string): Promise<void> {
+      await transport.send(JSON.stringify(createNotification(group, payload, extensionId)));
     }
   };
 }
@@ -69,6 +74,10 @@ export function sendHostRequest<TResponse>(
 
 export function sendHostResponse(response: HostResponse) {
   return defaultHostBridge.sendHostResponse(response);
+}
+
+export function sendHostNotification(group: HostMessageGroup, payload: unknown, extensionId?: string) {
+  return defaultHostBridge.sendHostNotification(group, payload, extensionId);
 }
 
 export function parseHostMessagePayload(payload: string): HostMessage | undefined {

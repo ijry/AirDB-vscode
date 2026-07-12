@@ -2,12 +2,13 @@ import { useEffect, useReducer } from "react";
 import {
   createResponse,
   type HostMessage,
+  type LanguageRangeDto,
   type HostResponse,
   type ResolveTreeChildrenResponse
 } from "@airdb-standalone/protocol";
 import { respondToExternalActionRequest } from "./bridge/externalActions";
 import { handleFileDialogRequest } from "./bridge/fileDialogs";
-import { listenToHostMessages, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
+import { listenToHostMessages, sendHostNotification, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
 import { respondToTextEditorRequest } from "./bridge/textEditors";
 import { ActivityBar } from "./workbench/ActivityBar";
@@ -137,6 +138,31 @@ export function App() {
     }
   }
 
+  function reportEditorNotificationError(error: unknown, fallback: string) {
+    dispatch({
+      type: "notification/show",
+      notification: {
+        id: `editor-notification-error-${Date.now()}`,
+        level: "error",
+        message: error instanceof Error ? error.message : fallback
+      }
+    });
+  }
+
+  function activateEditor(editorId: string) {
+    dispatch({ type: "editor/activate", id: editorId });
+    void sendHostNotification("editor.ui.activate", { editorId }).catch((error: unknown) => {
+      reportEditorNotificationError(error, `Failed to activate editor ${editorId}`);
+    });
+  }
+
+  function updateEditorSelection(editorId: string, selection: LanguageRangeDto) {
+    dispatch({ type: "editor/selection", id: editorId, selection });
+    void sendHostNotification("editor.ui.selection", { editorId, selection }).catch((error: unknown) => {
+      reportEditorNotificationError(error, `Failed to update editor selection ${editorId}`);
+    });
+  }
+
   async function respondToDialog(dialog: DialogState, value: unknown) {
     dispatch({ type: "dialog/close", requestId: dialog.requestId });
     try {
@@ -256,7 +282,11 @@ export function App() {
         onInvokeNode={(viewId, nodeId) => void invokeTreeNode(viewId, nodeId)}
       />
       <section className="editor-area">
-        <EditorTabs state={state} />
+        <EditorTabs
+          state={state}
+          onActivateEditor={activateEditor}
+          onSelectionChange={updateEditorSelection}
+        />
         <WebviewPanel state={state} />
         <OutputPanel state={state} />
         <TerminalPanel state={state} />

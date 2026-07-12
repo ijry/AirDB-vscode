@@ -185,13 +185,82 @@ describe("mapHostMessageToActions", () => {
       {
         type: "editor/open",
         editor: {
-          id: "document-1",
+          id: "editor:document-1",
+          documentId: "document-1",
           title: "Untitled-1.sql",
           language: "sql",
-          content: "select 1"
+          content: "select 1",
+          version: 1,
+          selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
         }
       }
     ]);
+  });
+
+  it("maps editor lifecycle notifications to editor state actions", () => {
+    const document = {
+      id: "document-1",
+      uri: "untitled:///Untitled-1.sql",
+      fileName: "untitled:Untitled-1.sql",
+      title: "Untitled-1.sql",
+      languageId: "sql",
+      content: "select 1",
+      isUntitled: true,
+      version: 1
+    };
+
+    expect(
+      mapHostMessageToActions(createNotification("editor.session.opened", {
+        id: "editor:document-1",
+        document,
+        viewColumn: 1,
+        selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+      }))
+    ).toEqual([
+      {
+        type: "editor/open",
+        editor: {
+          id: "editor:document-1",
+          documentId: "document-1",
+          title: "Untitled-1.sql",
+          language: "sql",
+          content: "select 1",
+          version: 1,
+          selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+        }
+      }
+    ]);
+
+    expect(
+      mapHostMessageToActions(createNotification("editor.active.changed", {
+        editorId: "editor:document-1"
+      }))
+    ).toEqual([{ type: "editor/activate", id: "editor:document-1" }]);
+
+    expect(
+      mapHostMessageToActions(createNotification("editor.selection.changed", {
+        editorId: "editor:document-1",
+        selection: { start: { line: 0, character: 7 }, end: { line: 0, character: 8 } }
+      }))
+    ).toEqual([{
+      type: "editor/selection",
+      id: "editor:document-1",
+      selection: { start: { line: 0, character: 7 }, end: { line: 0, character: 8 } }
+    }]);
+
+    expect(
+      mapHostMessageToActions(createNotification("editor.document.changed", {
+        documentId: "document-1",
+        version: 2,
+        content: "select 2",
+        changes: []
+      }))
+    ).toEqual([{
+      type: "editor/content",
+      documentId: "document-1",
+      version: 2,
+      content: "select 2"
+    }]);
   });
 
   it("maps extension contributions to activity containers", () => {

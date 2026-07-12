@@ -1,7 +1,11 @@
 import type {
+  EditorDocumentChangedPayload,
+  EditorSelectionChangedPayload,
   ExtensionDiagnosticPhase,
   ExtensionDiagnosticStatus,
-  HostMessage
+  HostMessage,
+  HostTextEditorDto,
+  LanguageRangeDto
 } from "@airdb-standalone/protocol";
 import type { WorkbenchAction } from "../workbench/workbenchStore";
 import type {
@@ -12,7 +16,7 @@ import type {
   ProgressState,
   WebviewState
 } from "../workbench/types";
-import { isHostTextDocumentDto } from "./textEditors";
+import { DEFAULT_EDITOR_SELECTION, editorIdForDocument, isHostTextDocumentDto } from "./textEditors";
 
 const DIAGNOSTIC_STATUSES = [
   "discovered",
@@ -115,13 +119,35 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
       return [{
         type: "editor/open",
         editor: {
-          id: document.id,
+          id: editorIdForDocument(document.id),
+          documentId: document.id,
           title: document.title,
           language: document.languageId,
-          content: document.content
+          content: document.content,
+          version: document.version,
+          selection: DEFAULT_EDITOR_SELECTION
         }
       }];
     }
+    case "editor.session.opened":
+      return isHostTextEditorDto(message.payload)
+        ? [{ type: "editor/open", editor: normalizeEditorPayload(message.payload) }]
+        : [];
+    case "editor.active.changed":
+      return typeof payload.editorId === "string" ? [{ type: "editor/activate", id: payload.editorId }] : [];
+    case "editor.selection.changed":
+      return isEditorSelectionChangedPayload(message.payload)
+        ? [{ type: "editor/selection", id: message.payload.editorId, selection: message.payload.selection }]
+        : [];
+    case "editor.document.changed":
+      return isEditorDocumentChangedPayload(message.payload)
+        ? [{
+            type: "editor/content",
+            documentId: message.payload.documentId,
+            version: message.payload.version,
+            content: message.payload.content
+          }]
+        : [];
     case "notification.show": {
       const isRequest = message.kind === "request";
       return [{
@@ -340,6 +366,52 @@ function normalizeWebviewPayload(payload: Record<string, unknown>, extensionId?:
     html: typeof payload.html === "string" ? payload.html : "",
     localResourceRoots: normalizeStringArray(payload.localResourceRoots)
   };
+}
+
+function normalizeEditorPayload(editor: HostTextEditorDto) {
+  return {
+    id: editor.id,
+    documentId: editor.document.id,
+    title: editor.document.title,
+    language: editor.document.languageId,
+    content: editor.document.content,
+    version: editor.document.version,
+    selection: editor.selection ?? DEFAULT_EDITOR_SELECTION
+  };
+}
+
+function isHostTextEditorDto(value: unknown): value is HostTextEditorDto {
+  if (!isStringRecord(value)) {
+    return false;
+  }
+  return typeof value.id === "string" &&
+    isHostTextDocumentDto(value.document) &&
+    (value.viewColumn === undefined || typeof value.viewColumn === "number") &&
+    (value.selection === undefined || isLanguageRangeDto(value.selection));
+}
+
+function isEditorSelectionChangedPayload(value: unknown): value is EditorSelectionChangedPayload {
+  return isStringRecord(value) &&
+    typeof value.editorId === "string" &&
+    isLanguageRangeDto(value.selection);
+}
+
+function isEditorDocumentChangedPayload(value: unknown): value is EditorDocumentChangedPayload {
+  return isStringRecord(value) &&
+    typeof value.documentId === "string" &&
+    typeof value.version === "number" &&
+    typeof value.content === "string" &&
+    Array.isArray(value.changes);
+}
+
+function isLanguageRangeDto(value: unknown): value is LanguageRangeDto {
+  if (!isStringRecord(value) || !isStringRecord(value.start) || !isStringRecord(value.end)) {
+    return false;
+  }
+  return typeof value.start.line === "number" &&
+    typeof value.start.character === "number" &&
+    typeof value.end.line === "number" &&
+    typeof value.end.character === "number";
 }
 
 function normalizeProgressStartPayload(payload: Record<string, unknown>, extensionId?: string): ProgressState | undefined {

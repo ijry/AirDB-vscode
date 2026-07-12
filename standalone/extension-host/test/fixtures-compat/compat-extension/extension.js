@@ -5,11 +5,14 @@ const vscode = require("vscode");
 exports.activate = function activate(context) {
   const phase3 = registerPhase3Compatibility(context);
   registerLanguageProviderCompatibility(context);
+  const editorLifecycle = registerEditorLifecycleCompatibility(context);
   const activatedExports = { activated: true, fixture: "compat-extension", phase3 };
 
   context.subscriptions.push(
     vscode.commands.registerCommand("compat.fixture.extra", () => "extra-ok"),
-    vscode.commands.registerCommand("compat.fixture.run", () => runCompatibilityFixture(context))
+    vscode.commands.registerCommand("compat.fixture.run", () => runCompatibilityFixture(context)),
+    vscode.commands.registerCommand("compat.fixture.editorLifecycle", () => exerciseEditorLifecycle()),
+    vscode.commands.registerCommand("compat.fixture.editorLifecycleStatus", () => editorLifecycle.snapshot())
   );
 
   return activatedExports;
@@ -71,6 +74,75 @@ async function runCompatibilityFixture(context) {
       isActive: extension?.isActive,
       exports: activated
     }
+  };
+}
+
+function registerEditorLifecycleCompatibility(context) {
+  const state = {
+    activeChanges: 0,
+    selectionChanges: 0,
+    documentChanges: 0,
+    activeEditorId: undefined,
+    activeDocumentId: undefined,
+    lastSelection: undefined,
+    lastChangedDocumentId: undefined,
+    lastChangedVersion: undefined
+  };
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      state.activeChanges += 1;
+      state.activeEditorId = editor?.id;
+      state.activeDocumentId = editor?.document?.id;
+    }),
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      state.selectionChanges += 1;
+      state.lastSelection = serializeSelection(event.selection);
+    }),
+    vscode.workspace.onDidChangeTextDocument((event) => {
+      state.documentChanges += 1;
+      state.lastChangedDocumentId = event.document?.id;
+      state.lastChangedVersion = event.document?.version;
+    })
+  );
+
+  return {
+    snapshot() {
+      return { ...state };
+    }
+  };
+}
+
+async function exerciseEditorLifecycle() {
+  const firstDocument = await vscode.workspace.openTextDocument({
+    language: "sql",
+    content: "select lifecycle_one"
+  });
+  const firstEditor = await vscode.window.showTextDocument(firstDocument);
+  const secondDocument = await vscode.workspace.openTextDocument({
+    language: "sql",
+    content: "select lifecycle_two"
+  });
+  const secondEditor = await vscode.window.showTextDocument(secondDocument, vscode.ViewColumn.Two);
+
+  return {
+    firstEditorId: firstEditor.id,
+    firstDocumentId: firstDocument.id,
+    secondEditorId: secondEditor.id,
+    secondDocumentId: secondDocument.id,
+    activeTextEditorId: vscode.window.activeTextEditor?.id,
+    firstSelection: serializeSelection(firstEditor.selection),
+    secondSelection: serializeSelection(secondEditor.selection)
+  };
+}
+
+function serializeSelection(selection) {
+  if (!selection) {
+    return undefined;
+  }
+  return {
+    start: { line: selection.start.line, character: selection.start.character },
+    end: { line: selection.end.line, character: selection.end.character }
   };
 }
 
