@@ -2,6 +2,7 @@ import { CommandRegistry, createCommandsApi } from "./commands.js";
 import { AuthenticationRegistry, createAuthenticationApi } from "./authentication.js";
 import { WorkspaceConfigurationStore } from "./configuration.js";
 import { createEnvApi } from "./env.js";
+import { EditorSessionRegistry } from "./editorSessions.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
 import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
 import { createLanguagesApi, type LanguageProviderRegistry } from "./languages.js";
@@ -26,6 +27,7 @@ export interface VscodeApiOptions {
   workspaceRoot?: string;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
   languageProviderRegistry?: LanguageProviderRegistry;
+  editorSessionRegistry?: EditorSessionRegistry;
   unsupportedApiReporter?: UnsupportedApiReporter;
 }
 
@@ -35,16 +37,21 @@ export function createVscodeApi(options: VscodeApiOptions) {
     commandRegistry,
     createExternalActionCommandHandler(options.extensionId, options.bridge)
   );
+  const editorSessionRegistry = options.editorSessionRegistry ?? new EditorSessionRegistry({
+    notify: (group, payload) => options.bridge.notify(group, payload)
+  });
 
   const reportUnsupportedApi = options.unsupportedApiReporter;
   const windowApi = createWindowApi({
     extensionId: options.extensionId,
     extensionPath: options.extensionPath,
-    bridge: options.bridge
+    bridge: options.bridge,
+    editorSessionRegistry
   });
   const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, {
     workspaceRoot: options.workspaceRoot,
-    configurationStore: options.workspaceConfigurationStore
+    configurationStore: options.workspaceConfigurationStore,
+    editorSessionRegistry
   });
 
   return {

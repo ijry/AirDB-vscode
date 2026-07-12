@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import {
+  type LanguageRangeDto,
   type HostTextDocumentDto,
   type HostTextEditorDto
 } from "@airdb-standalone/protocol";
@@ -19,8 +20,8 @@ export interface TextLine {
 }
 
 export class StandaloneTextDocument {
-  readonly lines: string[];
-  readonly lineOffsets: number[];
+  lines: string[];
+  lineOffsets: number[];
 
   constructor(
     public readonly id: string,
@@ -28,9 +29,9 @@ export class StandaloneTextDocument {
     public readonly fileName: string,
     public readonly title: string,
     public readonly languageId: string,
-    private readonly content: string,
+    private content: string,
     public readonly isUntitled: boolean,
-    public readonly version = 1
+    public version = 1
   ) {
     this.lines = splitLines(content);
     this.lineOffsets = computeLineOffsets(content);
@@ -104,6 +105,13 @@ export class StandaloneTextDocument {
     };
   }
 
+  replaceContent(content: string, version = this.version + 1): void {
+    this.content = content;
+    this.version = version;
+    this.lines = splitLines(content);
+    this.lineOffsets = computeLineOffsets(content);
+  }
+
   private offsetAt(position: Position): number {
     const line = Math.max(0, Math.min(position.line, this.lines.length - 1));
     const character = Math.max(0, Math.min(position.character, this.lines[line].length));
@@ -116,10 +124,12 @@ export class StandaloneTextEditor {
   selections: Selection[];
 
   constructor(
+    public readonly id: string,
     public readonly document: StandaloneTextDocument,
-    public readonly viewColumn: number = ViewColumn.One
+    public viewColumn: number = ViewColumn.One,
+    selection = new Selection(new Position(0, 0), new Position(0, 0))
   ) {
-    this.selection = new Selection(new Position(0, 0), new Position(0, 0));
+    this.selection = selection;
     this.selections = [this.selection];
   }
 
@@ -161,6 +171,10 @@ export function textDocumentToDto(document: StandaloneTextDocument): HostTextDoc
   return document.toDto();
 }
 
+export function textEditorIdForDocument(documentId: string): string {
+  return `editor:${documentId}`;
+}
+
 export function textDocumentFromDto(dto: HostTextDocumentDto): StandaloneTextDocument {
   const uri = Uri.parse(dto.uri);
   return new StandaloneTextDocument(
@@ -176,7 +190,20 @@ export function textDocumentFromDto(dto: HostTextDocumentDto): StandaloneTextDoc
 }
 
 export function textEditorFromDto(dto: HostTextEditorDto, document?: StandaloneTextDocument): StandaloneTextEditor {
-  return new StandaloneTextEditor(document ?? textDocumentFromDto(dto.document), dto.viewColumn ?? ViewColumn.One);
+  const textDocument = document ?? textDocumentFromDto(dto.document);
+  return new StandaloneTextEditor(
+    dto.id || textEditorIdForDocument(textDocument.id),
+    textDocument,
+    dto.viewColumn ?? ViewColumn.One,
+    dto.selection ? selectionFromRangeDto(dto.selection) : undefined
+  );
+}
+
+export function selectionFromRangeDto(range: LanguageRangeDto): Selection {
+  return new Selection(
+    new Position(range.start.line, range.start.character),
+    new Position(range.end.line, range.end.character)
+  );
 }
 
 async function readFileDocument(uri: Uri, languageId = inferLanguageId(uri.fsPath)): Promise<StandaloneTextDocument> {

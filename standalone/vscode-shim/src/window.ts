@@ -8,13 +8,13 @@ import {
   type ShowTextDocumentPayload
 } from "@airdb-standalone/protocol";
 import { Buffer } from "node:buffer";
+import { EditorSessionRegistry } from "./editorSessions.js";
 import {
   isStandaloneTextDocument,
+  selectionFromRangeDto,
   textDocumentFromDto,
   textDocumentToDto,
-  textEditorFromDto,
-  type StandaloneTextDocument,
-  type StandaloneTextEditor
+  type StandaloneTextDocument
 } from "./textDocument.js";
 import { Disposable, EventEmitter, Uri } from "./types.js";
 import {
@@ -54,6 +54,7 @@ export interface WindowApiOptions {
   extensionId: string;
   extensionPath: string;
   bridge: HostBridge;
+  editorSessionRegistry?: EditorSessionRegistry;
 }
 
 function fileDtoToUri(value: HostFileUriDto): Uri {
@@ -189,24 +190,24 @@ function normalizeShowTextDocumentOptions(
 }
 
 export function createWindowApi(options: WindowApiOptions) {
-  const activeTextEditorEmitter = new EventEmitter<unknown>();
-  const textEditorSelectionEmitter = new EventEmitter<unknown>();
+  const editorSessionRegistry = options.editorSessionRegistry ?? new EditorSessionRegistry({
+    notify: (group, payload) => options.bridge.notify(group, payload)
+  });
   const treeCollapseEmitter = new EventEmitter<{ element: unknown }>();
   const treeExpandEmitter = new EventEmitter<{ element: unknown }>();
   let activeTerminal: unknown;
-  let activeTextEditor: StandaloneTextEditor | undefined;
   let nextDecorationTypeId = 1;
   let nextProgressId = 1;
 
   return {
     get activeTextEditor() {
-      return activeTextEditor;
+      return editorSessionRegistry.activeTextEditor;
     },
     get activeTerminal() {
       return activeTerminal;
     },
-    onDidChangeActiveTextEditor: activeTextEditorEmitter.event,
-    onDidChangeTextEditorSelection: textEditorSelectionEmitter.event,
+    onDidChangeActiveTextEditor: editorSessionRegistry.onDidChangeActiveTextEditor,
+    onDidChangeTextEditorSelection: editorSessionRegistry.onDidChangeTextEditorSelection,
 
     createTextEditorDecorationType(decorationOptions: unknown) {
       return {
@@ -443,9 +444,13 @@ export function createWindowApi(options: WindowApiOptions) {
       const response = await options.bridge.request<HostTextEditorDto>(
         createRequest("editor.showDocument", payload, options.extensionId)
       );
-      const editor = textEditorFromDto(response, textDocument);
-      activeTextEditor = editor;
-      activeTextEditorEmitter.fire(editor);
+      const editor = editorSessionRegistry.openOrShowDocument(textDocument, {
+        viewColumn: response?.viewColumn ?? showOptions.viewColumn,
+        preserveFocus: showOptions.preserveFocus
+      });
+      if (response?.selection) {
+        editorSessionRegistry.setSelection(editor.id, selectionFromRangeDto(response.selection), "ui");
+      }
       return editor;
     },
 
@@ -484,11 +489,20 @@ export function createWindowApi(options: WindowApiOptions) {
     },
 
     __fireActiveTextEditor(editor: unknown) {
-      activeTextEditorEmitter.fire(editor);
+      const editorId = editor && typeof editor === "object" ? (editor as { id?: unknown }).id : undefined;
+      if (typeof editorId === "string") {
+        editorSessionRegistry.activateEditor(editorId, "host");
+      }
     },
 
     __fireTextEditorSelection(event: unknown) {
-      textEditorSelectionEmitter.fire(event);
+      const value = event && typeof event === "object" ? event as {
+        textEditor?: { id?: unknown };
+        selection?: { start?: unknown; end?: unknown };
+      } : undefined;
+      if (typeof value?.textEditor?.id === "string" && value.selection?.start && value.selection.end) {
+        editorSessionRegistry.setSelection(value.textEditor.id, value.selection as never, "host");
+      }
     }
   };
 }
