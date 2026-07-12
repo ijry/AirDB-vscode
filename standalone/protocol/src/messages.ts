@@ -20,6 +20,12 @@ export type HostMessageGroup =
   | "language.provideDocumentRangeFormattingEdits"
   | "editor.openDocument"
   | "editor.showDocument"
+  | "editor.session.opened"
+  | "editor.active.changed"
+  | "editor.selection.changed"
+  | "editor.document.changed"
+  | "editor.ui.activate"
+  | "editor.ui.selection"
   | "external.openUri"
   | "external.writeClipboard"
   | "external.readClipboard"
@@ -187,14 +193,49 @@ export interface ProvideDocumentRangeFormattingEditsResponse {
 }
 
 export interface HostTextEditorDto {
+  id: string;
   document: HostTextDocumentDto;
   viewColumn?: number;
+  selection?: LanguageRangeDto;
 }
 
 export interface ShowTextDocumentPayload {
   document: HostTextDocumentDto;
   viewColumn?: number;
   preserveFocus?: boolean;
+}
+
+export interface EditorActiveChangedPayload {
+  editorId?: string;
+  editor?: HostTextEditorDto;
+}
+
+export interface EditorSelectionChangedPayload {
+  editorId: string;
+  selection: LanguageRangeDto;
+}
+
+export interface EditorDocumentContentChangeDto {
+  range: LanguageRangeDto;
+  rangeOffset?: number;
+  rangeLength?: number;
+  text: string;
+}
+
+export interface EditorDocumentChangedPayload {
+  documentId: string;
+  version: number;
+  content: string;
+  changes: EditorDocumentContentChangeDto[];
+}
+
+export interface EditorUiActivatePayload {
+  editorId: string;
+}
+
+export interface EditorUiSelectionPayload {
+  editorId: string;
+  selection: LanguageRangeDto;
 }
 
 export interface HostExternalUriDto {

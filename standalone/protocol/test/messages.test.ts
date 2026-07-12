@@ -3,6 +3,11 @@ import {
   createNotification,
   createRequest,
   createResponse,
+  type EditorActiveChangedPayload,
+  type EditorDocumentChangedPayload,
+  type EditorSelectionChangedPayload,
+  type EditorUiActivatePayload,
+  type EditorUiSelectionPayload,
   type HostCommandDto,
   type HostExternalUriDto,
   type HostFileUriDto,
@@ -128,14 +133,73 @@ describe("tree protocol DTOs", () => {
       preserveFocus: true
     });
     const response = createResponse<HostTextEditorDto>(request, {
+      id: "editor:document-1",
       document,
-      viewColumn: 2
+      viewColumn: 2,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
     });
 
     expect(response.payload).toEqual({
+      id: "editor:document-1",
       document,
-      viewColumn: 2
+      viewColumn: 2,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
     });
+  });
+
+  it("supports typed editor lifecycle notifications", () => {
+    const document: HostTextDocumentDto = {
+      id: "document-1",
+      uri: "file:///C:/fixture/query.sql",
+      fsPath: "C:/fixture/query.sql",
+      fileName: "C:/fixture/query.sql",
+      title: "query.sql",
+      languageId: "sql",
+      content: "select 1",
+      isUntitled: false,
+      version: 1
+    };
+    const editor: HostTextEditorDto = {
+      id: "editor:document-1",
+      document,
+      viewColumn: 1,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+    };
+
+    const opened = createNotification("editor.session.opened", editor);
+    const activeChanged = createNotification<EditorActiveChangedPayload>("editor.active.changed", {
+      editorId: editor.id,
+      editor
+    });
+    const selectionChanged = createNotification<EditorSelectionChangedPayload>("editor.selection.changed", {
+      editorId: editor.id,
+      selection: { start: { line: 0, character: 7 }, end: { line: 0, character: 8 } }
+    });
+    const documentChanged = createNotification<EditorDocumentChangedPayload>("editor.document.changed", {
+      documentId: document.id,
+      version: 2,
+      content: "select 2",
+      changes: [{
+        range: { start: { line: 0, character: 7 }, end: { line: 0, character: 8 } },
+        rangeOffset: 7,
+        rangeLength: 1,
+        text: "2"
+      }]
+    });
+    const uiActivate = createNotification<EditorUiActivatePayload>("editor.ui.activate", {
+      editorId: editor.id
+    });
+    const uiSelection = createNotification<EditorUiSelectionPayload>("editor.ui.selection", {
+      editorId: editor.id,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
+    });
+
+    expect(opened).toMatchObject({ group: "editor.session.opened", payload: editor });
+    expect(activeChanged.payload.editor).toEqual(editor);
+    expect(selectionChanged.payload.selection.end.character).toBe(8);
+    expect(documentChanged.payload).toMatchObject({ documentId: document.id, version: 2, content: "select 2" });
+    expect(uiActivate.payload.editorId).toBe(editor.id);
+    expect(uiSelection.payload.selection.start).toEqual({ line: 0, character: 0 });
   });
 
   it("supports typed language provider request and response payloads", () => {
