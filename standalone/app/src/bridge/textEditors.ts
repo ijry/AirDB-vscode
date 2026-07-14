@@ -7,6 +7,11 @@ import {
   type ShowTextDocumentPayload
 } from "@airdb-standalone/protocol";
 
+export const DEFAULT_EDITOR_SELECTION = {
+  start: { line: 0, character: 0 },
+  end: { line: 0, character: 0 }
+} as const;
+
 export async function respondToTextEditorRequest(
   request: HostRequest,
   sendResponse: (response: HostResponse) => Promise<void>
@@ -26,9 +31,15 @@ export function createTextEditorResponse(request: HostRequest): HostResponse {
     return createErrorResponse(request, "Invalid text document payload");
   }
   return createResponse(request, {
+    id: editorIdForDocument(payload.document.id),
     document: payload.document,
+    selection: DEFAULT_EDITOR_SELECTION,
     ...(typeof payload.viewColumn === "number" ? { viewColumn: payload.viewColumn } : {})
   });
+}
+
+export function editorIdForDocument(documentId: string): string {
+  return `editor:${documentId}`;
 }
 
 export function isHostTextDocumentDto(value: unknown): value is HostTextDocumentDto {

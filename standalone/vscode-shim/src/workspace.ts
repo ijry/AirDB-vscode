@@ -1,5 +1,6 @@
 import path from "node:path";
 import { WorkspaceConfigurationStore } from "./configuration.js";
+import { EditorSessionRegistry } from "./editorSessions.js";
 import { createFileSystemWatcher, type GlobPattern } from "./fileSystemWatcher.js";
 import { openTextDocumentInput } from "./textDocument.js";
 import { Disposable, Uri, type WorkspaceFolder } from "./types.js";
@@ -9,6 +10,7 @@ import type { HostBridge } from "./window.js";
 export interface WorkspaceApiOptions {
   workspaceRoot?: string;
   configurationStore?: WorkspaceConfigurationStore;
+  editorSessionRegistry?: EditorSessionRegistry;
 }
 
 export function createWorkspaceApi(_extensionId: string, _bridge: HostBridge, options: WorkspaceApiOptions = {}) {
@@ -21,6 +23,7 @@ export function createWorkspaceApi(_extensionId: string, _bridge: HostBridge, op
   };
   const workspaceFolders = [workspaceFolder];
   const configurationStore = options.configurationStore ?? new WorkspaceConfigurationStore();
+  const editorSessionRegistry = options.editorSessionRegistry ?? new EditorSessionRegistry();
 
   return {
     workspaceFolders,
@@ -30,9 +33,7 @@ export function createWorkspaceApi(_extensionId: string, _bridge: HostBridge, op
     openTextDocument(input: unknown) {
       return openTextDocumentInput(input);
     },
-    onDidChangeTextDocument() {
-      return new Disposable();
-    },
+    onDidChangeTextDocument: editorSessionRegistry.onDidChangeTextDocument,
     onDidSaveTextDocument() {
       return new Disposable();
     },

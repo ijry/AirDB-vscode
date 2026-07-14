@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { EventEmitter, Position, Range, RelativePattern, Uri } from "../src";
+import { EventEmitter, Position, Range, RelativePattern, Selection, Uri } from "../src";
 
 describe("core VS Code types", () => {
   it("emits events and disposes listeners", () => {
@@ -21,6 +21,17 @@ describe("core VS Code types", () => {
     expect(uri.scheme).toBe("file");
     expect(uri.fsPath).toContain("C:/data/query.sql");
     expect(range.end.character).toBe(6);
+  });
+
+  it("supports numeric Range and Selection constructors", () => {
+    const range = new Range(0, 6, 0, 0);
+    const selection = new Selection(0, 6, 0, 0);
+
+    expect(range.start.isEqual(new Position(0, 0))).toBe(true);
+    expect(range.end.isEqual(new Position(0, 6))).toBe(true);
+    expect(selection.anchor.isEqual(new Position(0, 6))).toBe(true);
+    expect(selection.active.isEqual(new Position(0, 0))).toBe(true);
+    expect(selection.isReversed).toBe(true);
   });
 
   it("preserves POSIX absolute file paths", () => {

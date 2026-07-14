@@ -20,7 +20,7 @@ For a full pre-package verification pass, run:
 npm run verify
 ```
 
-This runs workspace checks, typecheck, build, AirDB extension preparation, the default extension-set guard, unit tests, and the key AirDB IPC smoke tests. It does not build MSI/NSIS installers.
+This runs workspace checks, typecheck, build, AirDB extension preparation, the default extension-set guard, unit tests, and the full standalone IPC smoke suite. It does not build MSI/NSIS installers.
 
 AirDB webview builds also use the root project webpack dependencies. If the repository root does not already have `node_modules`, install them before running `npm run build:airdb` or AirDB-backed smoke tests:
 
@@ -201,7 +201,7 @@ npm run build
 npm run smoke:vscode-api-compat-ipc
 ```
 
-The smoke test starts the Node extension host with the separate `extension-host/test/fixtures-compat` fixture and verifies configuration updates, file watchers, URI/RelativePattern helpers, sidebar webview views, progress IPC, completion/hover/document-symbol/range-formatting provider IPC, extension exports, context-key-filtered menus, secret storage, and command discovery. It does not change the default AirDB-only prepared extension set.
+The smoke test starts the Node extension host with the separate `extension-host/test/fixtures-compat` fixture and verifies configuration updates, file watchers, URI/RelativePattern helpers, sidebar webview views, progress IPC, completion/hover/document-symbol/range-formatting provider IPC, text editor lifecycle IPC, extension exports, context-key-filtered menus, secret storage, and command discovery. It does not change the default AirDB-only prepared extension set.
 
 ## Extension Diagnostics Troubleshooting
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type {
   HostMessageGroup,
   HostTextDocumentDto,
+  ProvideCodeLensesResponse,
   ProvideCompletionItemsResponse,
   ProvideDocumentRangeFormattingEditsResponse,
   ProvideDocumentSymbolsResponse,
@@ -61,13 +62,17 @@ describe("language provider bridge", () => {
     }]);
   });
 
-  it("sends hover symbol and formatting requests", async () => {
+  it("sends hover CodeLens symbol and formatting requests", async () => {
     const groups: HostMessageGroup[] = [];
     const transport: LanguageProviderBridgeTransport = {
       sendHostRequest: async <TResponse,>(group: HostMessageGroup): Promise<TResponse> => {
         groups.push(group);
         if (group === "language.provideHover") {
           const response = { hovers: [] } satisfies ProvideHoverResponse;
+          return response as TResponse;
+        }
+        if (group === "language.provideCodeLenses") {
+          const response = { codeLenses: [] } satisfies ProvideCodeLensesResponse;
           return response as TResponse;
         }
         if (group === "language.provideDocumentSymbols") {
@@ -81,6 +86,7 @@ describe("language provider bridge", () => {
     const bridge = createLanguageProviderBridge(transport);
 
     await bridge.provideHover({ document, position: { line: 0, character: 1 } });
+    await bridge.provideCodeLenses({ document });
     await bridge.provideDocumentSymbols({ document });
     await bridge.provideDocumentRangeFormattingEdits({
       document,
@@ -90,6 +96,7 @@ describe("language provider bridge", () => {
 
     expect(groups).toEqual([
       "language.provideHover",
+      "language.provideCodeLenses",
       "language.provideDocumentSymbols",
       "language.provideDocumentRangeFormattingEdits"
     ]);

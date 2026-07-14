@@ -1,6 +1,7 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import {
+  type LanguageRangeDto,
   type HostTextDocumentDto,
   type HostTextEditorDto
 } from "@airdb-standalone/protocol";
@@ -18,9 +19,23 @@ export interface TextLine {
   isEmptyOrWhitespace: boolean;
 }
 
+export interface TextEditorEditOperation {
+  range: Range;
+  text: string;
+}
+
+export interface TextEditorEditBuilder {
+  replace(location: Position | Range, value: string): void;
+  insert(location: Position, value: string): void;
+  delete(location: Range): void;
+  setEndOfLine(endOfLine: unknown): void;
+}
+
+export type TextEditorEditApplier = (edits: TextEditorEditOperation[]) => boolean;
+
 export class StandaloneTextDocument {
-  readonly lines: string[];
-  readonly lineOffsets: number[];
+  lines: string[];
+  lineOffsets: number[];
 
   constructor(
     public readonly id: string,
@@ -28,9 +43,9 @@ export class StandaloneTextDocument {
     public readonly fileName: string,
     public readonly title: string,
     public readonly languageId: string,
-    private readonly content: string,
+    private content: string,
     public readonly isUntitled: boolean,
-    public readonly version = 1
+    public version = 1
   ) {
     this.lines = splitLines(content);
     this.lineOffsets = computeLineOffsets(content);
@@ -90,6 +105,33 @@ export class StandaloneTextDocument {
     return undefined;
   }
 
+  offsetAt(position: Position): number {
+    const line = clampInteger(position.line, 0, this.lines.length - 1);
+    const text = this.lines[line] ?? "";
+    const character = clampInteger(position.character, 0, text.length);
+    return (this.lineOffsets[line] ?? this.content.length) + character;
+  }
+
+  positionAt(offset: number): Position {
+    const clampedOffset = clampInteger(offset, 0, this.content.length);
+    let low = 0;
+    let high = this.lineOffsets.length - 1;
+    let line = 0;
+
+    while (low <= high) {
+      const mid = Math.floor((low + high) / 2);
+      const lineOffset = this.lineOffsets[mid] ?? 0;
+      if (lineOffset <= clampedOffset) {
+        line = mid;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
+    }
+
+    return new Position(line, clampedOffset - (this.lineOffsets[line] ?? 0));
+  }
+
   toDto(): HostTextDocumentDto {
     return {
       id: this.id,
@@ -104,10 +146,49 @@ export class StandaloneTextDocument {
     };
   }
 
-  private offsetAt(position: Position): number {
-    const line = Math.max(0, Math.min(position.line, this.lines.length - 1));
-    const character = Math.max(0, Math.min(position.character, this.lines[line].length));
-    return this.lineOffsets[line] + character;
+  replaceContent(content: string, version = this.version + 1): void {
+    this.content = content;
+    this.version = version;
+    this.lines = splitLines(content);
+    this.lineOffsets = computeLineOffsets(content);
+  }
+}
+
+class StandaloneTextEditorEditBuilder implements TextEditorEditBuilder {
+  private readonly operations: TextEditorEditOperation[] = [];
+  private closed = false;
+
+  replace(location: Position | Range, value: string): void {
+    this.add(rangeFromEditLocation(location), value);
+  }
+
+  insert(location: Position, value: string): void {
+    const position = positionFromValue(location);
+    this.add(new Range(position, position), value);
+  }
+
+  delete(location: Range): void {
+    this.add(rangeFromValue(location), "");
+  }
+
+  setEndOfLine(_endOfLine: unknown): void {
+    this.assertOpen();
+  }
+
+  close(): TextEditorEditOperation[] {
+    this.closed = true;
+    return [...this.operations];
+  }
+
+  private add(range: Range, text: string): void {
+    this.assertOpen();
+    this.operations.push({ range, text: String(text) });
+  }
+
+  private assertOpen(): void {
+    if (this.closed) {
+      throw new Error("TextEditorEdit is only valid while the edit callback runs");
+    }
   }
 }
 
@@ -116,10 +197,13 @@ export class StandaloneTextEditor {
   selections: Selection[];
 
   constructor(
+    public readonly id: string,
     public readonly document: StandaloneTextDocument,
-    public readonly viewColumn: number = ViewColumn.One
+    public viewColumn: number = ViewColumn.One,
+    selection = new Selection(new Position(0, 0), new Position(0, 0)),
+    private readonly applyEdits?: TextEditorEditApplier
   ) {
-    this.selection = new Selection(new Position(0, 0), new Position(0, 0));
+    this.selection = selection;
     this.selections = [this.selection];
   }
 
@@ -127,8 +211,25 @@ export class StandaloneTextEditor {
     return undefined;
   }
 
-  edit(_callback?: unknown): Promise<boolean> {
-    return Promise.resolve(false);
+  edit(callback?: (editBuilder: TextEditorEditBuilder) => void): Promise<boolean> {
+    if (typeof callback !== "function") {
+      return Promise.resolve(false);
+    }
+
+    const editBuilder = new StandaloneTextEditorEditBuilder();
+    try {
+      callback(editBuilder);
+    } catch (error) {
+      editBuilder.close();
+      return Promise.reject(error);
+    }
+
+    const edits = editBuilder.close();
+    try {
+      return Promise.resolve(this.applyEdits ? this.applyEdits(edits) : false);
+    } catch (error) {
+      return Promise.reject(error);
+    }
   }
 }
 
@@ -161,6 +262,10 @@ export function textDocumentToDto(document: StandaloneTextDocument): HostTextDoc
   return document.toDto();
 }
 
+export function textEditorIdForDocument(documentId: string): string {
+  return `editor:${documentId}`;
+}
+
 export function textDocumentFromDto(dto: HostTextDocumentDto): StandaloneTextDocument {
   const uri = Uri.parse(dto.uri);
   return new StandaloneTextDocument(
@@ -176,7 +281,20 @@ export function textDocumentFromDto(dto: HostTextDocumentDto): StandaloneTextDoc
 }
 
 export function textEditorFromDto(dto: HostTextEditorDto, document?: StandaloneTextDocument): StandaloneTextEditor {
-  return new StandaloneTextEditor(document ?? textDocumentFromDto(dto.document), dto.viewColumn ?? ViewColumn.One);
+  const textDocument = document ?? textDocumentFromDto(dto.document);
+  return new StandaloneTextEditor(
+    dto.id || textEditorIdForDocument(textDocument.id),
+    textDocument,
+    dto.viewColumn ?? ViewColumn.One,
+    dto.selection ? selectionFromRangeDto(dto.selection) : undefined
+  );
+}
+
+export function selectionFromRangeDto(range: LanguageRangeDto): Selection {
+  return new Selection(
+    new Position(range.start.line, range.start.character),
+    new Position(range.end.line, range.end.character)
+  );
 }
 
 async function readFileDocument(uri: Uri, languageId = inferLanguageId(uri.fsPath)): Promise<StandaloneTextDocument> {
@@ -257,6 +375,53 @@ function lineBreakLength(content: string, offset: number): number {
     return 2;
   }
   return content[offset] === "\n" || content[offset] === "\r" ? 1 : 0;
+}
+
+function clampInteger(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) {
+    return min;
+  }
+  return Math.max(min, Math.min(Math.trunc(value), max));
+}
+
+function rangeFromEditLocation(location: Position | Range): Range {
+  if (isRangeLike(location)) {
+    return rangeFromValue(location);
+  }
+  const position = positionFromValue(location);
+  return new Range(position, position);
+}
+
+function rangeFromValue(value: unknown): Range {
+  if (value instanceof Range) {
+    return value;
+  }
+  if (value && typeof value === "object" && "start" in value && "end" in value) {
+    const range = value as { start: unknown; end: unknown };
+    return new Range(positionFromValue(range.start), positionFromValue(range.end));
+  }
+  throw new Error("Expected a Range");
+}
+
+function positionFromValue(value: unknown): Position {
+  if (value instanceof Position) {
+    return value;
+  }
+  if (isPositionLike(value)) {
+    const position = value as { line: unknown; character: unknown };
+    if (typeof position.line === "number" && typeof position.character === "number") {
+      return new Position(position.line, position.character);
+    }
+  }
+  throw new Error("Expected a Position");
+}
+
+function isRangeLike(value: unknown): value is { start: unknown; end: unknown } {
+  return Boolean(value && typeof value === "object" && "start" in value && "end" in value);
+}
+
+function isPositionLike(value: unknown): value is { line: unknown; character: unknown } {
+  return Boolean(value && typeof value === "object" && "line" in value && "character" in value);
 }
 
 function languageFromValue(value: unknown): string | undefined {

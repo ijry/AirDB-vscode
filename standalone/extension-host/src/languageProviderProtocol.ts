@@ -1,5 +1,6 @@
 import {
   type LanguageCompletionItemDto,
+  type LanguageCodeLensDto,
   type LanguageDocumentSymbolDto,
   type LanguageHoverDto,
   type LanguageMarkdownDto,
@@ -7,6 +8,7 @@ import {
   type LanguageRangeDto,
   type LanguageTextEditDto,
   type ProvideCompletionItemsResponse,
+  type ProvideCodeLensesResponse,
   type ProvideDocumentRangeFormattingEditsResponse,
   type ProvideDocumentSymbolsResponse,
   type ProvideHoverResponse
@@ -51,6 +53,14 @@ export function normalizeCompletionResults(results: unknown[]): ProvideCompletio
 export function normalizeHoverResults(results: unknown[]): ProvideHoverResponse {
   return {
     hovers: results.map(normalizeHover).filter(isDefined)
+  };
+}
+
+export function normalizeCodeLensResults(results: unknown[]): ProvideCodeLensesResponse {
+  return {
+    codeLenses: results.flatMap((result) =>
+      Array.isArray(result) ? result.map(normalizeCodeLens).filter(isDefined) : []
+    )
   };
 }
 
@@ -106,6 +116,21 @@ function normalizeHover(value: unknown): LanguageHoverDto | undefined {
   return omitUndefined({ contents, range: rangeToDto(hover.range) });
 }
 
+function normalizeCodeLens(value: unknown): LanguageCodeLensDto | undefined {
+  const codeLens = readRecord(value);
+  if (!codeLens) {
+    return undefined;
+  }
+  const range = rangeToDto(codeLens.range);
+  if (!range) {
+    return undefined;
+  }
+  return omitUndefined({
+    range,
+    command: normalizeCommand(codeLens.command)
+  });
+}
+
 function normalizeDocumentSymbol(value: unknown): LanguageDocumentSymbolDto | undefined {
   const symbol = readRecord(value);
   if (!symbol || typeof symbol.name !== "string" || typeof symbol.kind !== "number") {
@@ -135,6 +160,18 @@ function normalizeTextEdit(value: unknown): LanguageTextEditDto | undefined {
   }
   const range = rangeToDto(edit.range);
   return range ? { range, newText: edit.newText } : undefined;
+}
+
+function normalizeCommand(value: unknown): { command: string; title?: string; arguments?: unknown[] } | undefined {
+  const command = readRecord(value);
+  if (!command || typeof command.command !== "string") {
+    return undefined;
+  }
+  return omitUndefined({
+    command: command.command,
+    title: typeof command.title === "string" ? command.title : undefined,
+    arguments: Array.isArray(command.arguments) ? command.arguments : undefined
+  });
 }
 
 function normalizeHoverContents(value: unknown): Array<string | LanguageMarkdownDto> {

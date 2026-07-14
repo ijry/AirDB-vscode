@@ -2,15 +2,22 @@ import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createVscodeApi, FileSystemError, FileType } from "../src";
+import { createVscodeApi, EditorSessionRegistry, FileSystemError, FileType } from "../src";
 
-function createApi(options: { workspaceRoot?: string } = {}) {
+function createApi(options: { workspaceRoot?: string; editorSessionRegistry?: EditorSessionRegistry } = {}) {
   return createVscodeApi({
     extensionId: "fixture.one",
     extensionPath: "C:/fixture",
     workspaceRoot: options.workspaceRoot,
+    editorSessionRegistry: options.editorSessionRegistry,
     bridge: {
-      request: async () => undefined as never,
+      request: async (request) => {
+        if (request.group === "editor.showDocument") {
+          const payload = request.payload as { document: unknown; viewColumn?: number };
+          return { document: payload.document, viewColumn: payload.viewColumn } as never;
+        }
+        return undefined as never;
+      },
       notify: () => undefined
     }
   });
@@ -26,6 +33,35 @@ describe("workspace API", () => {
 
     expect(api.workspace.onDidChangeTextDocument(() => undefined)).toHaveProperty("dispose");
     expect(api.workspace.onDidSaveTextDocument(() => undefined)).toHaveProperty("dispose");
+  });
+
+  it("fires text document change events from the shared editor session registry", async () => {
+    const registry = new EditorSessionRegistry();
+    const api = createApi({ editorSessionRegistry: registry });
+    const events: unknown[] = [];
+    api.workspace.onDidChangeTextDocument((event: unknown) => events.push(event));
+    const document = await api.workspace.openTextDocument({ language: "sql", content: "select 1" });
+    await api.window.showTextDocument(document);
+
+    expect(registry.applyDocumentModelChange({
+      documentId: document.id,
+      content: "select 2",
+      changes: [{
+        range: { start: { line: 0, character: 7 }, end: { line: 0, character: 8 } },
+        rangeOffset: 7,
+        rangeLength: 1,
+        text: "2"
+      }]
+    })).toBe(true);
+
+    expect(events).toEqual([
+      expect.objectContaining({
+        document,
+        contentChanges: [expect.objectContaining({ text: "2", rangeOffset: 7, rangeLength: 1 })]
+      })
+    ]);
+    expect(document.version).toBe(2);
+    expect(document.getText()).toBe("select 2");
   });
 
   it("exposes a single synthetic workspace folder from the configured root", () => {

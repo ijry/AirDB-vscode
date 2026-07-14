@@ -16,6 +16,18 @@ const commandRequest = {
   group: "command.execute",
   payload: { command: "compat.fixture.run" }
 };
+const lifecycleCommandRequest = {
+  kind: "request",
+  id: "smoke-vscode-api-compat-editor-lifecycle",
+  group: "command.execute",
+  payload: { command: "compat.fixture.editorLifecycle" }
+};
+const lifecycleStatusRequest = {
+  kind: "request",
+  id: "smoke-vscode-api-compat-editor-lifecycle-status",
+  group: "command.execute",
+  payload: { command: "compat.fixture.editorLifecycleStatus" }
+};
 const sqlDocument = {
   id: "smoke-language-sql",
   uri: "file:///C:/workspace/query.sql",
@@ -83,6 +95,9 @@ const child = spawn(process.execPath, [hostEntry], {
 
 let sentCommand = false;
 let sentLanguageRequests = false;
+let sentLifecycleCommand = false;
+let sentLifecycleUiNotifications = false;
+let sentLifecycleStatus = false;
 let sawActivated = false;
 let sawContextMenu = false;
 let sawWebviewViewCreate = false;
@@ -94,6 +109,10 @@ let sawCompletion = false;
 let sawHover = false;
 let sawDocumentSymbols = false;
 let sawFormatting = false;
+let sawEditorSessionOpened = false;
+let sawEditorActiveChanged = false;
+let lifecycleCommandPayload;
+let sawEditorLifecycleStatus = false;
 let resolved = false;
 let stderr = "";
 let stdoutBuffer = "";
@@ -141,7 +160,7 @@ child.on("exit", (code) => {
 
 function sendCommandRequest() {
   if (!sentCommand) {
-    child.stdin.write(`${JSON.stringify(commandRequest)}\n`);
+    writeHostMessage(commandRequest);
     sentCommand = true;
   }
 }
@@ -149,10 +168,59 @@ function sendCommandRequest() {
 function sendLanguageRequests() {
   if (!sentLanguageRequests) {
     for (const request of languageRequests) {
-      child.stdin.write(`${JSON.stringify(request)}\n`);
+      writeHostMessage(request);
     }
     sentLanguageRequests = true;
   }
+}
+
+function sendLifecycleCommandRequest() {
+  if (!sentLifecycleCommand) {
+    writeHostMessage(lifecycleCommandRequest);
+    sentLifecycleCommand = true;
+  }
+}
+
+function sendLifecycleUiNotifications() {
+  if (sentLifecycleUiNotifications || !lifecycleCommandPayload?.firstEditorId) {
+    return;
+  }
+
+  writeHostMessage({
+    kind: "notification",
+    group: "editor.ui.activate",
+    payload: { editorId: lifecycleCommandPayload.firstEditorId }
+  });
+  writeHostMessage({
+    kind: "notification",
+    group: "editor.ui.selection",
+    payload: {
+      editorId: lifecycleCommandPayload.firstEditorId,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+    }
+  });
+  writeHostMessage({
+    kind: "notification",
+    group: "editor.ui.document",
+    payload: {
+      editorId: lifecycleCommandPayload.firstEditorId,
+      documentId: lifecycleCommandPayload.firstDocumentId,
+      content: "select lifecycle_one_edited"
+    }
+  });
+  sentLifecycleUiNotifications = true;
+  sendLifecycleStatusRequest();
+}
+
+function sendLifecycleStatusRequest() {
+  if (!sentLifecycleStatus) {
+    writeHostMessage(lifecycleStatusRequest);
+    sentLifecycleStatus = true;
+  }
+}
+
+function writeHostMessage(message) {
+  child.stdin.write(`${JSON.stringify(message)}\n`);
 }
 
 function handleStdoutLine(line) {
@@ -166,6 +234,10 @@ function handleStdoutLine(line) {
   }
 
   const message = JSON.parse(line);
+  if (message.kind === "request" && message.group === "editor.showDocument") {
+    handleEditorShowDocumentRequest(message);
+    return;
+  }
   if (
     message.kind === "notification" &&
     message.group === "extension.activated" &&
@@ -177,6 +249,16 @@ function handleStdoutLine(line) {
   }
   if (message.kind === "notification" && message.group === "extension.registerContributions") {
     sawContextMenu = hasEnabledCompatMenu(message.payload);
+    finishIfReady();
+    return;
+  }
+  if (message.kind === "notification" && message.group === "editor.session.opened") {
+    sawEditorSessionOpened = sawEditorSessionOpened || typeof message.payload?.id === "string";
+    finishIfReady();
+    return;
+  }
+  if (message.kind === "notification" && message.group === "editor.active.changed") {
+    sawEditorActiveChanged = sawEditorActiveChanged || typeof message.payload?.editorId === "string";
     finishIfReady();
     return;
   }
@@ -218,9 +300,39 @@ function handleStdoutLine(line) {
     handleLanguageResponse(message);
     return;
   }
+  if (message.kind === "response" && message.id === lifecycleCommandRequest.id) {
+    handleLifecycleCommandResponse(message);
+    return;
+  }
+  if (message.kind === "response" && message.id === lifecycleStatusRequest.id) {
+    handleLifecycleStatusResponse(message);
+    return;
+  }
   if (message.kind === "response" && message.id === commandRequest.id) {
     handleCommandResponse(message);
   }
+}
+
+function handleEditorShowDocumentRequest(message) {
+  const document = message.payload?.document;
+  if (!document?.id) {
+    void fail(`Invalid editor.showDocument smoke request: ${JSON.stringify(message.payload)}`);
+    return;
+  }
+
+  writeHostMessage({
+    kind: "response",
+    id: message.id,
+    group: message.group,
+    extensionId: message.extensionId,
+    ok: true,
+    payload: {
+      id: `editor:${document.id}`,
+      document,
+      ...(typeof message.payload?.viewColumn === "number" ? { viewColumn: message.payload.viewColumn } : {}),
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
+    }
+  });
 }
 
 function handleLanguageResponse(message) {
@@ -259,6 +371,36 @@ function handleCommandResponse(message) {
   }
 
   resolved = true;
+  sendLifecycleCommandRequest();
+  finishIfReady();
+}
+
+function handleLifecycleCommandResponse(message) {
+  if (!message.ok) {
+    void fail(message.error ?? "Editor lifecycle command failed.");
+    return;
+  }
+  if (!isValidLifecycleCommandPayload(message.payload)) {
+    void fail(`Unexpected editor lifecycle command payload: ${JSON.stringify(message.payload)}`);
+    return;
+  }
+
+  lifecycleCommandPayload = message.payload;
+  sendLifecycleUiNotifications();
+  finishIfReady();
+}
+
+function handleLifecycleStatusResponse(message) {
+  if (!message.ok) {
+    void fail(message.error ?? "Editor lifecycle status command failed.");
+    return;
+  }
+  if (!isValidLifecycleStatusPayload(message.payload)) {
+    void fail(`Unexpected editor lifecycle status payload: ${JSON.stringify(message.payload)}`);
+    return;
+  }
+
+  sawEditorLifecycleStatus = true;
   finishIfReady();
 }
 
@@ -289,6 +431,40 @@ function isValidCompatibilityPayload(payload) {
     payload.extension?.isActive === true &&
     payload.extension?.exports?.activated === true &&
     payload.extension?.exports?.fixture === "compat-extension"
+  );
+}
+
+function isValidLifecycleCommandPayload(payload) {
+  return (
+    typeof payload?.firstEditorId === "string" &&
+    payload.firstEditorId.startsWith("editor:") &&
+    typeof payload?.secondEditorId === "string" &&
+    payload.secondEditorId.startsWith("editor:") &&
+    payload.firstEditorId !== payload.secondEditorId &&
+    typeof payload?.firstDocumentId === "string" &&
+    typeof payload?.secondDocumentId === "string" &&
+    payload.activeTextEditorId === payload.secondEditorId &&
+    payload.firstSelection?.start?.line === 0 &&
+    payload.firstSelection?.end?.character === 0 &&
+    payload.secondSelection?.start?.line === 0 &&
+    payload.secondSelection?.end?.character === 0
+  );
+}
+
+function isValidLifecycleStatusPayload(payload) {
+  return (
+    lifecycleCommandPayload &&
+    payload?.activeEditorId === lifecycleCommandPayload.firstEditorId &&
+    payload?.activeDocumentId === lifecycleCommandPayload.firstDocumentId &&
+    payload?.activeChanges >= 3 &&
+    payload?.selectionChanges >= 1 &&
+    payload?.documentChanges >= 1 &&
+    payload?.lastChangedDocumentId === lifecycleCommandPayload.firstDocumentId &&
+    payload?.lastChangedVersion >= 2 &&
+    payload?.lastSelection?.start?.line === 0 &&
+    payload?.lastSelection?.start?.character === 0 &&
+    payload?.lastSelection?.end?.line === 0 &&
+    payload?.lastSelection?.end?.character === 6
   );
 }
 
@@ -374,10 +550,13 @@ function finishIfReady() {
     sawCompletion &&
     sawHover &&
     sawDocumentSymbols &&
-    sawFormatting
+    sawFormatting &&
+    sawEditorSessionOpened &&
+    sawEditorActiveChanged &&
+    sawEditorLifecycleStatus
   ) {
     clearTimeout(timeout);
-    console.log("Resolved VS Code API compatibility fixture through command IPC, webview view IPC, progress IPC, and language provider IPC.");
+    console.log("Resolved VS Code API compatibility fixture through command IPC, webview view IPC, progress IPC, language provider IPC, and editor lifecycle IPC.");
     child.kill();
   }
 }
@@ -416,6 +595,12 @@ function missingCheckpoints() {
     sawHover ? "" : "language.provideHover",
     sawDocumentSymbols ? "" : "language.provideDocumentSymbols",
     sawFormatting ? "" : "language.provideDocumentRangeFormattingEdits",
+    sentLifecycleCommand ? "" : "compat.fixture.editorLifecycle command",
+    sawEditorSessionOpened ? "" : "editor.session.opened",
+    sawEditorActiveChanged ? "" : "editor.active.changed",
+    sentLifecycleUiNotifications ? "" : "editor.ui activate/selection/document notifications",
+    sentLifecycleStatus ? "" : "compat.fixture.editorLifecycleStatus command",
+    sawEditorLifecycleStatus ? "" : "editor lifecycle event status",
     resolved ? "" : "compat command response"
   ].filter(Boolean);
 }

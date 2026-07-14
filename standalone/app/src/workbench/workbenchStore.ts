@@ -1,4 +1,7 @@
 import type {
+  LanguageRangeDto,
+} from "@airdb-standalone/protocol";
+import type {
   ActivityContainer,
   DialogState,
   EditorTab,
@@ -23,6 +26,9 @@ export type WorkbenchAction =
   | { type: "tree/updateChildren"; id: string; parentNodeId?: string; nodes: TreeViewState["nodes"] }
   | { type: "tree/loading"; id: string; nodeId?: string; loading: boolean }
   | { type: "editor/open"; editor: EditorTab }
+  | { type: "editor/activate"; id: string }
+  | { type: "editor/selection"; id: string; selection: LanguageRangeDto }
+  | { type: "editor/content"; documentId: string; version: number; content: string }
   | { type: "webview/open"; webview: WebviewState }
   | { type: "webview/html"; id: string; html: string }
   | { type: "webview/message"; id: string; message: unknown }
@@ -117,8 +123,28 @@ export function workbenchReducer(state: WorkbenchState, action: WorkbenchAction)
     case "editor/open":
       return {
         ...state,
-        editors: [...state.editors.filter((editor) => editor.id !== action.editor.id), action.editor],
+        editors: upsertEditor(state.editors, action.editor),
         activeEditorId: action.editor.id
+      };
+    case "editor/activate":
+      return state.editors.some((editor) => editor.id === action.id)
+        ? { ...state, activeEditorId: action.id }
+        : state;
+    case "editor/selection":
+      return {
+        ...state,
+        editors: state.editors.map((editor) =>
+          editor.id === action.id ? { ...editor, selection: action.selection } : editor
+        )
+      };
+    case "editor/content":
+      return {
+        ...state,
+        editors: state.editors.map((editor) =>
+          editor.documentId === action.documentId
+            ? { ...editor, content: action.content, version: action.version }
+            : editor
+        )
       };
     case "webview/open":
       return { ...state, webviews: upsertWebview(state.webviews, action.webview) };
@@ -318,6 +344,14 @@ function copyStateValue(value: unknown): unknown {
 
 function upsertWebview(webviews: WebviewState[], webview: WebviewState): WebviewState[] {
   return [...webviews.filter((candidate) => candidate.id !== webview.id), webview];
+}
+
+function upsertEditor(editors: EditorTab[], editor: EditorTab): EditorTab[] {
+  const existing = editors.find((candidate) => candidate.id === editor.id);
+  if (!existing) {
+    return [...editors, editor];
+  }
+  return editors.map((candidate) => candidate.id === editor.id ? { ...existing, ...editor } : candidate);
 }
 
 function updateWebviewHtml(webviews: WebviewState[], id: string, html: string): WebviewState[] {

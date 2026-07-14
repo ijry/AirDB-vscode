@@ -1,4 +1,5 @@
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -123,7 +124,7 @@ function handleCommandResponse(message) {
     void fail(`Unexpected asAbsolutePath payload: ${JSON.stringify(payload)}`);
     return;
   }
-  if (!samePath(payload.storagePath, path.join(expectedStorageRoot, "workspace"))) {
+  if (!samePath(payload.storagePath, path.join(expectedStorageRoot, "workspace", workspaceStorageKey(workspaceRoot)))) {
     void fail(`Unexpected storagePath payload: ${JSON.stringify(payload)}`);
     return;
   }
@@ -148,6 +149,13 @@ function samePath(actual, expected) {
 
 function normalizePath(value) {
   return path.resolve(value).replace(/\\/g, "/");
+}
+
+function workspaceStorageKey(workspaceRoot) {
+  const normalizedWorkspaceRoot = process.platform === "win32"
+    ? path.resolve(workspaceRoot).toLowerCase()
+    : path.resolve(workspaceRoot);
+  return createHash("sha256").update(normalizedWorkspaceRoot).digest("hex");
 }
 
 function missingCheckpoints() {

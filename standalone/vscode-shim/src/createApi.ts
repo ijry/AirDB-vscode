@@ -1,7 +1,8 @@
 import { CommandRegistry, createCommandsApi } from "./commands.js";
 import { AuthenticationRegistry, createAuthenticationApi } from "./authentication.js";
 import { WorkspaceConfigurationStore } from "./configuration.js";
-import { createEnvApi } from "./env.js";
+import { createEnvApi, resolveUiLanguage } from "./env.js";
+import { EditorSessionRegistry } from "./editorSessions.js";
 import { createExternalActionCommandHandler } from "./externalActions.js";
 import { ExtensionRegistry, createExtensionsApi, type ExtensionRegistryRecordInput } from "./extensions.js";
 import { createLanguagesApi, type LanguageProviderRegistry } from "./languages.js";
@@ -26,25 +27,33 @@ export interface VscodeApiOptions {
   workspaceRoot?: string;
   workspaceConfigurationStore?: WorkspaceConfigurationStore;
   languageProviderRegistry?: LanguageProviderRegistry;
+  editorSessionRegistry?: EditorSessionRegistry;
   unsupportedApiReporter?: UnsupportedApiReporter;
+  language?: string;
 }
 
 export function createVscodeApi(options: VscodeApiOptions) {
+  const language = resolveUiLanguage(options.language);
   const commandRegistry = options.commandRegistry ?? new CommandRegistry();
   const commands = createCommandsApi(
     commandRegistry,
     createExternalActionCommandHandler(options.extensionId, options.bridge)
   );
+  const editorSessionRegistry = options.editorSessionRegistry ?? new EditorSessionRegistry({
+    notify: (group, payload) => options.bridge.notify(group, payload)
+  });
 
   const reportUnsupportedApi = options.unsupportedApiReporter;
   const windowApi = createWindowApi({
     extensionId: options.extensionId,
     extensionPath: options.extensionPath,
-    bridge: options.bridge
+    bridge: options.bridge,
+    editorSessionRegistry
   });
   const workspaceApi = createWorkspaceApi(options.extensionId, options.bridge, {
     workspaceRoot: options.workspaceRoot,
-    configurationStore: options.workspaceConfigurationStore
+    configurationStore: options.workspaceConfigurationStore,
+    editorSessionRegistry
   });
 
   return {
@@ -53,12 +62,12 @@ export function createVscodeApi(options: VscodeApiOptions) {
     window: windowApi,
     workspace: workspaceApi,
     languages: createLanguagesApi(options.languageProviderRegistry),
-    env: createEnvApi(options.extensionId, options.bridge),
+    env: createEnvApi(options.extensionId, options.bridge, language),
     extensions: createExtensionsApi(options.extensions ?? []),
     authentication: createAuthenticationApi(options.authenticationRegistry, reportUnsupportedApi),
     tasks: createUnsupportedNamespace("tasks", reportUnsupportedApi),
     debug: createUnsupportedNamespace("debug", reportUnsupportedApi),
-    l10n: createL10nApi(),
+    l10n: createL10nApi({ extensionPath: options.extensionPath, language }),
     createContext() {
       return {
         subscriptions: [],

@@ -35,11 +35,41 @@ describe("workbenchReducer", () => {
   it("opens editors and updates active editor", () => {
     const state = workbenchReducer(initialWorkbenchState, {
       type: "editor/open",
-      editor: { id: "query-1", title: "Query", language: "sql", content: "select 1" }
+      editor: { id: "editor:query-1", documentId: "query-1", title: "Query", language: "sql", content: "select 1" }
     });
 
-    expect(state.activeEditorId).toBe("query-1");
+    expect(state.activeEditorId).toBe("editor:query-1");
     expect(state.editors[0].content).toBe("select 1");
+  });
+
+  it("updates editor active, selection, and document content state", () => {
+    const first = workbenchReducer(initialWorkbenchState, {
+      type: "editor/open",
+      editor: { id: "editor:query-1", documentId: "query-1", title: "Query 1", content: "select 1" }
+    });
+    const second = workbenchReducer(first, {
+      type: "editor/open",
+      editor: { id: "editor:query-2", documentId: "query-2", title: "Query 2", content: "select 2" }
+    });
+    const activated = workbenchReducer(second, { type: "editor/activate", id: "editor:query-1" });
+    const selected = workbenchReducer(activated, {
+      type: "editor/selection",
+      id: "editor:query-1",
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+    });
+    const changed = workbenchReducer(selected, {
+      type: "editor/content",
+      documentId: "query-1",
+      version: 2,
+      content: "select 42"
+    });
+
+    expect(changed.activeEditorId).toBe("editor:query-1");
+    expect(changed.editors.find((editor) => editor.id === "editor:query-1")).toMatchObject({
+      content: "select 42",
+      version: 2,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+    });
   });
 
   it("inserts child nodes under the requested parent", () => {

@@ -79,6 +79,19 @@ export class TreeViewRegistry {
     return true;
   }
 
+  async invokeMenuCommand(
+    viewId: string,
+    nodeId: string,
+    command: string,
+    args: unknown[] | undefined,
+    commandRegistry: CommandRegistry
+  ): Promise<boolean> {
+    const view = this.getView(viewId);
+    const node = this.getNode(view, nodeId);
+    await commandRegistry.executeCommand(command, node.element, ...(args ?? []));
+    return true;
+  }
+
   private async createNode(view: TreeViewRecord, element: unknown): Promise<HostTreeNodeDto> {
     const item = await Promise.resolve(view.provider.getTreeItem(element));
     const id = `${view.viewId}:${view.nextNodeId++}`;

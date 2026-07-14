@@ -33,7 +33,12 @@ describe("text editor bridge", () => {
     const request = editorRequest({ document, viewColumn: 2 });
 
     expect(createTextEditorResponse(request)).toEqual(
-      createResponse(request, { document, viewColumn: 2 })
+      createResponse(request, {
+        id: "editor:document-1",
+        document,
+        viewColumn: 2,
+        selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
+      })
     );
   });
 
@@ -46,7 +51,12 @@ describe("text editor bridge", () => {
     })).resolves.toBe(true);
 
     expect(responses).toEqual([
-      createResponse(request, { document, viewColumn: 1 })
+      createResponse(request, {
+        id: "editor:document-1",
+        document,
+        viewColumn: 1,
+        selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
+      })
     ]);
   });
 

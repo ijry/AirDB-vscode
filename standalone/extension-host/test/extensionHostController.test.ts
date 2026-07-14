@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   CommandRegistry,
+  CodeLens,
   CompletionItem,
   CompletionItemKind,
+  EditorSessionRegistry,
   LanguageProviderRegistry,
   Position,
+  Range,
   createLanguagesApi
 } from "@airdb-standalone/vscode-shim";
-import { createRequest, type HostTextDocumentDto } from "@airdb-standalone/protocol";
+import { createNotification, createRequest, type HostTextDocumentDto } from "@airdb-standalone/protocol";
 import { ExtensionHostController } from "../src/extensionHostController";
 import { TreeViewRegistry } from "../src/treeViewRegistry";
 import { WebviewRegistry } from "../src/webviewRegistry";
@@ -74,6 +77,81 @@ describe("ExtensionHostController", () => {
     expect(received).toEqual([{ type: "init" }]);
   });
 
+  it("dispatches contributed tree menu commands with the source node", async () => {
+    const node = { id: "connection-1", label: "Local" };
+    const received: unknown[] = [];
+    const commands = new CommandRegistry();
+    commands.registerCommand("fixture.open", (...args: unknown[]) => received.push(args));
+    const treeViewRegistry = new TreeViewRegistry();
+    treeViewRegistry.registerTreeView("fixture.view", {
+      treeDataProvider: {
+        getChildren: () => [node],
+        getTreeItem: (element: typeof node) => ({
+          label: element.label,
+          collapsibleState: 0,
+          contextValue: "connection"
+        })
+      }
+    });
+    const controller = new ExtensionHostController({
+      commandRegistry: commands,
+      treeViewRegistry
+    });
+    const resolved = await controller.handleMessage(
+      createRequest("tree.resolveChildren", { viewId: "fixture.view" })
+    );
+    const nodeId = (resolved?.payload as { nodes: Array<{ id: string }> }).nodes[0].id;
+
+    const response = await controller.handleMessage(
+      createRequest("tree.invokeMenuCommand", {
+        viewId: "fixture.view",
+        nodeId,
+        command: "fixture.open",
+        arguments: ["extra"]
+      })
+    );
+
+    expect(response).toMatchObject({ kind: "response", ok: true, payload: { invoked: true } });
+    expect(received).toEqual([[node, "extra"]]);
+  });
+
+  it("dispatches editor UI lifecycle notifications into the shared registry", async () => {
+    const editorSessionRegistry = new EditorSessionRegistry();
+    const editorOne = editorSessionRegistry.openOrShowDocument(sqlDocument("document-one"));
+    const editorTwo = editorSessionRegistry.openOrShowDocument(sqlDocument("document-two"));
+    const controller = new ExtensionHostController({
+      commandRegistry: new CommandRegistry(),
+      treeViewRegistry: new TreeViewRegistry(),
+      editorSessionRegistry
+    });
+
+    expect(editorSessionRegistry.activeTextEditor).toBe(editorTwo);
+
+    await expect(controller.handleMessage(createNotification("editor.ui.activate", {
+      editorId: editorOne.id
+    }))).resolves.toBeUndefined();
+    await expect(controller.handleMessage(createNotification("editor.ui.selection", {
+      editorId: editorOne.id,
+      selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
+    }))).resolves.toBeUndefined();
+    await expect(controller.handleMessage(createNotification("editor.ui.activate", {
+      editorId: "editor:missing"
+    }))).resolves.toBeUndefined();
+    await expect(controller.handleMessage(createNotification("editor.ui.document", {
+      editorId: editorOne.id,
+      content: "select from ui"
+    }))).resolves.toBeUndefined();
+    await expect(controller.handleMessage(createNotification("editor.ui.document", {
+      editorId: "editor:missing",
+      content: "ignored"
+    }))).resolves.toBeUndefined();
+
+    expect(editorSessionRegistry.activeTextEditor).toBe(editorOne);
+    expect(editorOne.selection.end).toEqual(new Position(0, 6));
+    expect(editorOne.document.getText()).toBe("select from ui");
+    expect(editorOne.document.version).toBe(2);
+  });
+
   it("dispatches language completion requests", async () => {
     const languageProviderRegistry = new LanguageProviderRegistry();
     createLanguagesApi(languageProviderRegistry).registerCompletionItemProvider("sql", {
@@ -104,6 +182,43 @@ describe("ExtensionHostController", () => {
       payload: {
         items: [{ label: "select", kind: CompletionItemKind.Keyword, detail: "SQL keyword" }],
         isIncomplete: false
+      }
+    });
+  });
+
+  it("dispatches language CodeLens requests", async () => {
+    const languageProviderRegistry = new LanguageProviderRegistry();
+    createLanguagesApi(languageProviderRegistry).registerCodeLensProvider("sql", {
+      provideCodeLenses(document) {
+        expect(document.getText()).toBe("select 1");
+        return [
+          new CodeLens(
+            new Range(new Position(0, 0), new Position(0, 8)),
+            { command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] }
+          )
+        ];
+      }
+    });
+    const controller = new ExtensionHostController({
+      commandRegistry: new CommandRegistry(),
+      treeViewRegistry: new TreeViewRegistry(),
+      languageProviderRegistry
+    });
+
+    const response = await controller.handleMessage(
+      createRequest("language.provideCodeLenses", {
+        document: sqlDocument()
+      })
+    );
+
+    expect(response).toMatchObject({
+      kind: "response",
+      ok: true,
+      payload: {
+        codeLenses: [{
+          range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+          command: { command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] }
+        }]
       }
     });
   });
@@ -153,13 +268,13 @@ describe("ExtensionHostController", () => {
   });
 });
 
-function sqlDocument(): HostTextDocumentDto {
+function sqlDocument(id = "document-sql"): HostTextDocumentDto {
   return {
-    id: "document-sql",
-    uri: "file:///C:/workspace/query.sql",
+    id,
+    uri: `file:///C:/workspace/${id}.sql`,
     fsPath: "C:/workspace/query.sql",
     fileName: "C:/workspace/query.sql",
-    title: "query.sql",
+    title: `${id}.sql`,
     languageId: "sql",
     content: "select 1",
     isUntitled: false,

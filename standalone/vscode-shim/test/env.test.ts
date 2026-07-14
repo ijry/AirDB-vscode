@@ -3,18 +3,19 @@ import type { HostRequest } from "@airdb-standalone/protocol";
 import { createVscodeApi } from "../src";
 
 describe("env API", () => {
-  it("provides a VS Code compatible UI language string", () => {
+  it("provides a normalized VS Code compatible UI language string", () => {
     const api = createVscodeApi({
       extensionId: "fixture.one",
       extensionPath: "C:/fixture",
+      language: "zh_CN",
       bridge: {
         request: async () => undefined as never,
         notify: () => undefined
       }
     });
 
-    expect(api.env.language).toBe("en");
-    expect(api.env.language.startsWith("zh-")).toBe(false);
+    expect(api.env.language).toBe("zh-cn");
+    expect(api.env.language.startsWith("zh-")).toBe(true);
   });
 
   it("routes openExternal through external.openUri", async () => {

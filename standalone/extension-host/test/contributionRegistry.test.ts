@@ -49,6 +49,40 @@ describe("ContributionRegistry", () => {
       "fixture.role": "admin"
     });
   });
+
+  it("keeps view-scoped menus for frontend filtering and enriches command titles", () => {
+    const registry = new ContributionRegistry();
+    registry.register({
+      name: "hello-extension",
+      publisher: "fixture",
+      contributes: {
+        commands: [
+          { command: "fixture.add", title: "Add Connection", category: "Fixture" },
+          { command: "fixture.open", title: "Open Connection" }
+        ],
+        menus: {
+          "view/title": [
+            { command: "fixture.add", when: "view =~ /fixture\\.view/" }
+          ],
+          "view/item/context": [
+            { command: "fixture.open", when: "view == fixture.view && viewItem =~ /connection/" }
+          ]
+        }
+      }
+    });
+
+    expect(registry.toPayload().menus["view/title"]).toEqual([
+      {
+        command: "fixture.add",
+        title: "Add Connection",
+        category: "Fixture",
+        icon: undefined,
+        when: "view =~ /fixture\\.view/",
+        extensionId: "fixture.hello-extension"
+      }
+    ]);
+    expect(menuCommands(registry.toPayload().menus["view/item/context"])).toEqual(["fixture.open"]);
+  });
 });
 
 function menuCommands(items: Array<Record<string, unknown>> | undefined): unknown[] {

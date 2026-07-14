@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createResponse, type HostMessage } from "@airdb-standalone/protocol";
+import { createNotification, createResponse, type HostMessage } from "@airdb-standalone/protocol";
 import { createHostBridge, parseHostMessagePayload } from "./hostBridge";
 
 describe("createHostBridge", () => {
@@ -61,6 +61,22 @@ describe("createHostBridge", () => {
     await bridge.sendHostResponse(response);
 
     expect(JSON.parse(sent[0])).toEqual(response);
+  });
+
+  it("sends host notifications through the active transport", async () => {
+    const sent: string[] = [];
+    const bridge = createHostBridge({
+      listen: async () => () => undefined,
+      send: async (message) => {
+        sent.push(message);
+      }
+    });
+
+    await bridge.sendHostNotification("editor.ui.activate", { editorId: "editor:document-1" });
+
+    expect(JSON.parse(sent[0])).toEqual(
+      createNotification("editor.ui.activate", { editorId: "editor:document-1" })
+    );
   });
 
   it("ignores JSON payloads that do not match the host protocol shape", () => {

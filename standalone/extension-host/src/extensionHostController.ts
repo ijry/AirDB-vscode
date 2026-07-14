@@ -1,11 +1,17 @@
 import {
   createErrorResponse,
   createResponse,
+  type EditorUiActivatePayload,
+  type EditorUiSelectionPayload,
+  type EditorUiDocumentPayload,
   type ExecuteCommandPayload,
   type HostMessage,
+  type HostNotification,
   type HostRequest,
   type HostResponse,
   type InvokeTreeItemCommandPayload,
+  type InvokeTreeMenuCommandPayload,
+  type ProvideCodeLensesPayload,
   type ProvideCompletionItemsPayload,
   type ProvideDocumentRangeFormattingEditsPayload,
   type ProvideDocumentSymbolsPayload,
@@ -13,8 +19,14 @@ import {
   type ResolveTreeChildrenPayload,
   type WebviewReceiveMessagePayload
 } from "@airdb-standalone/protocol";
-import { textDocumentFromDto, type CommandRegistry, type LanguageProviderRegistry } from "@airdb-standalone/vscode-shim";
 import {
+  textDocumentFromDto,
+  type CommandRegistry,
+  type EditorSessionRegistry,
+  type LanguageProviderRegistry
+} from "@airdb-standalone/vscode-shim";
+import {
+  normalizeCodeLensResults,
   normalizeCompletionResults,
   normalizeDocumentRangeFormattingResults,
   normalizeDocumentSymbolResults,
@@ -30,6 +42,7 @@ export interface ExtensionHostControllerOptions {
   treeViewRegistry: TreeViewRegistry;
   webviewRegistry?: WebviewRegistry;
   languageProviderRegistry?: LanguageProviderRegistry;
+  editorSessionRegistry?: EditorSessionRegistry;
 }
 
 export class ExtensionHostController {
@@ -37,6 +50,9 @@ export class ExtensionHostController {
 
   async handleMessage(message: HostMessage): Promise<HostResponse | undefined> {
     if (message.kind !== "request") {
+      if (message.kind === "notification") {
+        this.handleNotification(message);
+      }
       return undefined;
     }
 
@@ -44,6 +60,38 @@ export class ExtensionHostController {
       return createResponse(message, await this.handleRequest(message));
     } catch (error) {
       return createErrorResponse(message, error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  private handleNotification(notification: HostNotification): void {
+    switch (notification.group) {
+      case "editor.ui.activate": {
+        const payload = notification.payload as EditorUiActivatePayload;
+        this.options.editorSessionRegistry?.activateEditor(payload.editorId, "ui");
+        break;
+      }
+      case "editor.ui.selection": {
+        const payload = notification.payload as EditorUiSelectionPayload;
+        this.options.editorSessionRegistry?.setSelection(payload.editorId, payload.selection, "ui");
+        break;
+      }
+      case "editor.ui.document": {
+        const payload = notification.payload as EditorUiDocumentPayload;
+        const registry = this.options.editorSessionRegistry;
+        const editor = registry?.getEditor(payload.editorId);
+        if (!registry || !editor) {
+          break;
+        }
+        registry.applyDocumentModelChange({
+          documentId: editor.document.id,
+          content: payload.content,
+          ...(payload.version !== undefined ? { version: payload.version } : {}),
+          ...(payload.changes ? { changes: payload.changes } : {})
+        }, "ui");
+        break;
+      }
+      default:
+        break;
     }
   }
 
@@ -58,6 +106,17 @@ export class ExtensionHostController {
         const invoked = await this.options.treeViewRegistry.invokeNodeCommand(
           payload.viewId,
           payload.nodeId,
+          this.options.commandRegistry
+        );
+        return { invoked };
+      }
+      case "tree.invokeMenuCommand": {
+        const payload = request.payload as InvokeTreeMenuCommandPayload;
+        const invoked = await this.options.treeViewRegistry.invokeMenuCommand(
+          payload.viewId,
+          payload.nodeId,
+          payload.command,
+          payload.arguments,
           this.options.commandRegistry
         );
         return { invoked };
@@ -93,6 +152,12 @@ export class ExtensionHostController {
           positionFromDto(payload.position)
         );
         return normalizeHoverResults(results);
+      }
+      case "language.provideCodeLenses": {
+        const registry = this.requireLanguageProviderRegistry();
+        const payload = request.payload as ProvideCodeLensesPayload;
+        const results = await registry.provideCodeLenses(textDocumentFromDto(payload.document));
+        return normalizeCodeLensResults(results);
       }
       case "language.provideDocumentSymbols": {
         const registry = this.requireLanguageProviderRegistry();
