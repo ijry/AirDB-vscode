@@ -187,9 +187,13 @@ describe("mapHostMessageToActions", () => {
         editor: {
           id: "editor:document-1",
           documentId: "document-1",
+          uri: "untitled:///Untitled-1.sql",
+          fsPath: undefined,
+          fileName: "untitled:Untitled-1.sql",
           title: "Untitled-1.sql",
           language: "sql",
           content: "select 1",
+          isUntitled: true,
           version: 1,
           selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
         }
@@ -222,9 +226,13 @@ describe("mapHostMessageToActions", () => {
         editor: {
           id: "editor:document-1",
           documentId: "document-1",
+          uri: "untitled:///Untitled-1.sql",
+          fsPath: undefined,
+          fileName: "untitled:Untitled-1.sql",
           title: "Untitled-1.sql",
           language: "sql",
           content: "select 1",
+          isUntitled: true,
           version: 1,
           selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
         }

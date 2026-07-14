@@ -53,6 +53,12 @@ export class LanguageProviderRegistry {
     );
   }
 
+  provideCodeLenses(document: TextDocumentLike, token = createCancellationToken()): Promise<unknown[]> {
+    return this.invokeMatching("codeLens", document, (provider) =>
+      callProvider(provider, "provideCodeLenses", [document, token])
+    );
+  }
+
   provideDocumentSymbols(document: TextDocumentLike, token = createCancellationToken()): Promise<unknown[]> {
     return this.invokeMatching("documentSymbol", document, (provider) =>
       callProvider(provider, "provideDocumentSymbols", [document, token])

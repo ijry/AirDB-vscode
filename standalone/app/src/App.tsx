@@ -1,7 +1,10 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import {
   createResponse,
+  type HostCommandDto,
   type HostMessage,
+  type HostTextDocumentDto,
+  type LanguageCodeLensDto,
   type LanguageRangeDto,
   type HostResponse,
   type ResolveTreeChildrenResponse
@@ -9,6 +12,7 @@ import {
 import { respondToExternalActionRequest } from "./bridge/externalActions";
 import { handleFileDialogRequest } from "./bridge/fileDialogs";
 import { listenToHostMessages, sendHostNotification, sendHostRequest, sendHostResponse } from "./bridge/hostBridge";
+import { languageProviderBridge } from "./bridge/languageProviders";
 import { mapHostMessageToActions } from "./bridge/messageHandlers";
 import { respondToTextEditorRequest } from "./bridge/textEditors";
 import { ActivityBar } from "./workbench/ActivityBar";
@@ -21,8 +25,9 @@ import { SideBar } from "./workbench/SideBar";
 import { StatusBar } from "./workbench/StatusBar";
 import { TerminalPanel } from "./workbench/TerminalPanel";
 import { WebviewPanel } from "./workbench/WebviewPanel";
+import type { VisibleMenuItem } from "./workbench/menus";
 import { initialWorkbenchState, workbenchReducer, type WorkbenchAction } from "./workbench/workbenchStore";
-import type { DialogState, NotificationState, StatusBarItemState } from "./workbench/types";
+import type { DialogState, EditorTab, NotificationState, StatusBarItemState } from "./workbench/types";
 
 export async function respondToNotification(
   notification: NotificationState,
@@ -94,6 +99,8 @@ export async function executeStatusBarCommand(
 
 export function App() {
   const [state, dispatch] = useReducer(workbenchReducer, initialWorkbenchState);
+  const [editorCodeLenses, setEditorCodeLenses] = useState<Record<string, LanguageCodeLensDto[]>>({});
+  const activeEditor = state.editors.find((editor) => editor.id === state.activeEditorId) ?? state.editors[0];
 
   async function resolveTreeChildren(viewId: string, nodeId?: string) {
     dispatch({ type: "tree/loading", id: viewId, nodeId, loading: true });
@@ -138,6 +145,44 @@ export function App() {
     }
   }
 
+  async function executeViewMenuCommand(item: VisibleMenuItem) {
+    try {
+      await sendHostRequest("command.execute", {
+        command: item.command,
+        arguments: Array.isArray(item.arguments) ? item.arguments : []
+      }, item.extensionId, 10000);
+    } catch (error) {
+      dispatch({
+        type: "notification/show",
+        notification: {
+          id: `view-menu-command-error-${Date.now()}`,
+          level: "error",
+          message: error instanceof Error ? error.message : `Failed to execute command ${item.command}`
+        }
+      });
+    }
+  }
+
+  async function executeTreeMenuCommand(viewId: string, nodeId: string, item: VisibleMenuItem) {
+    try {
+      await sendHostRequest<{ invoked: boolean }>("tree.invokeMenuCommand", {
+        viewId,
+        nodeId,
+        command: item.command,
+        arguments: Array.isArray(item.arguments) ? item.arguments : []
+      }, item.extensionId, 10000);
+    } catch (error) {
+      dispatch({
+        type: "notification/show",
+        notification: {
+          id: `tree-menu-command-error-${Date.now()}`,
+          level: "error",
+          message: error instanceof Error ? error.message : `Failed to execute command ${item.command}`
+        }
+      });
+    }
+  }
+
   function reportEditorNotificationError(error: unknown, fallback: string) {
     dispatch({
       type: "notification/show",
@@ -161,6 +206,44 @@ export function App() {
     void sendHostNotification("editor.ui.selection", { editorId, selection }).catch((error: unknown) => {
       reportEditorNotificationError(error, `Failed to update editor selection ${editorId}`);
     });
+  }
+
+  function updateEditorContent(editorId: string, content: string) {
+    const editor = state.editors.find((candidate) => candidate.id === editorId);
+    if (!editor) {
+      return;
+    }
+    dispatch({
+      type: "editor/content",
+      documentId: editor.documentId,
+      version: editor.version ?? 1,
+      content
+    });
+    void sendHostNotification("editor.ui.document", {
+      editorId,
+      documentId: editor.documentId,
+      content
+    }).catch((error: unknown) => {
+      reportEditorNotificationError(error, `Failed to update editor content ${editorId}`);
+    });
+  }
+
+  async function executeCodeLensCommand(command: HostCommandDto) {
+    try {
+      await sendHostRequest("command.execute", {
+        command: command.command,
+        arguments: command.arguments ?? []
+      }, undefined, 10000);
+    } catch (error) {
+      dispatch({
+        type: "notification/show",
+        notification: {
+          id: `codelens-command-error-${Date.now()}`,
+          level: "error",
+          message: error instanceof Error ? error.message : `Failed to execute CodeLens command ${command.command}`
+        }
+      });
+    }
   }
 
   async function respondToDialog(dialog: DialogState, value: unknown) {
@@ -249,6 +332,12 @@ export function App() {
           void resolveTreeChildren(payload.viewId);
         }
       }
+      if (message.kind === "notification" && message.group === "tree.refresh") {
+        const payload = message.payload as { viewId?: string; disposed?: boolean };
+        if (payload.viewId && !payload.disposed) {
+          void resolveTreeChildren(payload.viewId);
+        }
+      }
     }).then((disposeListener) => {
       if (disposed) {
         disposeListener();
@@ -272,6 +361,34 @@ export function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!activeEditor) {
+      return;
+    }
+
+    let disposed = false;
+    const document = editorTabToTextDocumentDto(activeEditor);
+    void languageProviderBridge.provideCodeLenses({ document }, undefined, 10000).then((response) => {
+      if (!disposed) {
+        setEditorCodeLenses((current) => ({
+          ...current,
+          [activeEditor.id]: response.codeLenses
+        }));
+      }
+    }).catch(() => {
+      if (!disposed) {
+        setEditorCodeLenses((current) => ({
+          ...current,
+          [activeEditor.id]: []
+        }));
+      }
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [activeEditor?.id, activeEditor?.content, activeEditor?.version, activeEditor?.language]);
+
   return (
     <main className="app-shell">
       <ActivityBar state={state} dispatch={dispatch} />
@@ -280,12 +397,17 @@ export function App() {
         dispatch={dispatch}
         onResolveChildren={(viewId, nodeId) => void resolveTreeChildren(viewId, nodeId)}
         onInvokeNode={(viewId, nodeId) => void invokeTreeNode(viewId, nodeId)}
+        onExecuteViewCommand={(item) => void executeViewMenuCommand(item)}
+        onExecuteNodeCommand={(viewId, nodeId, item) => void executeTreeMenuCommand(viewId, nodeId, item)}
       />
       <section className="editor-area">
         <EditorTabs
           state={state}
           onActivateEditor={activateEditor}
           onSelectionChange={updateEditorSelection}
+          onContentChange={updateEditorContent}
+          codeLenses={activeEditor ? editorCodeLenses[activeEditor.id] ?? [] : []}
+          onCodeLensCommand={(command) => void executeCodeLensCommand(command)}
         />
         <WebviewPanel state={state} />
         <OutputPanel state={state} />
@@ -304,4 +426,19 @@ export function App() {
       />
     </main>
   );
+}
+
+function editorTabToTextDocumentDto(editor: EditorTab): HostTextDocumentDto {
+  const uri = editor.uri ?? `untitled:/${editor.title}`;
+  return {
+    id: editor.documentId,
+    uri,
+    ...(editor.fsPath ? { fsPath: editor.fsPath } : {}),
+    fileName: editor.fileName ?? editor.fsPath ?? editor.title,
+    title: editor.title,
+    languageId: editor.language ?? "plaintext",
+    content: editor.content,
+    isUntitled: editor.isUntitled ?? uri.startsWith("untitled:"),
+    version: editor.version ?? 1
+  };
 }

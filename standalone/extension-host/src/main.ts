@@ -12,7 +12,7 @@ import { startStdinMessageLoop } from "./stdinMessageLoop.js";
 import { TreeViewRegistry } from "./treeViewRegistry.js";
 import { WebviewRegistry } from "./webviewRegistry.js";
 
-const standaloneRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const standaloneRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const extensionsDir = process.env.AIRDB_STANDALONE_EXTENSIONS ?? path.join(standaloneRoot, "extensions");
 const storageRoot = process.env.AIRDB_STANDALONE_STORAGE ?? path.join(standaloneRoot, ".data");
 const workspaceRoot = process.env.AIRDB_STANDALONE_WORKSPACE ?? standaloneRoot;

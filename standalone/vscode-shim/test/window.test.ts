@@ -77,6 +77,43 @@ describe("window IPC API", () => {
     expect(notifications).toEqual([]);
   });
 
+  it("notifies the host when a registered tree view refreshes", () => {
+    const notifications: Array<{ group: HostMessageGroup; payload: unknown; extensionId?: string }> = [];
+    let listener: ((element?: unknown) => void) | undefined;
+    const api = createVscodeApi({
+      extensionId: "fixture.one",
+      extensionPath: "C:/fixture",
+      bridge: {
+        request: async () => undefined as never,
+        notify: (group, payload, extensionId) => notifications.push({ group, payload, extensionId }),
+        registerTreeView: () => undefined
+      }
+    });
+
+    const view = api.window.createTreeView("fixture.view", {
+      treeDataProvider: {
+        getChildren: () => [],
+        onDidChangeTreeData: (registeredListener: (element?: unknown) => void) => {
+          listener = registeredListener;
+          return { dispose: vi.fn() };
+        }
+      }
+    });
+
+    listener?.();
+
+    expect(notifications).toEqual([
+      { group: "tree.refresh", payload: { viewId: "fixture.view" }, extensionId: "fixture.one" }
+    ]);
+
+    view.dispose();
+    expect(notifications.at(-1)).toEqual({
+      group: "tree.refresh",
+      payload: { viewId: "fixture.view", disposed: true },
+      extensionId: "fixture.one"
+    });
+  });
+
   it("falls back to a JSON-safe tree creation notification", () => {
     const notifications: Array<{ group: HostMessageGroup; payload: unknown }> = [];
     const api = createVscodeApi({
@@ -425,7 +462,7 @@ describe("window IPC API", () => {
       "editor.session.opened",
       "editor.active.changed"
     ]);
-    await expect(editor.edit(() => undefined)).resolves.toBe(false);
+    await expect(editor.edit(() => undefined)).resolves.toBe(true);
   });
 
   it("updates activeTextEditor and fires active editor events after showTextDocument", async () => {

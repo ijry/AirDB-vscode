@@ -57,6 +57,14 @@ body {
   font-weight: 700;
 }
 
+.tree-view-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 4px 16px;
+}
+
+.tree-view-header h2,
 .tree-view h2,
 .webview-panel h2,
 .terminal-panel h2,
@@ -68,9 +76,26 @@ body {
   color: #8fb4c6;
 }
 
+.tree-view-header h2 {
+  margin: 0;
+}
+
+.tree-view-actions,
+.tree-node-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.tree-row {
+  display: flex;
+  align-items: center;
+}
+
 .tree-node {
   display: flex;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   align-items: center;
   gap: 6px;
   border: 0;
@@ -83,6 +108,34 @@ body {
 
 .tree-node:hover {
   background: #203340;
+}
+
+.tree-view-action,
+.tree-node-action {
+  border: 1px solid #314b5c;
+  border-radius: 8px;
+  color: #dbe7ef;
+  background: #1d303c;
+  cursor: pointer;
+  font-size: 11px;
+  line-height: 1;
+  padding: 5px 7px;
+  white-space: nowrap;
+}
+
+.tree-node-action {
+  opacity: 0;
+}
+
+.tree-row:hover .tree-node-action,
+.tree-node-action:focus {
+  opacity: 1;
+}
+
+.tree-view-action:hover,
+.tree-node-action:hover {
+  border-color: #78c6a3;
+  background: #244c43;
 }
 
 .tree-twistie {
@@ -128,7 +181,7 @@ body {
 
 .editor-textarea {
   width: 100%;
-  height: calc(100% - 39px);
+  height: calc(100% - 75px);
   box-sizing: border-box;
   border: 0;
   padding: 18px;
@@ -136,6 +189,27 @@ body {
   color: #dbe7ef;
   background: #101820;
   font: 14px/1.6 "Cascadia Code", "Consolas", monospace;
+}
+
+.editor-codelens-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-top: 1px solid #29404f;
+  background: #13212b;
+}
+
+.editor-codelens {
+  color: #9dd4f0;
+  background: transparent;
+  border: 0;
+  font-size: 12px;
+}
+
+.editor-codelens:disabled {
+  color: #5f7f8f;
 }
 
 .webview-stack {

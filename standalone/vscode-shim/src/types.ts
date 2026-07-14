@@ -269,10 +269,26 @@ export class Position {
 }
 
 export class Range {
+  readonly start: Position;
+  readonly end: Position;
+
+  constructor(start: Position, end: Position);
+  constructor(startLine: number, startCharacter: number, endLine: number, endCharacter: number);
   constructor(
-    public readonly start: Position,
-    public readonly end: Position
-  ) {}
+    startOrLine: Position | number,
+    endOrCharacter: Position | number,
+    endLine?: number,
+    endCharacter?: number
+  ) {
+    const [start, end] = rangePositionsFromArgs(startOrLine, endOrCharacter, endLine, endCharacter);
+    if (end.isBefore(start)) {
+      this.start = end;
+      this.end = start;
+    } else {
+      this.start = start;
+      this.end = end;
+    }
+  }
 
   get isEmpty(): boolean {
     return this.start.isEqual(this.end);
@@ -291,9 +307,49 @@ export class Range {
 }
 
 export class Selection extends Range {
-  constructor(anchor: Position, active: Position) {
+  readonly anchor: Position;
+  readonly active: Position;
+
+  constructor(anchor: Position, active: Position);
+  constructor(anchorLine: number, anchorCharacter: number, activeLine: number, activeCharacter: number);
+  constructor(
+    anchorOrLine: Position | number,
+    activeOrCharacter: Position | number,
+    activeLine?: number,
+    activeCharacter?: number
+  ) {
+    const [anchor, active] = rangePositionsFromArgs(anchorOrLine, activeOrCharacter, activeLine, activeCharacter);
     super(anchor, active);
+    this.anchor = anchor;
+    this.active = active;
   }
+
+  get isReversed(): boolean {
+    return this.active.isBefore(this.anchor);
+  }
+}
+
+function rangePositionsFromArgs(
+  startOrLine: Position | number,
+  endOrCharacter: Position | number,
+  endLine?: number,
+  endCharacter?: number
+): [Position, Position] {
+  if (startOrLine instanceof Position && endOrCharacter instanceof Position) {
+    return [startOrLine, endOrCharacter];
+  }
+  if (
+    typeof startOrLine === "number" &&
+    typeof endOrCharacter === "number" &&
+    typeof endLine === "number" &&
+    typeof endCharacter === "number"
+  ) {
+    return [
+      new Position(startOrLine, endOrCharacter),
+      new Position(endLine, endCharacter)
+    ];
+  }
+  throw new Error("Range and Selection constructors require two Positions or four numbers");
 }
 
 export enum TreeItemCollapsibleState {
@@ -395,8 +451,10 @@ export class CompletionList {
 }
 
 export class CodeLens {
-  command?: { command: string; title: string; arguments?: unknown[] };
-  constructor(public range: Range) {}
+  constructor(
+    public range: Range,
+    public command?: { command: string; title: string; arguments?: unknown[] }
+  ) {}
 }
 
 export class MarkdownString {

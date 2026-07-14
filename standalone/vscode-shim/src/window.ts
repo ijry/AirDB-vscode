@@ -218,6 +218,13 @@ export function createWindowApi(options: WindowApiOptions) {
     },
 
     createTreeView(viewId: string, treeOptions: unknown) {
+      const provider = (treeOptions as { treeDataProvider?: { onDidChangeTreeData?: (listener: (element?: unknown) => void) => { dispose(): void } } } | undefined)?.treeDataProvider;
+      const refreshSubscription = typeof provider?.onDidChangeTreeData === "function"
+        ? provider.onDidChangeTreeData(() => {
+            options.bridge.notify("tree.refresh", { viewId }, options.extensionId);
+          })
+        : undefined;
+
       if (options.bridge.registerTreeView) {
         options.bridge.registerTreeView(viewId, treeOptions, options.extensionId);
       } else {
@@ -229,7 +236,10 @@ export function createWindowApi(options: WindowApiOptions) {
         onDidExpandElement: treeExpandEmitter.event,
         reveal: (element: unknown) =>
           options.bridge.notify("tree.invokeItemCommand", { viewId, element, reveal: true }, options.extensionId),
-        dispose: () => options.bridge.notify("tree.refresh", { viewId, disposed: true }, options.extensionId)
+        dispose: () => {
+          refreshSubscription?.dispose();
+          options.bridge.notify("tree.refresh", { viewId, disposed: true }, options.extensionId);
+        }
       };
     },
 

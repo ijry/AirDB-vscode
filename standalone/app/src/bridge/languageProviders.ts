@@ -1,5 +1,7 @@
 import type {
   HostMessageGroup,
+  ProvideCodeLensesPayload,
+  ProvideCodeLensesResponse,
   ProvideCompletionItemsPayload,
   ProvideCompletionItemsResponse,
   ProvideDocumentRangeFormattingEditsPayload,
@@ -40,6 +42,14 @@ export function createLanguageProviderBridge(transport: LanguageProviderBridgeTr
       timeoutMs?: number
     ): Promise<ProvideHoverResponse> {
       return transport.sendHostRequest("language.provideHover", payload, extensionId, timeoutMs);
+    },
+
+    provideCodeLenses(
+      payload: ProvideCodeLensesPayload,
+      extensionId?: string,
+      timeoutMs?: number
+    ): Promise<ProvideCodeLensesResponse> {
+      return transport.sendHostRequest("language.provideCodeLenses", payload, extensionId, timeoutMs);
     },
 
     provideDocumentSymbols(

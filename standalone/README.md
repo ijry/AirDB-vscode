@@ -20,7 +20,7 @@ For a full pre-package verification pass, run:
 npm run verify
 ```
 
-This runs workspace checks, typecheck, build, AirDB extension preparation, the default extension-set guard, unit tests, and the key AirDB IPC smoke tests. It does not build MSI/NSIS installers.
+This runs workspace checks, typecheck, build, AirDB extension preparation, the default extension-set guard, unit tests, and the full standalone IPC smoke suite. It does not build MSI/NSIS installers.
 
 AirDB webview builds also use the root project webpack dependencies. If the repository root does not already have `node_modules`, install them before running `npm run build:airdb` or AirDB-backed smoke tests:
 

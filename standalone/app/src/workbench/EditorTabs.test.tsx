@@ -4,9 +4,11 @@ import { EditorTabs } from "./EditorTabs";
 import type { WorkbenchState } from "./types";
 
 describe("EditorTabs", () => {
-  it("activates clicked tabs and reports textarea selections", () => {
+  it("activates clicked tabs and reports textarea selections and content edits", () => {
     const activations: string[] = [];
     const selections: unknown[] = [];
+    const contents: unknown[] = [];
+    const commands: unknown[] = [];
     const element = EditorTabs({
       state: {
         editors: [
@@ -16,12 +18,22 @@ describe("EditorTabs", () => {
         activeEditorId: "editor:query-1"
       } as WorkbenchState,
       onActivateEditor: (editorId) => activations.push(editorId),
-      onSelectionChange: (editorId, selection) => selections.push({ editorId, selection })
+      onSelectionChange: (editorId, selection) => selections.push({ editorId, selection }),
+      onContentChange: (editorId, content) => contents.push({ editorId, content }),
+      codeLenses: [{
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        command: { command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] }
+      }],
+      onCodeLensCommand: (command) => commands.push(command)
     });
 
     findButton(element, "Query 2").props.onClick();
+    findButton(element, "Run SQL").props.onClick();
     findTextarea(element).props.onSelect({
       currentTarget: { selectionStart: 7, selectionEnd: 18 }
+    });
+    findTextarea(element).props.onChange({
+      currentTarget: { value: "select 42" }
     });
 
     expect(activations).toEqual(["editor:query-2"]);
@@ -32,7 +44,12 @@ describe("EditorTabs", () => {
         end: { line: 1, character: 9 }
       }
     }]);
-    expect(findTextarea(element).props.readOnly).toBe(true);
+    expect(contents).toEqual([{
+      editorId: "editor:query-1",
+      content: "select 42"
+    }]);
+    expect(commands).toEqual([{ command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] }]);
+    expect(findTextarea(element).props.readOnly).toBeUndefined();
   });
 });
 
@@ -47,15 +64,18 @@ function findButton(node: React.ReactNode, text: string): React.ReactElement<{ o
 
 function findTextarea(node: React.ReactNode): React.ReactElement<{
   onSelect: (event: { currentTarget: { selectionStart: number; selectionEnd: number } }) => void;
+  onChange: (event: { currentTarget: { value: string } }) => void;
   readOnly?: boolean;
 }> {
   const element = assertElement(node);
   const props = element.props as {
     onSelect?: (event: { currentTarget: { selectionStart: number; selectionEnd: number } }) => void;
+    onChange?: (event: { currentTarget: { value: string } }) => void;
   };
-  if (element.type === "textarea" && props.onSelect) {
+  if (element.type === "textarea" && props.onSelect && props.onChange) {
     return element as React.ReactElement<{
       onSelect: (event: { currentTarget: { selectionStart: number; selectionEnd: number } }) => void;
+      onChange: (event: { currentTarget: { value: string } }) => void;
       readOnly?: boolean;
     }>;
   }

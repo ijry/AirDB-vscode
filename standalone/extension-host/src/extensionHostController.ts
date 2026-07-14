@@ -3,12 +3,15 @@ import {
   createResponse,
   type EditorUiActivatePayload,
   type EditorUiSelectionPayload,
+  type EditorUiDocumentPayload,
   type ExecuteCommandPayload,
   type HostMessage,
   type HostNotification,
   type HostRequest,
   type HostResponse,
   type InvokeTreeItemCommandPayload,
+  type InvokeTreeMenuCommandPayload,
+  type ProvideCodeLensesPayload,
   type ProvideCompletionItemsPayload,
   type ProvideDocumentRangeFormattingEditsPayload,
   type ProvideDocumentSymbolsPayload,
@@ -23,6 +26,7 @@ import {
   type LanguageProviderRegistry
 } from "@airdb-standalone/vscode-shim";
 import {
+  normalizeCodeLensResults,
   normalizeCompletionResults,
   normalizeDocumentRangeFormattingResults,
   normalizeDocumentSymbolResults,
@@ -71,6 +75,21 @@ export class ExtensionHostController {
         this.options.editorSessionRegistry?.setSelection(payload.editorId, payload.selection, "ui");
         break;
       }
+      case "editor.ui.document": {
+        const payload = notification.payload as EditorUiDocumentPayload;
+        const registry = this.options.editorSessionRegistry;
+        const editor = registry?.getEditor(payload.editorId);
+        if (!registry || !editor) {
+          break;
+        }
+        registry.applyDocumentModelChange({
+          documentId: editor.document.id,
+          content: payload.content,
+          ...(payload.version !== undefined ? { version: payload.version } : {}),
+          ...(payload.changes ? { changes: payload.changes } : {})
+        }, "ui");
+        break;
+      }
       default:
         break;
     }
@@ -87,6 +106,17 @@ export class ExtensionHostController {
         const invoked = await this.options.treeViewRegistry.invokeNodeCommand(
           payload.viewId,
           payload.nodeId,
+          this.options.commandRegistry
+        );
+        return { invoked };
+      }
+      case "tree.invokeMenuCommand": {
+        const payload = request.payload as InvokeTreeMenuCommandPayload;
+        const invoked = await this.options.treeViewRegistry.invokeMenuCommand(
+          payload.viewId,
+          payload.nodeId,
+          payload.command,
+          payload.arguments,
           this.options.commandRegistry
         );
         return { invoked };
@@ -122,6 +152,12 @@ export class ExtensionHostController {
           positionFromDto(payload.position)
         );
         return normalizeHoverResults(results);
+      }
+      case "language.provideCodeLenses": {
+        const registry = this.requireLanguageProviderRegistry();
+        const payload = request.payload as ProvideCodeLensesPayload;
+        const results = await registry.provideCodeLenses(textDocumentFromDto(payload.document));
+        return normalizeCodeLensResults(results);
       }
       case "language.provideDocumentSymbols": {
         const registry = this.requireLanguageProviderRegistry();

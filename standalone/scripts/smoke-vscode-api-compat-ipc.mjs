@@ -199,6 +199,15 @@ function sendLifecycleUiNotifications() {
       selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 6 } }
     }
   });
+  writeHostMessage({
+    kind: "notification",
+    group: "editor.ui.document",
+    payload: {
+      editorId: lifecycleCommandPayload.firstEditorId,
+      documentId: lifecycleCommandPayload.firstDocumentId,
+      content: "select lifecycle_one_edited"
+    }
+  });
   sentLifecycleUiNotifications = true;
   sendLifecycleStatusRequest();
 }
@@ -449,6 +458,9 @@ function isValidLifecycleStatusPayload(payload) {
     payload?.activeDocumentId === lifecycleCommandPayload.firstDocumentId &&
     payload?.activeChanges >= 3 &&
     payload?.selectionChanges >= 1 &&
+    payload?.documentChanges >= 1 &&
+    payload?.lastChangedDocumentId === lifecycleCommandPayload.firstDocumentId &&
+    payload?.lastChangedVersion >= 2 &&
     payload?.lastSelection?.start?.line === 0 &&
     payload?.lastSelection?.start?.character === 0 &&
     payload?.lastSelection?.end?.line === 0 &&
@@ -586,7 +598,7 @@ function missingCheckpoints() {
     sentLifecycleCommand ? "" : "compat.fixture.editorLifecycle command",
     sawEditorSessionOpened ? "" : "editor.session.opened",
     sawEditorActiveChanged ? "" : "editor.active.changed",
-    sentLifecycleUiNotifications ? "" : "editor.ui activate/selection notifications",
+    sentLifecycleUiNotifications ? "" : "editor.ui activate/selection/document notifications",
     sentLifecycleStatus ? "" : "compat.fixture.editorLifecycleStatus command",
     sawEditorLifecycleStatus ? "" : "editor lifecycle event status",
     resolved ? "" : "compat command response"

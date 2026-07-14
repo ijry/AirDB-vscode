@@ -1,10 +1,20 @@
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use serde::Serialize;
+use std::fs::OpenOptions;
 use std::io::{BufRead, BufReader, ErrorKind, Write};
 use std::path::{Path, PathBuf};
 use std::process::{ChildStdin, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use tauri::{Emitter, Manager};
+#[cfg(windows)]
+use std::os::windows::process::CommandExt;
+#[cfg(windows)]
+use windows_sys::Win32::Globalization::GetUserDefaultLocaleName;
+
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
+#[cfg(windows)]
+const WINDOWS_LOCALE_NAME_MAX_LENGTH: usize = 85;
 
 #[derive(Clone, Default)]
 struct ExtensionHostState {
@@ -287,9 +297,13 @@ fn resolve_standalone_root(app: &tauri::AppHandle) -> Result<PathBuf, String> {
         .path()
         .resource_dir()
         .map_err(|error| error.to_string())?;
+    let mut resource_candidates = packaged_resource_root_candidates(&resource_dir);
+    if let Some(executable_dir) = current_executable_dir() {
+        push_path_candidate(&mut resource_candidates, executable_dir);
+    }
     resolve_standalone_root_from_candidates(
         None,
-        &packaged_resource_root_candidates(&resource_dir),
+        &resource_candidates,
         source_checkout_root(),
     )
 }
@@ -319,13 +333,39 @@ fn resolve_standalone_root_from_candidates(
 
 fn packaged_resource_root_candidates(resource_dir: &Path) -> Vec<PathBuf> {
     let mut candidates = vec![resource_dir.to_path_buf()];
-    if let Some(parent_root) = resource_dir.parent().and_then(|path| path.parent()) {
-        let parent_root = parent_root.to_path_buf();
-        if parent_root != resource_dir {
-            candidates.push(parent_root);
-        }
+    if let Some(parent_root) = resource_dir.parent() {
+        push_path_candidate(&mut candidates, parent_root.to_path_buf());
     }
     candidates
+}
+
+fn current_executable_dir() -> Option<PathBuf> {
+    std::env::current_exe()
+        .ok()
+        .and_then(|path| path.parent().map(PathBuf::from))
+}
+
+fn push_path_candidate(candidates: &mut Vec<PathBuf>, candidate: PathBuf) {
+    if !candidates.contains(&candidate) {
+        candidates.push(candidate);
+    }
+}
+
+fn normalize_child_process_path(path: &Path) -> PathBuf {
+    #[cfg(windows)]
+    {
+        let value = path.to_string_lossy();
+        if let Some(stripped) = value.strip_prefix(r"\\?\UNC\") {
+            return PathBuf::from(format!(r"\\{stripped}"));
+        }
+        if let Some(stripped) = value.strip_prefix(r"\\?\") {
+            return PathBuf::from(stripped);
+        }
+        if let Some(stripped) = value.strip_prefix(r"\??\") {
+            return PathBuf::from(stripped);
+        }
+    }
+    path.to_path_buf()
 }
 
 fn source_checkout_root() -> Option<PathBuf> {
@@ -345,6 +385,25 @@ fn has_extension_host_entry(root: &Path) -> bool {
 fn prepare_extension_host_storage_root(app_data_dir: &Path) -> Result<PathBuf, String> {
     std::fs::create_dir_all(app_data_dir).map_err(|error| error.to_string())?;
     Ok(app_data_dir.to_path_buf())
+}
+
+fn host_log_path_from_env() -> Option<PathBuf> {
+    std::env::var("AIRDB_STANDALONE_HOST_LOG")
+        .ok()
+        .filter(|value| !value.trim().is_empty())
+        .map(PathBuf::from)
+}
+
+fn append_host_log(log_path: &Option<PathBuf>, line: impl AsRef<str>) {
+    let Some(log_path) = log_path else {
+        return;
+    };
+    if let Some(parent) = log_path.parent() {
+        let _ = std::fs::create_dir_all(parent);
+    }
+    if let Ok(mut file) = OpenOptions::new().create(true).append(true).open(log_path) {
+        let _ = writeln!(file, "{}", line.as_ref());
+    }
 }
 
 fn resolve_node_runtime(standalone_root: &Path) -> Result<PathBuf, String> {
@@ -411,9 +470,102 @@ fn node_executable_name() -> &'static str {
     }
 }
 
+fn resolve_extension_host_language() -> Option<String> {
+    resolve_extension_host_language_from_values(
+        std::env::var("AIRDB_STANDALONE_LANGUAGE").ok(),
+        windows_user_default_locale(),
+        std::env::var("LC_ALL").ok(),
+        std::env::var("LC_MESSAGES").ok(),
+        std::env::var("LANGUAGE").ok(),
+        std::env::var("LANG").ok(),
+    )
+}
+
+fn resolve_extension_host_language_from_values(
+    explicit: Option<String>,
+    platform_locale: Option<String>,
+    lc_all: Option<String>,
+    lc_messages: Option<String>,
+    language: Option<String>,
+    lang: Option<String>,
+) -> Option<String> {
+    normalize_extension_host_language(explicit)
+        .or_else(|| normalize_extension_host_language(platform_locale))
+        .or_else(|| normalize_extension_host_language(lc_all))
+        .or_else(|| normalize_extension_host_language(lc_messages))
+        .or_else(|| {
+            language.and_then(|value| {
+                normalize_extension_host_language(value.split(':').next().map(str::to_string))
+            })
+        })
+        .or_else(|| normalize_extension_host_language(lang))
+}
+
+fn normalize_extension_host_language(value: Option<String>) -> Option<String> {
+    let value = value?;
+    let normalized = value
+        .trim()
+        .split('.')
+        .next()
+        .unwrap_or_default()
+        .split('@')
+        .next()
+        .unwrap_or_default()
+        .replace('_', "-")
+        .to_lowercase();
+    if normalized.is_empty() || normalized == "c" || normalized == "posix" {
+        None
+    } else {
+        Some(normalized)
+    }
+}
+
+fn extension_host_nls_config(language: &str) -> String {
+    format!(r#"{{"locale":"{language}"}}"#)
+}
+
+#[cfg(windows)]
+fn windows_user_default_locale() -> Option<String> {
+    let mut buffer = [0u16; WINDOWS_LOCALE_NAME_MAX_LENGTH];
+    let length = unsafe { GetUserDefaultLocaleName(buffer.as_mut_ptr(), buffer.len() as i32) };
+    if length <= 1 {
+        return None;
+    }
+    let end = buffer
+        .iter()
+        .position(|code_unit| *code_unit == 0)
+        .unwrap_or(length as usize);
+    String::from_utf16(&buffer[..end])
+        .ok()
+        .and_then(|locale| normalize_extension_host_language(Some(locale)))
+}
+
+#[cfg(not(windows))]
+fn windows_user_default_locale() -> Option<String> {
+    None
+}
+
 fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Result<(), String> {
-    let standalone_root = resolve_standalone_root(&app)?;
-    let node_runtime = resolve_node_runtime(&standalone_root)?;
+    let host_log_path = host_log_path_from_env();
+    if let Ok(resource_dir) = app.path().resource_dir() {
+        append_host_log(
+            &host_log_path,
+            format!("[startup] resource_dir={}", resource_dir.display()),
+        );
+    }
+    if let Ok(current_exe) = std::env::current_exe() {
+        append_host_log(
+            &host_log_path,
+            format!("[startup] current_exe={}", current_exe.display()),
+        );
+    }
+
+    let standalone_root = resolve_standalone_root(&app).map_err(|error| {
+        append_host_log(&host_log_path, format!("[startup] root_error={error}"));
+        error
+    })?;
+    let standalone_root = normalize_child_process_path(&standalone_root);
+    let node_runtime = normalize_child_process_path(&resolve_node_runtime(&standalone_root)?);
     let host_entry = standalone_root
         .join("extension-host")
         .join("dist")
@@ -424,29 +576,56 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
             .app_data_dir()
             .map_err(|error| error.to_string())?,
     )?;
+    let language = resolve_extension_host_language();
+    append_host_log(
+        &host_log_path,
+        format!(
+            "[startup] standalone_root={} node_runtime={} host_entry={} extensions_dir={} storage_root={} language={}",
+            standalone_root.display(),
+            node_runtime.display(),
+            host_entry.display(),
+            extensions_dir.display(),
+            storage_root.display(),
+            language.as_deref().unwrap_or("(auto)")
+        ),
+    );
 
-    let mut child = Command::new(&node_runtime)
+    let mut command = Command::new(&node_runtime);
+    command
         .arg(&host_entry)
         .env("AIRDB_STANDALONE_EXTENSIONS", &extensions_dir)
         .env("AIRDB_STANDALONE_STORAGE", &storage_root)
+        .current_dir(&standalone_root)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .map_err(|error| {
-            if error.kind() == ErrorKind::NotFound {
-                format!(
-                    "Failed to start extension host because the Node runtime was not found. Tried: {}. Set AIRDB_STANDALONE_NODE, include the packaged Node sidecar, or install node on PATH for development. Extension host entry: {}",
-                    node_runtime.display(),
-                    host_entry.display()
-                )
-            } else {
-                format!(
-                    "Failed to start extension host at {}: {error}",
-                    host_entry.display()
-                )
-            }
-        })?;
+        .stderr(Stdio::piped());
+    if let Some(language) = language {
+        command
+            .env("AIRDB_STANDALONE_LANGUAGE", &language)
+            .env("VSCODE_NLS_CONFIG", extension_host_nls_config(&language));
+    }
+
+    #[cfg(windows)]
+    {
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+
+    let mut child = command.spawn().map_err(|error| {
+        let message = if error.kind() == ErrorKind::NotFound {
+            format!(
+                "Failed to start extension host because the Node runtime was not found. Tried: {}. Set AIRDB_STANDALONE_NODE, include the packaged Node sidecar, or install node on PATH for development. Extension host entry: {}",
+                node_runtime.display(),
+                host_entry.display()
+            )
+        } else {
+            format!(
+                "Failed to start extension host at {}: {error}",
+                host_entry.display()
+            )
+        };
+        append_host_log(&host_log_path, format!("[startup] spawn_error={message}"));
+        message
+    })?;
 
     let child_stdin = child
         .stdin
@@ -459,9 +638,11 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
 
     if let Some(stdout) = child.stdout.take() {
         let app_for_stdout = app.clone();
+        let log_path_for_stdout = host_log_path.clone();
         std::thread::spawn(move || {
             let reader = BufReader::new(stdout);
             for line in reader.lines().map_while(Result::ok) {
+                append_host_log(&log_path_for_stdout, format!("[stdout] {line}"));
                 if let Some(message) = parse_extension_host_protocol_message(&line) {
                     let _ = app_for_stdout.emit("extension-host-message", message);
                 } else {
@@ -473,9 +654,11 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
 
     if let Some(stderr) = child.stderr.take() {
         let app_for_stderr = app.clone();
+        let log_path_for_stderr = host_log_path.clone();
         std::thread::spawn(move || {
             let reader = BufReader::new(stderr);
             for line in reader.lines().map_while(Result::ok) {
+                append_host_log(&log_path_for_stderr, format!("[stderr] {line}"));
                 eprintln!("{line}");
                 let _ = app_for_stderr.emit("host-log", line);
             }
@@ -484,6 +667,7 @@ fn spawn_extension_host(app: tauri::AppHandle, state: ExtensionHostState) -> Res
 
     std::thread::spawn(move || {
         if let Ok(status) = child.wait() {
+            append_host_log(&host_log_path, format!("[exit] extension_host_status={status}"));
             if !status.success() {
                 eprintln!("[extension-host] exited with status {status}");
             }
@@ -767,6 +951,101 @@ mod tests {
         assert_eq!(resolved, source_root);
         fs::remove_dir_all(resource_root).unwrap();
         fs::remove_dir_all(source_root).unwrap();
+    }
+
+    #[test]
+    fn packaged_resource_candidates_include_parent_directory() {
+        let resource_dir = temp_root().join("resources");
+        fs::create_dir_all(&resource_dir).unwrap();
+
+        let candidates = packaged_resource_root_candidates(&resource_dir);
+
+        assert!(candidates.contains(&resource_dir));
+        assert!(candidates.contains(&resource_dir.parent().unwrap().to_path_buf()));
+        fs::remove_dir_all(resource_dir.parent().unwrap()).unwrap();
+    }
+
+    #[test]
+    fn path_candidates_are_unique() {
+        let root = temp_root();
+        let mut candidates = vec![root.clone()];
+
+        push_path_candidate(&mut candidates, root.clone());
+
+        assert_eq!(candidates, vec![root.clone()]);
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn normalizes_windows_verbatim_paths_for_child_processes() {
+        assert_eq!(
+            normalize_child_process_path(Path::new(r"\\?\C:\AirDB Standalone\extension-host")),
+            PathBuf::from(r"C:\AirDB Standalone\extension-host")
+        );
+        assert_eq!(
+            normalize_child_process_path(Path::new(r"\\?\UNC\server\share\AirDB Standalone")),
+            PathBuf::from(r"\\server\share\AirDB Standalone")
+        );
+    }
+
+    #[test]
+    fn normalizes_extension_host_language_values() {
+        assert_eq!(
+            normalize_extension_host_language(Some("zh_CN.UTF-8".to_string())),
+            Some("zh-cn".to_string())
+        );
+        assert_eq!(
+            normalize_extension_host_language(Some("en-US@calendar=gregorian".to_string())),
+            Some("en-us".to_string())
+        );
+        assert_eq!(normalize_extension_host_language(Some("C".to_string())), None);
+        assert_eq!(normalize_extension_host_language(Some("POSIX".to_string())), None);
+    }
+
+    #[test]
+    fn resolves_extension_host_language_priority() {
+        assert_eq!(
+            resolve_extension_host_language_from_values(
+                Some("zh_CN.UTF-8".to_string()),
+                Some("en-US".to_string()),
+                None,
+                None,
+                None,
+                None,
+            ),
+            Some("zh-cn".to_string())
+        );
+        assert_eq!(
+            resolve_extension_host_language_from_values(
+                None,
+                Some("zh-Hans-CN".to_string()),
+                Some("en-US".to_string()),
+                None,
+                None,
+                None,
+            ),
+            Some("zh-hans-cn".to_string())
+        );
+        assert_eq!(
+            resolve_extension_host_language_from_values(
+                None,
+                None,
+                None,
+                None,
+                Some("fr_FR:en_US".to_string()),
+                Some("en-US".to_string()),
+            ),
+            Some("fr-fr".to_string())
+        );
+    }
+
+    #[test]
+    fn builds_extension_host_nls_config() {
+        assert_eq!(
+            extension_host_nls_config("zh-cn"),
+            r#"{"locale":"zh-cn"}"#.to_string()
+        );
     }
 
     #[test]

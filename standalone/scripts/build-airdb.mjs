@@ -31,8 +31,8 @@ function runNode(args, extraEnv = {}) {
 }
 
 async function buildWebviewOnly() {
-  const require = createRequire(import.meta.url);
-  const webpack = require(path.join(repoRoot, "node_modules", "webpack"));
+  const require = createRequire(path.join(repoRoot, "package.json"));
+  const webpack = require("webpack");
   const configs = require(path.join(repoRoot, "webpack.config.js"));
   const webviewConfig = configs[1];
 

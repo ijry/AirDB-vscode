@@ -92,20 +92,45 @@ function collectMenus(extensions: RegisteredContribution[]): Record<string, Arra
     if (!menus) {
       return acc;
     }
+    const commandMetadata = commandMetadataById(contribution.manifest);
 
     for (const [location, items] of Object.entries(menus)) {
       const bucket = acc[location] ?? [];
       bucket.push(
-        ...items.map((item) => ({
-          ...item,
-          extensionId: contribution.extensionId
-        }))
+        ...items.map((item) => enrichMenuItem(item, contribution.extensionId, commandMetadata))
       );
       acc[location] = bucket;
     }
 
     return acc;
   }, {});
+}
+
+function commandMetadataById(manifest: ExtensionManifest): Map<string, Record<string, unknown>> {
+  return new Map(
+    (manifest.contributes?.commands ?? []).map((command) => [
+      command.command,
+      {
+        title: command.title,
+        category: command.category,
+        icon: command.icon
+      }
+    ])
+  );
+}
+
+function enrichMenuItem(
+  item: Record<string, unknown>,
+  extensionId: string,
+  commandMetadata: Map<string, Record<string, unknown>>
+): Record<string, unknown> {
+  const commandId = typeof item.command === "string" ? item.command : undefined;
+  const metadata = commandId ? commandMetadata.get(commandId) : undefined;
+  return {
+    ...(metadata ?? {}),
+    ...item,
+    extensionId
+  };
 }
 
 function isWhenExpressionEnabled(expression: unknown, context: Record<string, unknown>): boolean {
@@ -130,12 +155,24 @@ function evaluateWhenTerm(term: string, context: Record<string, unknown>): boole
     if (!key) {
       return false;
     }
+    if (isDeferredMenuContextKey(key, context)) {
+      return true;
+    }
     return !Boolean(context[key]);
+  }
+
+  const regexMatch = term.match(/^([A-Za-z0-9_.:-]+)\s*=~\s*\/(.+)\/$/);
+  if (regexMatch) {
+    const [, key] = regexMatch;
+    return isDeferredMenuContextKey(key, context) ? true : false;
   }
 
   const equalityMatch = term.match(/^([A-Za-z0-9_.:-]+)\s*(===|==|!==|!=)\s*(.+)$/);
   if (equalityMatch) {
     const [, key, operator, rawValue] = equalityMatch;
+    if (isDeferredMenuContextKey(key, context)) {
+      return true;
+    }
     const actual = context[key];
     const expected = parseWhenValue(rawValue.trim());
     return operator === "==" || operator === "===" ? actual === expected : actual !== expected;
@@ -146,6 +183,18 @@ function evaluateWhenTerm(term: string, context: Record<string, unknown>): boole
   }
 
   return Boolean(context[term]);
+}
+
+function isDeferredMenuContextKey(key: string, context: Record<string, unknown>): boolean {
+  return !(key in context) && [
+    "view",
+    "viewItem",
+    "editorLangId",
+    "resourceFilename",
+    "resourceExtname",
+    "resourceScheme",
+    "resourceDirname"
+  ].includes(key);
 }
 
 function parseWhenValue(value: string): unknown {

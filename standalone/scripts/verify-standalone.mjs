@@ -13,8 +13,18 @@ const steps = [
   ["check:prepared-extensions", ["run", "check:prepared-extensions"]],
   ["test", ["run", "test"]],
   ["smoke:tree-ipc", ["run", "smoke:tree-ipc"]],
+  ["smoke:isolated-extension-ipc", ["run", "smoke:isolated-extension-ipc"]],
+  ["smoke:dialog-ipc", ["run", "smoke:dialog-ipc"]],
+  ["smoke:file-dialog-ipc", ["run", "smoke:file-dialog-ipc"]],
+  ["smoke:text-document-ipc", ["run", "smoke:text-document-ipc"]],
+  ["smoke:external-actions-ipc", ["run", "smoke:external-actions-ipc"]],
+  ["smoke:workbench-feedback-ipc", ["run", "smoke:workbench-feedback-ipc"]],
+  ["smoke:workspace-fs-ipc", ["run", "smoke:workspace-fs-ipc"]],
+  ["smoke:workspace-metadata-ipc", ["run", "smoke:workspace-metadata-ipc"]],
+  ["smoke:notification-ipc", ["run", "smoke:notification-ipc"]],
   ["smoke:webview-ipc", ["run", "smoke:webview-ipc"]],
-  ["smoke:isolated-extension-ipc", ["run", "smoke:isolated-extension-ipc"]]
+  ["smoke:extension-diagnostics-ipc", ["run", "smoke:extension-diagnostics-ipc"]],
+  ["smoke:vscode-api-compat-ipc", ["run", "smoke:vscode-api-compat-ipc"]]
 ];
 
 for (const [label, args] of steps) {

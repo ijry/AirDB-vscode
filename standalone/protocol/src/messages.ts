@@ -7,6 +7,7 @@ export type HostMessageGroup =
   | "tree.refresh"
   | "tree.resolveChildren"
   | "tree.invokeItemCommand"
+  | "tree.invokeMenuCommand"
   | "webview.create"
   | "webview.setHtml"
   | "webview.postMessage"
@@ -16,6 +17,7 @@ export type HostMessageGroup =
   | "webview.receiveMessage"
   | "language.provideCompletionItems"
   | "language.provideHover"
+  | "language.provideCodeLenses"
   | "language.provideDocumentSymbols"
   | "language.provideDocumentRangeFormattingEdits"
   | "editor.openDocument"
@@ -26,6 +28,7 @@ export type HostMessageGroup =
   | "editor.document.changed"
   | "editor.ui.activate"
   | "editor.ui.selection"
+  | "editor.ui.document"
   | "external.openUri"
   | "external.writeClipboard"
   | "external.readClipboard"
@@ -154,6 +157,19 @@ export interface ProvideHoverResponse {
   hovers: LanguageHoverDto[];
 }
 
+export interface ProvideCodeLensesPayload {
+  document: HostTextDocumentDto;
+}
+
+export interface LanguageCodeLensDto {
+  range: LanguageRangeDto;
+  command?: HostCommandDto;
+}
+
+export interface ProvideCodeLensesResponse {
+  codeLenses: LanguageCodeLensDto[];
+}
+
 export interface ProvideDocumentSymbolsPayload {
   document: HostTextDocumentDto;
 }
@@ -236,6 +252,14 @@ export interface EditorUiActivatePayload {
 export interface EditorUiSelectionPayload {
   editorId: string;
   selection: LanguageRangeDto;
+}
+
+export interface EditorUiDocumentPayload {
+  editorId: string;
+  content: string;
+  documentId?: string;
+  version?: number;
+  changes?: EditorDocumentContentChangeDto[];
 }
 
 export interface HostExternalUriDto {
@@ -393,6 +417,13 @@ export interface ResolveTreeChildrenResponse {
 export interface InvokeTreeItemCommandPayload {
   viewId: string;
   nodeId: string;
+}
+
+export interface InvokeTreeMenuCommandPayload {
+  viewId: string;
+  nodeId: string;
+  command: string;
+  arguments?: unknown[];
 }
 
 export interface ExecuteCommandPayload {

@@ -4,7 +4,7 @@
 
 **Goal:** Add a generic standalone VS Code text-editor lifecycle layer with host-owned sessions, bidirectional active/selection events, and a document-model change contract.
 
-**Architecture:** Keep document/editor objects and event emitters in `vscode-shim` via a shared `EditorSessionRegistry`. Extension-host owns UI notification dispatch into that registry and host-to-app projection notifications. The Tauri app remains a read-only projection that can activate tabs and report selection changes.
+**Architecture:** Keep document/editor objects and event emitters in `vscode-shim` via a shared `EditorSessionRegistry`. Extension-host owns UI notification dispatch into that registry and host-to-app projection notifications. The Tauri app can activate tabs, report selection changes, and send editable-buffer content changes back into the host-owned document model.
 
 **Tech Stack:** Tauri, TypeScript, Node.js extension host, `vscode-shim`, shared protocol DTOs, Vitest, Node IPC smoke tests.
 
@@ -14,7 +14,7 @@
 - Keep the default prepared standalone extension set AirDB-only unless explicitly changed.
 - Do not claim full VS Code API compatibility; keep the coverage matrix honest about partial lifecycle support.
 - Preserve existing AirDB packaged path: `prepare:extensions`, `check:prepared-extensions`, tree/webview/compat smokes.
-- UI content remains read-only in this phase; no `TextEditor.edit` apply path, no `workspace.applyEdit`.
+- Editable UI content is supported through the generic VS Code-compatible document model path; `workspace.applyEdit`, save lifecycle, CodeLens invocation, decorations, and full editor parity remain pending.
 - Prefer narrow, tested compatibility slices and frequent commits.
 - Leave historical `feature/extension-diagnostics-panel` alone.
 
@@ -52,6 +52,7 @@
 - [x] Task 2: `vscode-shim` editor session registry + document model events. Committed as `f27f747 feat(standalone): add editor session registry in vscode-shim`.
 - [x] Task 3: Extension-host wiring for UI notifications and shared registry. Committed as `0109e66 feat(standalone): wire editor UI lifecycle into extension host`.
 - [x] Task 4: App projection, interactive tabs, smoke, docs, final verification.
+- [x] Task 5: `TextEditor.edit` apply path plus UI editable-buffer document changes. Implemented in current worktree; not committed yet.
 
 ---
 
@@ -321,6 +322,47 @@ git commit -m "feat(standalone): complete text editor lifecycle compatibility"
 
 ---
 
+### Task 5: TextEditor.edit And UI Editable Buffer Follow-Up
+
+**Files:**
+- Modify: `standalone/protocol/src/messages.ts`
+- Modify: `standalone/vscode-shim/src/types.ts`
+- Modify: `standalone/vscode-shim/src/textDocument.ts`
+- Modify: `standalone/vscode-shim/src/editorSessions.ts`
+- Modify: `standalone/extension-host/src/extensionHostController.ts`
+- Modify: `standalone/app/src/App.tsx`, `standalone/app/src/workbench/EditorTabs.tsx`
+- Test: protocol, vscode-shim, extension-host, app editor tests
+- Modify: `standalone/scripts/smoke-vscode-api-compat-ipc.mjs`
+- Modify: `standalone/docs/vscode-api-coverage.md`
+
+**Behavior:**
+1. `Range` and `Selection` accept numeric VS Code-style constructor overloads.
+2. `TextDocument.offsetAt`, `positionAt`, and ranged `getText` are implemented.
+3. `TextEditor.edit` supports `insert`, `replace`, and `delete`; overlapping edits return `false` without mutation.
+4. Successful edits update document content/version and emit `workspace.onDidChangeTextDocument` plus `editor.document.changed`.
+5. Add `editor.ui.document` protocol notification for UI-originated content changes.
+6. Extension-host routes `editor.ui.document` into `EditorSessionRegistry.applyDocumentModelChange(..., "ui")`.
+7. Workbench textarea is editable and sends UI content changes through the generic host document path.
+8. Smoke asserts UI document notification reaches extension-side document-change listeners.
+
+- [x] **Step 1: Implement value types and document offset helpers**
+- [x] **Step 2: Implement `TextEditor.edit` application in the shared registry**
+- [x] **Step 3: Add `editor.ui.document` protocol and extension-host routing**
+- [x] **Step 4: Make workbench editor content editable and notify host**
+- [x] **Step 5: Extend unit tests and compat smoke**
+- [x] **Step 6: Verify with tests, typecheck, build, and smoke**
+
+Verification run:
+
+```bash
+npm --prefix standalone run test -- --workspaces --if-present
+npm --prefix standalone run typecheck -- --workspaces --if-present
+npm --prefix standalone run build --workspace @airdb-standalone/extension-host
+npm --prefix standalone run smoke:vscode-api-compat-ipc
+```
+
+---
+
 ## Spec Coverage Check
 
 | Spec requirement | Task |
@@ -331,10 +373,12 @@ git commit -m "feat(standalone): complete text editor lifecycle compatibility"
 | Real active/selection events | Task 2 + Task 3 + Task 4 |
 | Real document-model change events | Task 2 (+ host assertions in Task 3) |
 | Bidirectional UI activate/selection | Task 3 + Task 4 |
+| Bidirectional UI content changes | Task 5 |
+| Basic `TextEditor.edit` apply path | Task 5 |
 | Protocol notifications | Task 1 |
-| App tab projection / read-only UI | Task 4 |
-| Coverage matrix honesty | Task 4 |
-| No full editable buffer / applyEdit | all tasks avoid it |
+| App tab projection / editable UI | Task 4 + Task 5 |
+| Coverage matrix honesty | Task 4 + Task 5 |
+| No `workspace.applyEdit` or save lifecycle | all tasks avoid it |
 | Generic host, AirDB-only prepared set | all tasks |
 
 ## Placeholder / Consistency Review
@@ -342,7 +386,7 @@ git commit -m "feat(standalone): complete text editor lifecycle compatibility"
 - No TBD/TODO left in tasks.
 - Editor id format is consistently `editor:${document.id}`.
 - Notification group names match across protocol, registry, controller, and app.
-- Document model changes are host-owned; UI stays read-only.
+- Document model changes are host-owned; UI-originated content changes flow through `editor.ui.document` and are projected back as `editor.document.changed`.
 - Registry lives in `vscode-shim` and is shared into extension-host, matching `LanguageProviderRegistry` while preserving host-owned source of truth.
 
 ## Execution Handoff

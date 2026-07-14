@@ -1,13 +1,23 @@
-import type { LanguageRangeDto } from "@airdb-standalone/protocol";
+import type { HostCommandDto, LanguageCodeLensDto, LanguageRangeDto } from "@airdb-standalone/protocol";
 import type { WorkbenchState } from "./types";
 
 interface EditorTabsProps {
   state: WorkbenchState;
   onActivateEditor?: (editorId: string) => void;
   onSelectionChange?: (editorId: string, selection: LanguageRangeDto) => void;
+  onContentChange?: (editorId: string, content: string) => void;
+  codeLenses?: LanguageCodeLensDto[];
+  onCodeLensCommand?: (command: HostCommandDto) => void;
 }
 
-export function EditorTabs({ state, onActivateEditor, onSelectionChange }: EditorTabsProps) {
+export function EditorTabs({
+  state,
+  onActivateEditor,
+  onSelectionChange,
+  onContentChange,
+  codeLenses = [],
+  onCodeLensCommand
+}: EditorTabsProps) {
   const activeEditor = state.editors.find((editor) => editor.id === state.activeEditorId) ?? state.editors[0];
 
   if (!activeEditor) {
@@ -31,6 +41,9 @@ export function EditorTabs({ state, onActivateEditor, onSelectionChange }: Edito
       </nav>
       <textarea
         className="editor-textarea"
+        onChange={(event) => {
+          onContentChange?.(activeEditor.id, event.currentTarget.value);
+        }}
         onSelect={(event) => {
           const target = event.currentTarget;
           onSelectionChange?.(
@@ -38,9 +51,27 @@ export function EditorTabs({ state, onActivateEditor, onSelectionChange }: Edito
             selectionFromOffsets(activeEditor.content, target.selectionStart, target.selectionEnd)
           );
         }}
-        readOnly
         value={activeEditor.content}
       />
+      {codeLenses.length > 0 ? (
+        <div className="editor-codelens-bar">
+          {codeLenses.map((codeLens, index) => (
+            <button
+              className="editor-codelens"
+              disabled={!codeLens.command}
+              key={`${codeLens.range.start.line}:${codeLens.range.start.character}:${index}`}
+              onClick={() => {
+                if (codeLens.command) {
+                  onCodeLensCommand?.(codeLens.command);
+                }
+              }}
+              type="button"
+            >
+              {codeLens.command?.title ?? codeLens.command?.command ?? "CodeLens"}
+            </button>
+          ))}
+        </div>
+      ) : null}
     </section>
   );
 }

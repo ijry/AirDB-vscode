@@ -2,6 +2,7 @@ import type { Dispatch } from "react";
 import { TreeView } from "./TreeView";
 import { WebviewFrame } from "./WebviewPanel";
 import type { WorkbenchState } from "./types";
+import type { VisibleMenuItem } from "./menus";
 import type { WorkbenchAction } from "./workbenchStore";
 
 interface SideBarProps {
@@ -9,9 +10,17 @@ interface SideBarProps {
   dispatch: Dispatch<WorkbenchAction>;
   onResolveChildren: (viewId: string, nodeId?: string) => void;
   onInvokeNode: (viewId: string, nodeId: string) => void;
+  onExecuteViewCommand: (item: VisibleMenuItem) => void;
+  onExecuteNodeCommand: (viewId: string, nodeId: string, item: VisibleMenuItem) => void;
 }
 
-export function SideBar({ state, onResolveChildren, onInvokeNode }: SideBarProps) {
+export function SideBar({
+  state,
+  onResolveChildren,
+  onInvokeNode,
+  onExecuteViewCommand,
+  onExecuteNodeCommand
+}: SideBarProps) {
   const treeViews = Object.values(state.treeViews);
   const webviewViews = state.webviewViews;
 
@@ -29,8 +38,12 @@ export function SideBar({ state, onResolveChildren, onInvokeNode }: SideBarProps
               <TreeView
                 key={tree.id}
                 tree={tree}
+                menus={state.menus}
+                contextKeys={state.contextKeys}
                 onResolveChildren={onResolveChildren}
                 onInvokeNode={onInvokeNode}
+                onExecuteViewCommand={onExecuteViewCommand}
+                onExecuteNodeCommand={onExecuteNodeCommand}
               />
             ))}
             {webviewViews.map((view) => (

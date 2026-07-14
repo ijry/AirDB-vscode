@@ -121,9 +121,13 @@ export function mapHostMessageToActions(message: HostMessage): WorkbenchAction[]
         editor: {
           id: editorIdForDocument(document.id),
           documentId: document.id,
+          uri: document.uri,
+          fsPath: document.fsPath,
+          fileName: document.fileName,
           title: document.title,
           language: document.languageId,
           content: document.content,
+          isUntitled: document.isUntitled,
           version: document.version,
           selection: DEFAULT_EDITOR_SELECTION
         }
@@ -372,9 +376,13 @@ function normalizeEditorPayload(editor: HostTextEditorDto) {
   return {
     id: editor.id,
     documentId: editor.document.id,
+    uri: editor.document.uri,
+    fsPath: editor.document.fsPath,
+    fileName: editor.document.fileName,
     title: editor.document.title,
     language: editor.document.languageId,
     content: editor.document.content,
+    isUntitled: editor.document.isUntitled,
     version: editor.document.version,
     selection: editor.selection ?? DEFAULT_EDITOR_SELECTION
   };

@@ -8,6 +8,7 @@ import {
   type EditorSelectionChangedPayload,
   type EditorUiActivatePayload,
   type EditorUiSelectionPayload,
+  type EditorUiDocumentPayload,
   type HostCommandDto,
   type HostExternalUriDto,
   type HostFileUriDto,
@@ -18,7 +19,10 @@ import {
   type HostTextEditorDto,
   type HostTreeNodeDto,
   type HostWebviewPanelDto,
+  type InvokeTreeMenuCommandPayload,
   type OpenExternalUriPayload,
+  type ProvideCodeLensesPayload,
+  type ProvideCodeLensesResponse,
   type OutputChannelAppendPayload,
   type ProvideCompletionItemsPayload,
   type ProvideCompletionItemsResponse,
@@ -193,6 +197,11 @@ describe("tree protocol DTOs", () => {
       editorId: editor.id,
       selection: { start: { line: 0, character: 0 }, end: { line: 0, character: 0 } }
     });
+    const uiDocument = createNotification<EditorUiDocumentPayload>("editor.ui.document", {
+      editorId: editor.id,
+      documentId: document.id,
+      content: "select 3"
+    });
 
     expect(opened).toMatchObject({ group: "editor.session.opened", payload: editor });
     expect(activeChanged.payload.editor).toEqual(editor);
@@ -200,6 +209,11 @@ describe("tree protocol DTOs", () => {
     expect(documentChanged.payload).toMatchObject({ documentId: document.id, version: 2, content: "select 2" });
     expect(uiActivate.payload.editorId).toBe(editor.id);
     expect(uiSelection.payload.selection.start).toEqual({ line: 0, character: 0 });
+    expect(uiDocument.payload).toMatchObject({
+      editorId: editor.id,
+      documentId: document.id,
+      content: "select 3"
+    });
   });
 
   it("supports typed language provider request and response payloads", () => {
@@ -241,6 +255,16 @@ describe("tree protocol DTOs", () => {
       hovers: [{ contents: [{ value: "SQL hover" }] }]
     });
 
+    const codeLensesRequest = createRequest<ProvideCodeLensesPayload>("language.provideCodeLenses", {
+      document
+    });
+    const codeLensesResponse = createResponse<ProvideCodeLensesResponse>(codeLensesRequest, {
+      codeLenses: [{
+        range: { start: { line: 0, character: 0 }, end: { line: 0, character: 8 } },
+        command: { command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] }
+      }]
+    });
+
     const symbolsRequest = createRequest<ProvideDocumentSymbolsPayload>("language.provideDocumentSymbols", {
       document
     });
@@ -272,6 +296,10 @@ describe("tree protocol DTOs", () => {
 
     expect(completionResponse.payload?.items[0].label).toBe("select");
     expect(hoverResponse.payload?.hovers[0].contents).toEqual([{ value: "SQL hover" }]);
+    expect(codeLensesResponse.payload?.codeLenses[0].command).toMatchObject({
+      command: "airdb.runQuery",
+      title: "Run SQL"
+    });
     expect(symbolsResponse.payload?.symbols[0].name).toBe("query");
     expect(formattingResponse.payload?.edits[0].newText).toBe("SELECT 1");
   });
@@ -347,5 +375,19 @@ describe("tree protocol DTOs", () => {
     expect(appendNotification.payload).toEqual(outputAppend);
     expect(statusNotification.payload).toEqual(status);
     expect(terminalNotification.payload).toEqual(terminalAppend);
+  });
+
+  it("supports invoking contributed tree menu commands", () => {
+    const payload: InvokeTreeMenuCommandPayload = {
+      viewId: "activitybar.airdb.sql",
+      nodeId: "node-1",
+      command: "airdb.connection.open",
+      arguments: ["extra"]
+    };
+
+    const request = createRequest("tree.invokeMenuCommand", payload, "jry.airdb");
+
+    expect(request.payload).toEqual(payload);
+    expect(request.extensionId).toBe("jry.airdb");
   });
 });

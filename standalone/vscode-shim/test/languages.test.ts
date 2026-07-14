@@ -3,6 +3,7 @@ import {
   CompletionItem,
   CompletionItemKind,
   CompletionList,
+  CodeLens,
   DocumentSymbol,
   Hover,
   LanguageProviderRegistry,
@@ -95,17 +96,23 @@ describe("LanguageProviderRegistry", () => {
     ).resolves.toHaveLength(1);
   });
 
-  it("keeps CodeLens registration stored without invoking it in this phase", () => {
+  it("invokes CodeLens providers with VS Code-like argument order", async () => {
     const registry = new LanguageProviderRegistry();
     const api = createLanguagesApi(registry);
+    const range = new Range(new Position(0, 0), new Position(0, 8));
 
     api.registerCodeLensProvider("sql", {
-      provideCodeLenses: () => {
-        throw new Error("CodeLens is not invoked by Phase 4");
+      provideCodeLenses(document, token) {
+        expect(document.getText()).toBe("select 1");
+        expect(token.isCancellationRequested).toBe(false);
+        return [new CodeLens(range, { command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] })];
       }
     });
 
     expect(registry.providers).toMatchObject([{ kind: "codeLens", selector: "sql" }]);
+    await expect(registry.provideCodeLenses(sqlDocument())).resolves.toEqual([
+      [new CodeLens(range, { command: "airdb.runQuery", title: "Run SQL", arguments: ["select 1"] })]
+    ]);
   });
 });
 
