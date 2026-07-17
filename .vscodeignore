@@ -240,3 +240,46 @@ standalone/**
 docs/**
 logs/**
 *.vsix
+.superpowers/**
+airdb/**
+sqlite/**
+
+# Bundled into out/webview/js/*.js by webpack. Keep them out of the VSIX
+# node_modules payload to avoid shipping duplicate frontend source packages.
+node_modules/@element-plus/**
+node_modules/element-plus/**
+node_modules/@vue/**
+node_modules/vue/**
+node_modules/vue-i18n/**
+node_modules/vue-router/**
+node_modules/vxe-table/**
+node_modules/vxe-pc-ui/**
+node_modules/xe-utils/**
+node_modules/xterm/**
+node_modules/xterm-addon-fit/**
+node_modules/xterm-addon-search/**
+node_modules/xterm-addon-web-links/**
+
+# Build-time only; production output is already in out/.
+node_modules/typescript/**
+node_modules/ts-node/**
+node_modules/esbuild/**
+node_modules/@esbuild/**
+node_modules/@babel/**
+node_modules/@types/**
+node_modules/@vueuse/**
+node_modules/csstype/**
+
+# Runtime packages should not ship tests, examples, docs, sourcemaps or type
+# declarations when compiled JS/native bindings are enough.
+node_modules/**/test/**
+node_modules/**/tests/**
+node_modules/**/__tests__/**
+node_modules/**/example/**
+node_modules/**/examples/**
+node_modules/**/*.d.ts
+node_modules/**/*.ts
+node_modules/**/*.map
+node_modules/**/*.md
+node_modules/**/CHANGELOG*
+node_modules/**/README*

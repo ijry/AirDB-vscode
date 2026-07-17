@@ -11,7 +11,7 @@
                 <el-form-item prop="password">
                     <el-input type="password" prefix-icon="Lock" v-model="loginForm.password"
                     :placeholder="$t('Please enter') + ' ' + $t('password')"
-                    @keyup.enter="handleSubmit">
+                    @keyup.enter="handleLoginSubmit">
                     </el-input>
                 </el-form-item>
                 <!-- <el-form-item class="agreement">

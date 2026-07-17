@@ -2,7 +2,7 @@
 	"name": "airdb",
 	"displayName": "MySQL Redis Client AirDB",
 	"description": "Database Client for vscode，现代化数据库管理工具。",
-	"version": "2.0.0",
+	"version": "2.0.4",
 	"publisher": "jry",
 	"icon": "resources/logo.png",
 	"engines": {
@@ -450,79 +450,79 @@
 			},
 			{
 				"command": "airdb.kafka.topic.view",
-				"title": "View Kafka Messages",
+				"title": "%command.kafka.topic.view%",
 				"category": "AirDB",
 				"icon": "$(eye)"
 			},
 			{
 				"command": "airdb.kafka.topic.send",
-				"title": "Send Kafka Message",
+				"title": "%command.kafka.topic.send%",
 				"category": "AirDB",
 				"icon": "$(send)"
 			},
 			{
 				"command": "airdb.rabbitmq.queue.view",
-				"title": "View RabbitMQ Messages",
+				"title": "%command.rabbitmq.queue.view%",
 				"category": "AirDB",
 				"icon": "$(eye)"
 			},
 			{
 				"command": "airdb.rabbitmq.queue.send",
-				"title": "Send RabbitMQ Message",
+				"title": "%command.rabbitmq.queue.send%",
 				"category": "AirDB",
 				"icon": "$(send)"
 			},
 			{
 				"command": "airdb.s3.object.open",
-				"title": "Open S3 Object",
+				"title": "%command.s3.object.open%",
 				"category": "AirDB",
 				"icon": "$(go-to-file)"
 			},
 			{
 				"command": "airdb.s3.object.download",
-				"title": "Download S3 Object",
+				"title": "%command.s3.object.download%",
 				"category": "AirDB",
 				"icon": "$(cloud-download)"
 			},
 			{
 				"command": "airdb.s3.object.delete",
-				"title": "Delete S3 Object",
+				"title": "%command.s3.object.delete%",
 				"category": "AirDB",
 				"icon": "$(trash)"
 			},
 			{
 				"command": "airdb.s3.object.copy",
-				"title": "Copy S3 Object",
+				"title": "%command.s3.object.copy%",
 				"category": "AirDB",
 				"icon": "$(copy)"
 			},
 			{
 				"command": "airdb.s3.object.presign",
-				"title": "Create Presigned URL",
+				"title": "%command.s3.object.presign%",
 				"category": "AirDB",
 				"icon": "$(link)"
 			},
 			{
 				"command": "airdb.s3.object.upload",
-				"title": "Upload S3 Object",
+				"title": "%command.s3.object.upload%",
 				"category": "AirDB",
 				"icon": "$(cloud-upload)"
 			},
 			{
 				"command": "airdb.s3.folder.new",
-				"title": "Create S3 Folder",
+				"title": "%command.s3.folder.new%",
 				"category": "AirDB",
 				"icon": "$(new-folder)"
 			},
 			{
 				"command": "airdb.zookeeper.znode.open",
-				"title": "Open ZooKeeper Znode",
+				"title": "%command.zookeeper.znode.open%",
 				"category": "AirDB",
 				"icon": "$(go-to-file)"
 			},
 			{
 				"command": "airdb.ssh.terminal.hear",
-				"title": "Open Terminal in hear"
+				"title": "%command.ssh.terminal.hear%"
 			},
 			{
 				"command": "airdb.ssh.path.copy",

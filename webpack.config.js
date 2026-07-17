@@ -94,13 +94,13 @@ module.exports = [
       new HtmlWebpackPlugin({ inject: true, template: './public/index.html', chunks: ['app'], filename: 'webview/app.html' }),
       new HtmlWebpackPlugin({
         inject: true,
-        templateContent: '<head><script src="js/oldCompatible.js"></script></head><body><div id="app"></div></body>',
+        templateContent: '<head><meta charset="UTF-8"><script src="js/oldCompatible.js"></script></head><body><div id="app"></div></body>',
         chunks: ['query'],
         filename: 'webview/result.html'
       }),
       new HtmlWebpackPlugin({
         inject: true,
-        templateContent: '<head><script src="js/oldCompatible.js"></script></head><body><div id="app"></div></body>',
+        templateContent: '<head><meta charset="UTF-8"><script src="js/oldCompatible.js"></script></head><body><div id="app"></div></body>',
         chunks: ['queryWorkspace'],
         filename: 'webview/queryWorkspace.html'
       }),

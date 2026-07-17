@@ -15309,3 +15309,288 @@ body {
     text-align: right;
     margin: 0
 }
+
+/* Element Plus DOM compatibility.
+   auto.css is the VS Code theme layer for Element components. Vue 3 uses
+   Element Plus, whose DOM moved input borders from .el-input__inner to
+   .el-input__wrapper and changed form/checkbox grouping. Keep the theme here
+   so old Element UI2 rules do not partially style the new DOM. */
+:root {
+    --el-color-primary: #409EFF;
+    --el-bg-color: var(--vscode-editor-background);
+    --el-bg-color-overlay: var(--vscode-editor-background);
+    --el-fill-color-blank: var(--vscode-input-background);
+    --el-text-color-primary: var(--input-color);
+    --el-text-color-regular: var(--input-color);
+    --el-text-color-secondary: var(--editor-color);
+    --el-text-color-placeholder: var(--second-color);
+    --el-border-color: var(--border-color);
+    --el-border-color-light: var(--border-color);
+    --el-border-color-lighter: var(--border-color);
+    --el-border-color-extra-light: var(--border-color);
+    --el-disabled-bg-color: var(--disable-bg-color);
+    --el-disabled-text-color: var(--editor-color);
+    --el-disabled-border-color: var(--border-color);
+    --el-input-bg-color: var(--vscode-input-background);
+    --el-input-text-color: var(--input-color);
+    --el-input-border-color: var(--border-color);
+    --el-input-hover-border-color: var(--border-color);
+    --el-input-focus-border-color: #409EFF;
+    --el-input-placeholder-color: var(--second-color);
+    --el-dialog-bg-color: var(--vscode-editor-background);
+}
+
+.el-form-item {
+    display: flex;
+    margin-bottom: 18px;
+}
+
+.el-form-item--large {
+    margin-bottom: 22px;
+}
+
+.el-form-item--label-top {
+    display: block;
+}
+
+.el-form-item::before,
+.el-form-item::after,
+.el-form-item__content::before,
+.el-form-item__content::after {
+    display: none;
+    content: none;
+}
+
+.el-form-item__label {
+    color: var(--input-color);
+}
+
+.el-form-item__content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1;
+    line-height: normal;
+    min-width: 0;
+    position: relative;
+}
+
+.el-form:not(.el-form--inline) .el-form-item__content {
+    display: flex;
+}
+
+.el-form--inline .el-form-item__content {
+    display: inline-flex;
+}
+
+.el-form-item.is-error .el-input__wrapper,
+.el-form-item.is-error .el-input__wrapper.is-focus,
+.el-form-item.is-error .el-input.is-active .el-input__wrapper {
+    box-shadow: 0 0 0 1px #F56C6C inset;
+}
+
+.el-input {
+    --el-input-height: var(--el-component-size, 32px);
+    --el-input-inner-height: calc(var(--el-input-height, 32px) - 2px);
+    --el-input-width: 100%;
+    box-sizing: border-box;
+    display: inline-flex;
+    font-size: var(--el-font-size-base, 14px);
+    line-height: var(--el-input-height);
+    position: relative;
+    vertical-align: middle;
+    width: var(--el-input-width);
+}
+
+.el-input__wrapper {
+    align-items: center;
+    background-color: var(--vscode-input-background);
+    border-radius: 0;
+    box-shadow: 0 0 0 1px var(--border-color) inset;
+    box-sizing: border-box;
+    color: var(--input-color);
+    display: inline-flex;
+    flex-grow: 1;
+    min-height: var(--el-input-height, 32px);
+    min-width: 0;
+    padding: 1px 11px;
+    transition: box-shadow .2s cubic-bezier(.645, .045, .355, 1);
+    width: 100%;
+}
+
+.el-input__wrapper:hover {
+    box-shadow: 0 0 0 1px var(--border-color) inset;
+}
+
+.el-input__wrapper.is-focus,
+.el-input.is-active .el-input__wrapper {
+    box-shadow: 0 0 0 1px #409EFF inset;
+}
+
+.el-input__wrapper.is-disabled {
+    background-color: var(--disable-bg-color);
+    box-shadow: 0 0 0 1px var(--border-color) inset;
+    color: var(--editor-color);
+}
+
+.el-input .el-input__wrapper .el-input__inner {
+    -webkit-appearance: none;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    color: var(--input-color);
+    flex-grow: 1;
+    font-size: inherit;
+    height: var(--el-input-inner-height);
+    line-height: var(--el-input-inner-height);
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.el-input .el-input__wrapper .el-input__inner:focus,
+.el-input .el-input__wrapper .el-input__inner:hover {
+    border: 0;
+    box-shadow: none;
+}
+
+.el-input .el-input__wrapper .el-input__inner::placeholder {
+    color: var(--second-color);
+}
+
+.el-input.is-disabled .el-input__wrapper .el-input__inner {
+    background: transparent;
+    border: 0;
+    color: var(--editor-color);
+}
+
+.el-input--large {
+    --el-input-height: 40px;
+}
+
+.el-input--default {
+    --el-input-height: 32px;
+}
+
+.el-input--small {
+    --el-input-height: 24px;
+}
+
+.el-input__prefix,
+.el-input__suffix {
+    color: var(--editor-color);
+    display: inline-flex;
+    flex-shrink: 0;
+    flex-wrap: nowrap;
+    height: auto;
+    line-height: var(--el-input-inner-height);
+    pointer-events: none;
+    position: static;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.el-input__prefix-inner,
+.el-input__suffix-inner {
+    align-items: center;
+    display: inline-flex;
+    height: 100%;
+}
+
+.el-input__icon {
+    height: auto;
+    line-height: 1;
+}
+
+.el-input-group {
+    align-items: stretch;
+    display: inline-flex;
+    width: 100%;
+}
+
+.el-input-group > .el-input__wrapper {
+    flex: 1 1 auto;
+}
+
+.el-input-group__append,
+.el-input-group__prepend {
+    align-items: center;
+    background-color: var(--vscode-input-background);
+    border: 0;
+    box-shadow: 0 0 0 1px var(--border-color) inset;
+    color: var(--input-color);
+    display: inline-flex;
+    min-height: var(--el-input-height, 32px);
+}
+
+.el-input-group__prepend {
+    border-radius: 0;
+}
+
+.el-input-group__append {
+    border-radius: 0;
+}
+
+.el-input-group--prepend > .el-input__wrapper {
+    border-bottom-left-radius: 0;
+    border-top-left-radius: 0;
+}
+
+.el-input-group--append > .el-input__wrapper {
+    border-bottom-right-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.el-checkbox {
+    align-items: center;
+    color: var(--input-color);
+    display: inline-flex;
+    height: auto;
+    line-height: normal;
+    margin-right: 30px;
+    white-space: nowrap;
+}
+
+.el-checkbox__input {
+    align-items: center;
+    display: inline-flex;
+}
+
+.el-checkbox__label {
+    color: var(--input-color);
+    line-height: normal;
+}
+
+.el-checkbox__input.is-checked + .el-checkbox__label {
+    color: #409EFF;
+}
+
+.el-tabs__nav {
+    float: none;
+}
+
+.el-tabs__item {
+    align-items: center;
+    display: inline-flex;
+    height: 40px;
+    line-height: 40px;
+}
+
+.el-tabs__nav-scroll {
+    display: flex;
+}
+
+.el-tabs__active-bar {
+    background-color: #409EFF;
+}
+
+.el-dialog {
+    background: var(--vscode-editor-background);
+    color: var(--input-color);
+    max-width: calc(100% - 32px);
+    width: var(--el-dialog-width, 50%);
+}
+
+.el-dialog__body {
+    color: var(--input-color);
+}
