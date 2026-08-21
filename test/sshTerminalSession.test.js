@@ -209,6 +209,61 @@ function pathEmits(entry) {
   await retry;
   assert.strictEqual(pathEmits(created[1]).length, 1, "the retry should reach a working terminal");
 
+  // ---------------------------------------------------------------------------
+  // 6. The terminal must resolve privateKeyPath itself and bound the handshake.
+  //    It used to pass sshConfig through untouched, relying on ClientManager having
+  //    already cached sshConfig.privateKey as a side effect -- so opening a terminal
+  //    from a collapsed connection node skipped key auth entirely.
+  // ---------------------------------------------------------------------------
+  const fsMod = require("fs");
+  const osMod = require("os");
+  const tmpDir = fsMod.mkdtempSync(path.join(osMod.tmpdir(), "airdb-term-key-"));
+  const keyPath = path.join(tmpDir, "id_rsa");
+  fsMod.writeFileSync(keyPath, "TERMINAL-KEY");
+  try {
+    created.length = 0;
+    clients.length = 0;
+    const keyed = new XtermTerminal();
+    const keyHost = { username: "root", host: "10.0.0.5", port: 22, privateKeyPath: keyPath };
+
+    const open = keyed.openMethod(keyHost);
+    created[0].emitter.emit("initTerminal", { cols: 80, rows: 24 });
+    const client = clients[clients.length - 1];
+    client.fire("ready");
+    await open;
+
+    assert.ok(client.connectConfig, "connect() should receive an explicit config");
+    assert.strictEqual(
+      client.connectConfig.privateKey?.toString(), "TERMINAL-KEY",
+      "the terminal must load the private key itself"
+    );
+    assert.strictEqual(
+      client.connectConfig.readyTimeout, 10000,
+      "the terminal handshake must be bounded"
+    );
+    assert.ok(
+      !("privateKey" in keyHost),
+      "resolving the key must not mutate the shared SSHConfig"
+    );
+
+    // A misconfigured key path surfaces in the terminal instead of hanging.
+    created.length = 0;
+    clients.length = 0;
+    const broken = new XtermTerminal();
+    const badHost = {
+      username: "root", host: "10.0.0.6", port: 22,
+      privateKeyPath: path.join(tmpDir, "missing")
+    };
+    const brokenOpen = broken.openPath(badHost, "/z");
+    created[0].emitter.emit("initTerminal", { cols: 80, rows: 24 });
+    assert.strictEqual(await brokenOpen, undefined, "a bad key path must not hang the open");
+    const errors = created[0].panel.posted.filter((m) => m.type === "ssherror");
+    assert.strictEqual(errors.length, 1, "the key error should be shown in the terminal");
+    assert.match(errors[0].content, /Private key file not found/);
+  } finally {
+    fsMod.rmSync(tmpDir, { recursive: true, force: true });
+  }
+
   console.log("sshTerminalSession: all assertions passed");
 })().catch((err) => {
   console.error(err);

@@ -6,6 +6,7 @@ import { Constants } from '@/common/constants';
 import { SSHConfig } from '@/model/interface/sshConfig';
 import { Util } from '@/common/util';
 import * as vscode from 'vscode';
+import { resolvePrivateKey } from '../sshConfigResolver';
 
 export class ForwardInfo {
     id: any;
@@ -84,6 +85,14 @@ export class ForwardService {
                 }
             }
 
+            let privateKey: Buffer | undefined;
+            try {
+                privateKey = resolvePrivateKey(sshConfig)
+            } catch (err) {
+                reject(err)
+                return;
+            }
+
             const config = {
                 ...sshConfig,
                 localHost: forwardInfo.localHost,
@@ -91,11 +100,7 @@ export class ForwardService {
                 dstHost: forwardInfo.remoteHost,
                 dstPort: forwardInfo.remotePort,
                 keepAlive: true,
-                privateKey: (() => {
-                    if (sshConfig.privateKeyPath) {
-                        return require('fs').readFileSync(sshConfig.privateKeyPath)
-                    }
-                })()
+                privateKey
             };
 
             const localTunnel = tunnel(config, (error, server) => {

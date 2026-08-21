@@ -1,10 +1,10 @@
 import tunnel = require('./tunnel-ssh')
 import { Node } from '../../model/interface/node';
 import { Console } from '../../common/Console';
-import { existsSync } from 'fs';
 import * as portfinder from 'portfinder'
 import { DatabaseType } from '@/common/constants';
 import { spawn } from "child_process";
+import { resolvePrivateKey } from '../ssh/sshConfigResolver';
 
 export class SSHTunnelService {
 
@@ -27,6 +27,18 @@ export class SSHTunnelService {
             }
             const port = await portfinder.getPortPromise();
             node.ssh.tunnelPort = port
+
+            let privateKey: Buffer | undefined;
+            try {
+                privateKey = resolvePrivateKey(ssh as any)
+            } catch (err) {
+                // Previously this silently fell through to password auth, which then
+                // failed with an unrelated-looking error.
+                errorCallback(err)
+                resolve(null)
+                return;
+            }
+
             const config = {
                 username: ssh.username,
                 password: ssh.password,
@@ -38,12 +50,7 @@ export class SSHTunnelService {
                 localPort: port,
                 algorithms: ssh.algorithms,
                 passphrase: ssh.passphrase,
-                privateKey: (() => {
-                    if (ssh.privateKeyPath && existsSync(ssh.privateKeyPath)) {
-                        return require('fs').readFileSync(ssh.privateKeyPath)
-                    }
-                    return null
-                })()
+                privateKey: privateKey ?? null
             };
 
             this.adapterES(node, config);

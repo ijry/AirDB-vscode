@@ -6,6 +6,7 @@ import { FileManager, FileModel } from "@/common/filesManager";
 import { Util } from "@/common/util";
 import { Hanlder, ViewManager } from "@/common/viewManager";
 import { SSHConfig } from "@/model/interface/sshConfig";
+import { buildConnectConfig } from "../sshConfigResolver";
 
 interface TerminalSession {
     /** unique webview panel type, also the key inside XtermTerminal.sessions */
@@ -173,7 +174,14 @@ export class XtermTerminal implements TerminalService {
                 end();
                 done(null);
             })
-            client.connect(sshConfig)
+            // Resolve the key here rather than relying on another code path having
+            // populated sshConfig.privateKey as a side effect: opening a terminal
+            // straight from a collapsed connection node used to skip key auth.
+            try {
+                client.connect(buildConnectConfig(sshConfig))
+            } catch (err) {
+                SSHerror(err?.message || String(err), null)
+            }
         }).on('openLog', async () => {
             const filePath = sshConfig.username + '@' + sshConfig.host
             await FileManager.record(filePath, dataBuffer.toString().replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, ''), FileModel.WRITE)

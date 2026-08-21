@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { Client, SFTPWrapper } from "ssh2";
-import { existsSync, readFileSync } from 'fs';
 import { SSHConfig } from '@/model/interface/sshConfig';
+import { buildConnectConfig } from './sshConfigResolver';
 
 class SSH {
     client: Client;
@@ -26,8 +26,13 @@ export class ClientManager {
         if (this.activeClient[key]) {
             return Promise.resolve(this.activeClient[key]);
         }
-        if (sshConfig.privateKeyPath) {
-            sshConfig.privateKey = readFileSync(sshConfig.privateKeyPath)
+
+        let connectConfig: SSHConfig & { readyTimeout: number };
+        try {
+            connectConfig = buildConnectConfig(sshConfig);
+        } catch (err) {
+            vscode.window.showErrorMessage(err.message)
+            return Promise.reject(err)
         }
 
         const client = new Client();
@@ -35,7 +40,12 @@ export class ClientManager {
             client.on('ready', () => {
                 if (option.withSftp) {
                     client.sftp((err, sftp) => {
-                        if (err) throw err;
+                        if (err) {
+                            this.activeClient[key] = null
+                            vscode.window.showErrorMessage(err.message)
+                            reject(err)
+                            return
+                        }
                         this.activeClient[key] = { client, sftp };
                         resolve(this.activeClient[key])
                     })
@@ -49,7 +59,7 @@ export class ClientManager {
                 reject(err)
             }).on('end', () => {
                 this.activeClient[key] = null
-            }).connect({ ...sshConfig, readyTimeout: 1000 * 10 });
+            }).connect(connectConfig);
             // https://blog.csdn.net/a351945755/article/details/22661411
         })
 
