@@ -44,6 +44,8 @@ interface ViewState {
     instance: WebviewPanel;
     creating: boolean;
     eventEmitter: EventEmitter;
+    /** set from onDidDispose, so async work can tell the panel is gone */
+    disposed?: boolean;
 }
 
 export class ViewManager {
@@ -86,28 +88,42 @@ export class ViewManager {
 
             const viewColumn = viewOption.splitView ? vscode.ViewColumn.Two : vscode.ViewColumn.One;
             const currentStatus = this.viewStatu[viewOption.type]
-            if (viewOption.singlePage && currentStatus) {
+            if (viewOption.singlePage && currentStatus && !currentStatus.disposed) {
                 if (viewColumn==vscode.ViewColumn.Two && currentStatus.instance?.visible == false) {
                     currentStatus.instance.dispose()
                 } else {
-                    if(currentStatus.instance?.visible == false){
-                        currentStatus.instance.reveal()
+                    // reveal() throws if the panel is already gone. Fall through to
+                    // creating a fresh one rather than failing the whole call: the
+                    // cached entry is stale in that case, not usable.
+                    let revealed = true;
+                    try {
+                        if(currentStatus.instance?.visible == false){
+                            currentStatus.instance.reveal()
+                        }
+                    } catch (err) {
+                        revealed = false;
+                        if (this.viewStatu[viewOption.type] === currentStatus) {
+                            this.viewStatu[viewOption.type] = null
+                        }
+                        currentStatus.disposed = true
                     }
-                    // Only the previous caller's business listeners go; the panel-level
-                    // ones registered below (loginSuccess/logout) must survive reuse.
-                    this.removeBusinessListeners(currentStatus.eventEmitter)
-                    if (viewOption.eventHandler) {
-                        viewOption.eventHandler(new Hanlder(currentStatus.instance, currentStatus.eventEmitter))
-                    }
-                    if(currentStatus.creating){
-                        // Still booting: the pending 'init' from the webview will drive
-                        // the handler we just installed.
+                    if (revealed) {
+                        // Only the previous caller's business listeners go; the panel-level
+                        // ones registered below (loginSuccess/logout) must survive reuse.
+                        this.removeBusinessListeners(currentStatus.eventEmitter)
+                        if (viewOption.eventHandler) {
+                            viewOption.eventHandler(new Hanlder(currentStatus.instance, currentStatus.eventEmitter))
+                        }
+                        if(currentStatus.creating){
+                            // Still booting: the pending 'init' from the webview will drive
+                            // the handler we just installed.
+                            resolve(currentStatus.instance);
+                            return;
+                        }
+                        currentStatus.eventEmitter.emit('init')
                         resolve(currentStatus.instance);
                         return;
                     }
-                    currentStatus.eventEmitter.emit('init')
-                    resolve(currentStatus.instance);
-                    return;
                 }
             }
             const webviewPanel = vscode.window.createWebviewPanel(
@@ -116,8 +132,72 @@ export class ViewManager {
                 { viewColumn, preserveFocus: viewOption.preserveFocus },
                 { enableScripts: true, retainContextWhenHidden: true },
             );
-            const newStatus = { creating: true, instance: webviewPanel, eventEmitter: new EventEmitter() }
+            const newStatus: ViewState = { creating: true, instance: webviewPanel, eventEmitter: new EventEmitter() }
             this.viewStatu[viewOption.type] = newStatus
+
+            // Everything below must be wired up synchronously, before the html read.
+            // The cache entry above is visible to the next caller immediately, so any
+            // binding deferred to the readFile callback leaves a window in which the
+            // panel is reachable but not yet disposable/subscribed:
+            //  - a tab closed inside that window never cleared the cache entry, and
+            //    every later open revealed the dead panel and silently did nothing
+            //  - a second call inside that window installed its listeners via the
+            //    reuse branch, then the readFile callback added a second copy, so one
+            //    click ran every handler twice (a duplicated UPDATE, for instance)
+            webviewPanel.onDidDispose(() => {
+                if (this.viewStatu[viewOption.type] === newStatus) {
+                    this.viewStatu[viewOption.type] = null
+                }
+                newStatus.eventEmitter.removeAllListeners()
+                newStatus.disposed = true
+            })
+            if (viewOption.eventHandler) {
+                viewOption.eventHandler(new Hanlder(webviewPanel, newStatus.eventEmitter))
+            }
+            newStatus.eventEmitter.on('loginSuccess', (userState) => {
+                // 存储状态
+                // vscode.window.showErrorMessage(userState.token)
+                GlobalState.update('userState', userState);
+
+                // 刷新左侧目录树
+                vscode.commands.executeCommand(CodeCommand.Refresh)
+            })
+            // 注销登录
+            newStatus.eventEmitter.on('logout', () => {
+                // 存储状态
+                GlobalState.update('userState', '');
+
+                webviewPanel.webview.postMessage({ type: 'syncState',
+                    content: {
+                        lang : vscode.env.language,
+                        userState: '' // 用户登录数据{token, userInfo}
+                    }
+                })
+
+                // 刷新左侧目录树
+                vscode.commands.executeCommand(CodeCommand.Refresh)
+            })
+            let userStateExist = GlobalState.get<any>('userState') || '';
+            webviewPanel.webview.onDidReceiveMessage((message) => {
+                if (message.type == 'init') {
+                    // console.log('初始化')
+                    if (newStatus.creating) {
+                        newStatus.eventEmitter.emit(message.type, message.content)
+                        newStatus.creating = false
+                    }
+
+                    // 发送同步数据
+                    webviewPanel.webview.postMessage({ type: 'syncState',
+                        content: {
+                            lang : vscode.env.language,
+                            userState: userStateExist // 用户登录数据{token, userInfo}
+                        }
+                    })
+                } else {
+                    newStatus.eventEmitter.emit(message.type, message.content)
+                }
+            })
+
             const targetPath = `${this.webviewPath}/${viewOption.path}.html`;
             fs.readFile(targetPath, 'utf8', async (err, data) => {
                 if (err) {
@@ -125,68 +205,31 @@ export class ViewManager {
                     reject(err);
                     return;
                 }
-                if (viewOption.iconPath) {
-                    if(viewOption.iconPath instanceof Object){
-                        webviewPanel.iconPath = viewOption.iconPath
-                    }else{
-                        webviewPanel.iconPath =vscode.Uri.file(viewOption.iconPath) 
-                    }
+                // The user may have closed the tab while the html was being read.
+                // Touching a disposed webview throws, and that throw would land in
+                // this fs callback where the promise can no longer reject.
+                if (newStatus.disposed) {
+                    resolve(webviewPanel);
+                    return;
                 }
-                const contextPath = path.resolve(targetPath, "..");
-                if (viewOption.handleHtml) {
-                    data = viewOption.handleHtml(data, webviewPanel)
-                }
-                webviewPanel.webview.html = this.buildPath(data, webviewPanel.webview, contextPath);
-
-                webviewPanel.onDidDispose(() => {
-                    this.viewStatu[viewOption.type] = null
-                })
-                if (viewOption.eventHandler) {
-                    viewOption.eventHandler(new Hanlder(webviewPanel, newStatus.eventEmitter))
-                }
-                newStatus.eventEmitter.on('loginSuccess', (userState) => {
-                    // 存储状态
-                    // vscode.window.showErrorMessage(userState.token)
-                    GlobalState.update('userState', userState);
-
-                    // 刷新左侧目录树
-                    vscode.commands.executeCommand(CodeCommand.Refresh)
-                })
-                // 注销登录
-                newStatus.eventEmitter.on('logout', () => {
-                    // 存储状态
-                    GlobalState.update('userState', '');
-
-                    webviewPanel.webview.postMessage({ type: 'syncState',
-                        content: {
-                            lang : vscode.env.language,
-                            userState: '' // 用户登录数据{token, userInfo}
+                try {
+                    if (viewOption.iconPath) {
+                        if(viewOption.iconPath instanceof Object){
+                            webviewPanel.iconPath = viewOption.iconPath
+                        }else{
+                            webviewPanel.iconPath =vscode.Uri.file(viewOption.iconPath)
                         }
-                    })
-
-                    // 刷新左侧目录树
-                    vscode.commands.executeCommand(CodeCommand.Refresh)
-                })
-                let userStateExist = GlobalState.get<any>('userState') || '';
-                webviewPanel.webview.onDidReceiveMessage((message) => {
-                    if (message.type == 'init') {
-                        // console.log('初始化')
-                        if (newStatus.creating) {
-                            newStatus.eventEmitter.emit(message.type, message.content)
-                            newStatus.creating = false
-                        }
-                        
-                        // 发送同步数据
-                        webviewPanel.webview.postMessage({ type: 'syncState',
-                            content: {
-                                lang : vscode.env.language,
-                                userState: userStateExist // 用户登录数据{token, userInfo}
-                            }
-                        })
-                    } else {
-                        newStatus.eventEmitter.emit(message.type, message.content)
                     }
-                })
+                    const contextPath = path.resolve(targetPath, "..");
+                    if (viewOption.handleHtml) {
+                        data = viewOption.handleHtml(data, webviewPanel)
+                    }
+                    webviewPanel.webview.html = this.buildPath(data, webviewPanel.webview, contextPath);
+                } catch (error) {
+                    Console.log(error);
+                    reject(error);
+                    return;
+                }
                 resolve(webviewPanel);
             });
 
