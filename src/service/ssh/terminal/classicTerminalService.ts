@@ -1,3 +1,4 @@
+import { Hanlder } from '@/common/viewManager';
 import { SSHConfig } from '@/model/interface/sshConfig';
 import * as vscode from 'vscode';
 import { TerminalService } from "./terminalService";
@@ -11,7 +12,7 @@ export class ClassicTerminal implements TerminalService {
         }
     }
 
-    openMethod(sshConfig: SSHConfig): void {
+    async openMethod(sshConfig: SSHConfig): Promise<Hanlder> {
 
         const sendConfirm = "SEND PASSWORD";
         const sshterm = vscode.window.activeTerminal ? vscode.window.activeTerminal : vscode.window.createTerminal(sshConfig.username + "@" + sshConfig.host);
@@ -26,6 +27,8 @@ export class ClassicTerminal implements TerminalService {
             })
         }
 
+        // The classic terminal is a native vscode terminal, not a webview panel.
+        return null;
     }
 
 }

@@ -7,53 +7,119 @@ import { Util } from "@/common/util";
 import { Hanlder, ViewManager } from "@/common/viewManager";
 import { SSHConfig } from "@/model/interface/sshConfig";
 
+interface TerminalSession {
+    /** unique webview panel type, also the key inside XtermTerminal.sessions */
+    panelType: string;
+    sshUrl: string;
+    handler: Hanlder;
+    client?: Client;
+    /** true once the shell is up and the session can accept a `cd` */
+    ready?: boolean;
+}
+
 export class XtermTerminal implements TerminalService {
+
+    /**
+     * Live terminals keyed by panel type. The panel type is unique per panel, so
+     * several terminals on the same host no longer overwrite each other's entry.
+     */
+    private static sessions = new Map<string, TerminalSession>();
+    /** sshUrl -> panelType that openPath should reuse (the most recently ready one) */
+    private static activeByUrl = new Map<string, string>();
+    /** sshUrl -> terminal currently being opened, so rapid clicks share one terminal */
+    private static opening = new Map<string, Promise<Hanlder>>();
+    private static panelSeq = 0;
 
     private getSshUrl(sshConfig: SSHConfig): string {
         return 'ssh://' + sshConfig.username + '@' + sshConfig.host + ':' + sshConfig.port;
     }
 
-    private static handlerMap = new Map<string, Hanlder>();
-
     public async openPath(sshConfig: SSHConfig, fullPath: string) {
-        const handler: Hanlder = XtermTerminal.handlerMap[this.getSshUrl(sshConfig)]
-        if (handler) {
-            handler.panel.reveal()
-            handler.emit('path', fullPath)
-        } else {
-            this.openMethod(sshConfig, () => { this.openPath(sshConfig, fullPath) })
-        }
-    }
-
-    public async openMethod(sshConfig: SSHConfig, callback?: () => void) {
-
-        const title = this.getTitle(sshConfig);
-        const sshUrl = this.getSshUrl(sshConfig)
-        const type = XtermTerminal.handlerMap[sshUrl] ? `${sshUrl}_${new Date().getTime()}` : sshUrl
-
-        ViewManager.createWebviewPanel({
-            splitView: false, path: "app", iconPath: {
-                light: Util.getExtPath( "image", "terminal_light.png"),
-                dark: Util.getExtPath( "image", "terminal_dark.svg"),
-            },
-            title, type,
-            eventHandler: (handler) => {
-                this.handlerEvent(handler, sshConfig, callback)
-            }
-        })
-
-    }
-
-    private handlerEvent(handler: Hanlder, sshConfig: SSHConfig, callback?: () => void) {
-
-        const fontSize=vscode.workspace.getConfiguration("terminal.integrated").get("fontSize",16)
 
         const sshUrl = this.getSshUrl(sshConfig);
+        const cd = (handler: Hanlder) => { if (handler) { handler.emit('path', fullPath) } };
+
+        const live = XtermTerminal.activeSession(sshUrl);
+        if (live && this.reveal(live)) {
+            cd(live.handler);
+            return;
+        }
+
+        // A second click while the first terminal is still connecting rides that
+        // terminal instead of racing it into a second panel.
+        const opening = XtermTerminal.opening.get(sshUrl);
+        if (opening) {
+            cd(await opening);
+            return;
+        }
+
+        cd(await this.openMethod(sshConfig));
+    }
+
+    /**
+     * Opens a terminal and resolves once its shell is ready, or with null when the
+     * panel is closed or the connection fails before that happens.
+     */
+    public async openMethod(sshConfig: SSHConfig): Promise<Hanlder> {
+
+        const sshUrl = this.getSshUrl(sshConfig);
+        // Always a fresh type: deriving it from the session map raced with the SSH
+        // handshake, so two quick clicks both got the bare sshUrl, hit ViewManager's
+        // single-page reuse branch and tore the listeners off the live terminal.
+        const panelType = `${sshUrl}#${++XtermTerminal.panelSeq}`;
+
+        let settle: (handler: Hanlder) => void;
+        const ready = new Promise<Hanlder>(resolve => { settle = resolve });
+        XtermTerminal.opening.set(sshUrl, ready);
+        const done = (handler: Hanlder) => {
+            if (XtermTerminal.opening.get(sshUrl) === ready) {
+                XtermTerminal.opening.delete(sshUrl);
+            }
+            settle(handler);
+        };
+
+        try {
+            await ViewManager.createWebviewPanel({
+                splitView: false, path: "app", iconPath: {
+                    light: Util.getExtPath("image", "terminal_light.png"),
+                    dark: Util.getExtPath("image", "terminal_dark.svg"),
+                },
+                title: this.getTitle(sshConfig), type: panelType,
+                eventHandler: (handler) => {
+                    this.handlerEvent(panelType, sshUrl, handler, sshConfig, done)
+                }
+            })
+        } catch (err) {
+            vscode.window.showErrorMessage(
+                vscode.l10n.t(`Open terminal failed: {0}`, err?.message || err)
+            );
+            done(null);
+        }
+
+        return ready;
+    }
+
+    private handlerEvent(panelType: string, sshUrl: string, handler: Hanlder, sshConfig: SSHConfig, done: (handler: Hanlder) => void) {
+
+        const fontSize = vscode.workspace.getConfiguration("terminal.integrated").get("fontSize", 16)
+
+        const session: TerminalSession = { panelType, sshUrl, handler };
+        XtermTerminal.sessions.set(panelType, session);
+
+        // The webview never emits 'dispose', so the panel is the only reliable signal
+        // that a terminal is gone. Without this the session leaked and the next
+        // "open in terminal" revealed a disposed panel and silently did nothing.
+        handler.panel.onDidDispose(() => {
+            session.client?.end();
+            XtermTerminal.drop(session);
+            done(null);
+        })
+
         let dataBuffer = [];
         handler.on("init", () => {
             handler.emit("route", 'sshTerminal')
-        }).on("route-sshTerminal",()=>{
-            handler.emit("terminalConfig",{fontSize})
+        }).on("route-sshTerminal", () => {
+            handler.emit("terminalConfig", { fontSize })
         }).on("initTerminal", (content) => {
             handler.emit('connecting', `connecting ${sshConfig.username}@${sshConfig.host}...\n`);
             let termCols: number, termRows: number;
@@ -62,10 +128,16 @@ export class XtermTerminal implements TerminalService {
                 termRows = content.rows
             }
             const client = new Client()
-            const end = () => { client.end(); XtermTerminal.handlerMap[sshUrl] = null; }
-            const SSHerror = (message: string, err: any) => { handler.emit('ssherror', (err) ? `${message}: ${err.message}` : message); end(); }
+            session.client = client
+            const end = () => { client.end(); XtermTerminal.drop(session); }
+            const SSHerror = (message: string, err: any) => {
+                handler.emit('ssherror', (err) ? `${message}: ${err.message}` : message);
+                end();
+                done(null);
+            }
             client.on('ready', () => {
-                XtermTerminal.handlerMap[sshUrl] = handler
+                session.ready = true
+                XtermTerminal.activeByUrl.set(sshUrl, panelType)
                 client.shell({ term: 'xterm-color', cols: termCols, rows: termRows }, (err, stream) => {
                     if (err) {
                         SSHerror('EXEC ERROR' + err, null)
@@ -90,8 +162,7 @@ export class XtermTerminal implements TerminalService {
                         handler.emit('ssherror', 'ssh serssion is close.')
                         end()
                     })
-                    if (callback && (typeof callback) == "function")
-                        callback()
+                    done(handler)
                 })
             })
             // client.on('banner', (data: string) => handler.emit('data', data.replace(/\r?\n/g, '\r\n')))
@@ -100,6 +171,7 @@ export class XtermTerminal implements TerminalService {
             client.on('error', (err) => { SSHerror('CONN ERROR', err) })
             client.on('keyboard-interactive', () => {
                 end();
+                done(null);
             })
             client.connect(sshConfig)
         }).on('openLog', async () => {
@@ -113,6 +185,42 @@ export class XtermTerminal implements TerminalService {
             })
         })
 
+    }
+
+    private static activeSession(sshUrl: string): TerminalSession {
+        const panelType = this.activeByUrl.get(sshUrl);
+        return panelType ? this.sessions.get(panelType) : null;
+    }
+
+    private static drop(session: TerminalSession) {
+        session.ready = false;
+        if (this.sessions.get(session.panelType) === session) {
+            this.sessions.delete(session.panelType);
+        }
+        // Only clear the host pointer while it still points at us: a second terminal
+        // on the same host must not be unregistered by the first one closing.
+        if (this.activeByUrl.get(session.sshUrl) !== session.panelType) {
+            return;
+        }
+        this.activeByUrl.delete(session.sshUrl);
+        for (const candidate of this.sessions.values()) {
+            if (candidate.sshUrl === session.sshUrl && candidate.ready) {
+                this.activeByUrl.set(session.sshUrl, candidate.panelType);
+                return;
+            }
+        }
+    }
+
+    private reveal(session: TerminalSession): boolean {
+        try {
+            session.handler.panel.reveal()
+            return true
+        } catch (err) {
+            // Panel is already gone even though onDidDispose never ran: forget it so
+            // the caller opens a fresh terminal instead of silently doing nothing.
+            XtermTerminal.drop(session)
+            return false
+        }
     }
 
     private getTitle(sshConfig: SSHConfig): string {

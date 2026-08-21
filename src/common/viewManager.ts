@@ -48,10 +48,24 @@ interface ViewState {
 
 export class ViewManager {
 
+    /**
+     * Panel-scoped events owned by ViewManager itself. They are registered once per
+     * panel and must not be dropped when a panel is reused by a new caller.
+     */
+    private static readonly PANEL_EVENTS = ['loginSuccess', 'logout'];
+
     private static viewStatu: { [key: string]: ViewState } = {};
     private static webviewPath: string;
     public static initExtesnsionPath(extensionPath: string) {
         this.webviewPath = extensionPath + "/out/webview"
+    }
+
+    private static removeBusinessListeners(eventEmitter: EventEmitter) {
+        for (const event of eventEmitter.eventNames()) {
+            if (!this.PANEL_EVENTS.includes(event as string)) {
+                eventEmitter.removeAllListeners(event)
+            }
+        }
     }
 
     public static createWebviewPanel(viewOption: ViewOption): Promise<WebviewPanel> {
@@ -79,15 +93,21 @@ export class ViewManager {
                     if(currentStatus.instance?.visible == false){
                         currentStatus.instance.reveal()
                     }
-                    currentStatus.eventEmitter.removeAllListeners()
+                    // Only the previous caller's business listeners go; the panel-level
+                    // ones registered below (loginSuccess/logout) must survive reuse.
+                    this.removeBusinessListeners(currentStatus.eventEmitter)
                     if (viewOption.eventHandler) {
                         viewOption.eventHandler(new Hanlder(currentStatus.instance, currentStatus.eventEmitter))
                     }
                     if(currentStatus.creating){
+                        // Still booting: the pending 'init' from the webview will drive
+                        // the handler we just installed.
+                        resolve(currentStatus.instance);
                         return;
                     }
                     currentStatus.eventEmitter.emit('init')
-                    return Promise.resolve(currentStatus.instance);
+                    resolve(currentStatus.instance);
+                    return;
                 }
             }
             const webviewPanel = vscode.window.createWebviewPanel(
