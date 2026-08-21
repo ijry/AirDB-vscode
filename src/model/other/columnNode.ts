@@ -1,4 +1,5 @@
 import { ColumnMeta } from "@/common/typeDef";
+import { Console } from "@/common/Console";
 import { MockRunner } from "@/service/mock/mockRunner";
 import * as vscode from "vscode";
 import { DatabaseType, ModelType, Template } from "../../common/constants";
@@ -124,8 +125,10 @@ ${this.column.type} ${this.column.nullable == "YES" ? "Nullable" : "NotNull"}`
         if (this.dbType == DatabaseType.MYSQL || !this.dbType) {
             return;
         }
-        vscode.window.showErrorMessage(vscode.l10n.t("Only mysql support change column position."))
-        throw new Error(vscode.l10n.t("Only mysql support change column position."));
+        const error = new Error(vscode.l10n.t("Only mysql support change column position."));
+        // Already surfaced here; the command wrapper must not repeat it.
+        Console.reportError(error);
+        throw error;
     }
 
 }

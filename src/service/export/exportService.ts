@@ -22,13 +22,13 @@ export class ExportService {
                     vscode.window.withProgress({ title: `Start exporting data to ${context.type}...`, location: ProgressLocation.Notification }, () => {
                         return new Promise((resolve) => {
                             context.done = resolve
-                            try {
-                                this.exportData(context)
-                            } catch (error) {
+                            // exportData is async, so a sync catch would miss its
+                            // rejection and leave the progress notification spinning.
+                            this.exportData(context).catch(error => {
+                                Console.reportError(error, 'Export failed')
                                 resolve(null)
-                            } finally {
-                                res(null)
-                            }
+                            })
+                            res(null)
                         })
                     })
                 } else {
@@ -42,14 +42,28 @@ export class ExportService {
     private async exportData(context: ExportContext) {
 
         const sql = context.sql
-        const connection = await ConnectionManager.getConnection(context.dbOption)
-        connection.query(sql, (err, rows, fields?: FieldInfo[]) => {
-            if (err) {
-                Console.log(err)
-                return;
-            }
-            this.delegateExport(context, rows, fields)
-        })
+        try {
+            const connection = await ConnectionManager.getConnection(context.dbOption)
+            connection.query(sql, (err, rows, fields?: FieldInfo[]) => {
+                if (err) {
+                    // Must settle the progress promise: returning here used to leave
+                    // the "Start exporting..." notification spinning forever, with no
+                    // file written and no error shown.
+                    Console.reportError(err, 'Export failed')
+                    context.done?.()
+                    return;
+                }
+                try {
+                    this.delegateExport(context, rows, fields)
+                } catch (error) {
+                    Console.reportError(error, 'Export failed')
+                    context.done?.()
+                }
+            })
+        } catch (error) {
+            Console.reportError(error, 'Export failed')
+            context.done?.()
+        }
 
     }
 

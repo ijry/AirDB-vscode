@@ -193,9 +193,12 @@ export class Util {
         vscode.window.withProgress({ title, location: vscode.ProgressLocation.Notification }, () => {
             return new Promise(async (resolve) => {
                 try {
-                    task(resolve)
+                    // A task that rejects must still settle the progress promise,
+                    // otherwise the notification spins forever.
+                    await task(resolve)
                 } catch (error) {
-                    vscode.window.showErrorMessage(error.message)
+                    Console.reportError(error)
+                    resolve(null)
                 }
             })
         })

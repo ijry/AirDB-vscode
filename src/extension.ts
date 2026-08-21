@@ -398,12 +398,30 @@ function detectActive(): void {
 
 function commandWrapper(commandDefinition: any, command: string): (...args: any[]) => any {
     return (...args: any[]) => {
+        // Most handlers are async. A synchronous try/catch cannot observe a rejected
+        // promise, so their failures used to vanish entirely: no notification, not
+        // even an output-channel line, leaving the command looking like a no-op.
+        // Return the promise so callers of executeCommand can await it too.
         try {
-            commandDefinition[command](...args);
-        }catch (err) {
-            Console.log(err);
+            const result = commandDefinition[command](...args);
+            if (result && typeof result.then == 'function') {
+                return Promise.resolve(result).catch(err => reportCommandError(err, command));
+            }
+            return result;
+        } catch (err) {
+            reportCommandError(err, command);
         }
     };
+}
+
+function reportCommandError(err: any, command: string) {
+    // Handlers that already told the user (via Console.reportError) are only logged,
+    // so a single failure does not stack up two notifications.
+    if (Console.isReported(err)) {
+        Console.log(`${command}: ${err?.message || err}`);
+        return;
+    }
+    Console.reportError(err, command);
 }
 
 function initCommand(commandDefinition: any): vscode.Disposable[] {

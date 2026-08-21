@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { Client, SFTPWrapper } from "ssh2";
 import { SSHConfig } from '@/model/interface/sshConfig';
+import { Console } from '@/common/Console';
 import { buildConnectConfig } from './sshConfigResolver';
 
 class SSH {
@@ -31,7 +32,7 @@ export class ClientManager {
         try {
             connectConfig = buildConnectConfig(sshConfig);
         } catch (err) {
-            vscode.window.showErrorMessage(err.message)
+            Console.reportError(err)
             return Promise.reject(err)
         }
 
@@ -42,7 +43,7 @@ export class ClientManager {
                     client.sftp((err, sftp) => {
                         if (err) {
                             this.activeClient[key] = null
-                            vscode.window.showErrorMessage(err.message)
+                            Console.reportError(err)
                             reject(err)
                             return
                         }
@@ -55,7 +56,7 @@ export class ClientManager {
 
             }).on('error', (err) => {
                 this.activeClient[key] = null
-                vscode.window.showErrorMessage(err.message)
+                Console.reportError(err)
                 reject(err)
             }).on('end', () => {
                 this.activeClient[key] = null

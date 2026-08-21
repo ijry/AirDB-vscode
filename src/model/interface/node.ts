@@ -421,8 +421,10 @@ export abstract class Node extends vscode.TreeItem implements CopyAble {
     checkCommand(command: string) {
         if (!commandExistsSync(command)) {
             const errText = vscode.l10n.t(`Command {0} not exists in path!`, command);
-            vscode.window.showErrorMessage(errText)
-            throw new Error(errText);
+            const error = new Error(errText);
+            // Already surfaced here; the command wrapper must not repeat it.
+            Console.reportError(error);
+            throw error;
         }
     }
 
