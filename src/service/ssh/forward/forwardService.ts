@@ -21,7 +21,17 @@ export class ForwardInfo {
 
 export class ForwardService {
 
-    private tunelMark: { [key: string]: { tunnel: any } } = {};
+    /**
+     * Running tunnels, keyed by forward id.
+     *
+     * Static on purpose: ForwardService is a field initializer on SSHConnectionNode
+     * (sshConnectionNode.ts:82), and the tree rebuilds those nodes on every refresh
+     * (treeDataProvider.ts:298). An instance field was therefore wiped whenever the
+     * tree reloaded, while the webview panel was reused -- so the panel ended up
+     * talking to a service that had forgotten its own tunnels: every forward showed
+     * as stopped and Stop silently did nothing while the port stayed bound.
+     */
+    private static tunelMark: { [key: string]: { tunnel: any } } = {};
     private store_key = "forward_store"
 
     public createForwardView(sshConfig: SSHConfig) {
@@ -63,9 +73,9 @@ export class ForwardService {
     }
 
     public closeTunnel(connectId: string) {
-        if (this.tunelMark[connectId]) {
-            this.tunelMark[connectId].tunnel.close()
-            delete this.tunelMark[connectId]
+        if (ForwardService.tunelMark[connectId]) {
+            ForwardService.tunelMark[connectId].tunnel.close()
+            delete ForwardService.tunelMark[connectId]
         }
     }
 
@@ -104,11 +114,14 @@ export class ForwardService {
             };
 
             const localTunnel = tunnel(config, (error, server) => {
-                this.tunelMark[id] = { tunnel: localTunnel }
                 if (error) {
-                    delete this.tunelMark[id]
+                    // Must stop here: falling through used to store the forward and
+                    // resolve as if it had succeeded, right after rejecting.
+                    delete ForwardService.tunelMark[id]
                     reject(error)
+                    return;
                 }
+                ForwardService.tunelMark[id] = { tunnel: localTunnel }
                 if (create) {
                     forwardInfo.id = id
                     const forwardInfos = this.list(sshConfig)
@@ -117,6 +130,10 @@ export class ForwardService {
                 }
                 resolve();
             });
+            // A tunnel that dies later (remote closed, network dropped) must not be
+            // left showing as running.
+            localTunnel.on?.('error', () => { delete ForwardService.tunelMark[id] })
+            localTunnel.on?.('close', () => { delete ForwardService.tunelMark[id] })
         })
 
     }
@@ -151,7 +168,7 @@ export class ForwardService {
         const forwardInfos: ForwardInfo[] = Util.getStore(`${this.store_key}_${sshConfig.host}_${sshConfig.port}`)
         if (!forwardInfos) return [];
         for (const forwardInfo of forwardInfos) {
-            if (this.tunelMark[forwardInfo.id]) {
+            if (ForwardService.tunelMark[forwardInfo.id]) {
                 forwardInfo.state = true;
             } else {
                 forwardInfo.state = false;

@@ -87,8 +87,15 @@ function createServer(config) {
             connection.end();
         });
         let id = getId(config)
-        try { 
-            tunelMark[id].connection.close() 
+        // tunelMark[id] is only set once traffic actually opened an ssh connection,
+        // so a forward that was never used has no entry here. The old try/finally
+        // had no catch, and the resulting TypeError escaped the 'close' handler.
+        try {
+            if (tunelMark[id] && tunelMark[id].connection) {
+                tunelMark[id].connection.close()
+            }
+        } catch (e) {
+            // closing a already-dead connection must not break teardown
         } finally {
             delete tunelMark[id]
         }
@@ -108,9 +115,27 @@ function tunnel(configArgs, callback) {
         config = createConfig(configArgs);
         server = createServer(config);
 
-        server.listen(config.localPort, config.localHost, function (error) {
-            callback(error, server);
-        });
+        // server.listen's third argument is a 'listening' listener and is invoked
+        // with no arguments, so the old `function (error)` here was always
+        // undefined. Bind failures (EADDRINUSE) arrive as an 'error' event
+        // instead, and with nothing listening for them the caller's promise never
+        // settled and node saw an uncaught exception.
+        var settled = false;
+        var onListenError = function (err) {
+            if (settled) { return; }
+            settled = true;
+            server.removeListener('listening', onListening);
+            callback(err, server);
+        };
+        var onListening = function () {
+            if (settled) { return; }
+            settled = true;
+            server.removeListener('error', onListenError);
+            callback(null, server);
+        };
+        server.once('error', onListenError);
+        server.once('listening', onListening);
+        server.listen(config.localPort, config.localHost);
     } catch (e) {
         server = new events.EventEmitter();
         setImmediate(function () {
