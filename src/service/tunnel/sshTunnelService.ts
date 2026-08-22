@@ -61,17 +61,41 @@ export class SSHTunnelService {
                     args.push('-i', ssh.privateKeyPath)
                 }
                 const bat = spawn('ssh', args);
+                // Every path out of here has to settle the promise. The error and
+                // close paths used to only call errorCallback, so a failing ssh
+                // subprocess (bad key, unreachable host) left createTunnel pending
+                // forever and its caller hanging with it.
+                let settled = false;
+                const settle = (value: Node) => {
+                    if (settled) { return; }
+                    settled = true;
+                    resolve(value)
+                };
                 const successHandler = setTimeout(() => {
-                    resolve({ ...node, host: "127.0.0.1", port } as Node)
+                    settle({ ...node, host: "127.0.0.1", port } as Node)
                 }, ssh.watingTime);
                 bat.stderr.on('data', (chunk) => {
                     if (chunk?.toString().match(/^[@\s]+$/)) return;
                     delete this.tunelMark[key]
-                    errorCallback(new Error(chunk.toString()?.replace(/@/g, '')))
                     clearTimeout(successHandler)
+                    if (errorCallback) { errorCallback(new Error(chunk.toString()?.replace(/@/g, ''))) }
+                    settle(null)
+                });
+                bat.on('error', (err) => {
+                    delete this.tunelMark[key]
+                    clearTimeout(successHandler)
+                    if (errorCallback) { errorCallback(err) }
+                    settle(null)
                 });
                 bat.on('close', (code, signal) => {
                     delete this.tunelMark[key]
+                    if (!settled) {
+                        clearTimeout(successHandler)
+                        if (errorCallback) {
+                            errorCallback(new Error(`ssh exited with code ${code}`))
+                        }
+                        settle(null)
+                    }
                 });
                 return;
             }

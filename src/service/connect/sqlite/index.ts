@@ -17,7 +17,13 @@ class SQLite {
     }
 
     query(query: string): Promise<ResultNew | ResultNew[]> {
-        if (!this.sqliteCommand) Promise.resolve({ error: "Unable to execute query: provide a valid sqlite3 executable in the setting sqlite.sqlite3." });
+        // This used to build a resolved value and drop it (no return), so execution
+        // continued into spawn(undefined, ...) and the user got a low-level spawn
+        // error instead of being told which setting to fill in. Reject rather than
+        // resolve: the caller reads res.rows on success and has a catch for failure.
+        if (!this.sqliteCommand) {
+            return Promise.reject(new Error("Unable to execute query: provide a valid sqlite3 executable in the setting sqlite.sqlite3."));
+        }
         return new Promise((res, rej) => {
 
 

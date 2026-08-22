@@ -18,10 +18,21 @@ export class FileManager {
             fs.appendFileSync(recordPath, "");
         }
         const openPath = vscode.Uri.file(recordPath);
-        return new Promise((resolve) => {
-            vscode.workspace.openTextDocument(openPath).then(async (doc) => {
-                resolve(await vscode.window.showTextDocument(doc));
-            });
+        // Both stages must be able to reject: the executor had no reject parameter
+        // and no rejection handler, so a document that could not be opened (deleted
+        // underneath us, locked, past the size limit) left every awaiting caller
+        // hanging forever.
+        return new Promise((resolve, reject) => {
+            vscode.workspace.openTextDocument(openPath).then(
+                async (doc) => {
+                    try {
+                        resolve(await vscode.window.showTextDocument(doc));
+                    } catch (err) {
+                        reject(err);
+                    }
+                },
+                reject
+            );
         })
 
     }

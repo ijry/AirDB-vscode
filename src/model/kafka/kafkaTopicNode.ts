@@ -44,7 +44,10 @@ export class KafkaTopicNode extends KafkaBaseNode {
             title: `${this.topic} messages`,
             type: `kafka-message-viewer-${this.getConnectId()}-${this.topic}`,
             splitView: true,
-            singlePage: false,
+            // The type above is already unique per topic/queue, which is what makes
+            // the panel reusable. singlePage: false made ViewManager append a
+            // timestamp to it, so every click opened another identical tab.
+            singlePage: true,
             path: "app",
             eventHandler: (handler) => {
                 handler.on("init", () => {
@@ -94,7 +97,10 @@ export class KafkaTopicNode extends KafkaBaseNode {
             title: `${this.topic} producer`,
             type: `kafka-message-producer-${this.getConnectId()}-${this.topic}`,
             splitView: true,
-            singlePage: false,
+            // The type above is already unique per topic/queue, which is what makes
+            // the panel reusable. singlePage: false made ViewManager append a
+            // timestamp to it, so every click opened another identical tab.
+            singlePage: true,
             path: "app",
             eventHandler: (handler) => {
                 handler.on("init", () => {

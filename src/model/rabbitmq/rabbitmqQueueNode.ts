@@ -26,7 +26,10 @@ export class RabbitMQQueueNode extends RabbitMQBaseNode {
             title: `${this.queue} messages`,
             type: `rabbitmq-message-viewer-${this.getConnectId()}-${this.queue}`,
             splitView: true,
-            singlePage: false,
+            // The type above is already unique per topic/queue, which is what makes
+            // the panel reusable. singlePage: false made ViewManager append a
+            // timestamp to it, so every click opened another identical tab.
+            singlePage: true,
             path: "app",
             eventHandler: (handler) => {
                 handler.on("init", () => {
@@ -51,7 +54,10 @@ export class RabbitMQQueueNode extends RabbitMQBaseNode {
             title: `${this.queue} producer`,
             type: `rabbitmq-message-producer-${this.getConnectId()}-${this.queue}`,
             splitView: true,
-            singlePage: false,
+            // The type above is already unique per topic/queue, which is what makes
+            // the panel reusable. singlePage: false made ViewManager append a
+            // timestamp to it, so every click opened another identical tab.
+            singlePage: true,
             path: "app",
             eventHandler: (handler) => {
                 handler.on("init", () => {
