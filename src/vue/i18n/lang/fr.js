@@ -1,4 +1,5 @@
 export default {  
+    'Update Failed': 'Échec de la mise à jour',
     'Connect to Database Server': 'Se connecter au serveur de base de données',  
     'Connection error!': "Attention, une erreur de connexion s'est produite!",  
     'Success!': "Bravo, la connexion a réussi!",  

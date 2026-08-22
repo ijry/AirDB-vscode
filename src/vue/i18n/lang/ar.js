@@ -1,4 +1,5 @@
 export default {  
+    'Update Failed': 'فشل التحديث',
     'Connect to Database Server': 'اتصال بخادم قاعدة البيانات',  
     'Connection error!': 'ملاحظة: خطأ في الاتصال!',  
     'Success!': 'نجاح! اتصال موفق!',  

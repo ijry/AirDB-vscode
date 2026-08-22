@@ -31,9 +31,13 @@ export class DuckDBConnection extends IConnection {
     query(sql: any, values?: any, callback?: any) {
         if (!callback && values instanceof Function) {
             callback = values;
+            values = undefined;
         }
         const event = new EventEmitter();
-        this.connection.all(sql, (error: Error, rows: any[]) => {
+        // Bind values were accepted and dropped before; duckdb's all() takes them as
+        // variadic arguments ahead of the callback.
+        const params = Array.isArray(values) ? values : [];
+        const handler = (error: Error, rows: any[]) => {
             if (error) {
                 if (callback) callback(error);
                 event.emit("error", error.message || String(error));
@@ -48,7 +52,8 @@ export class DuckDBConnection extends IConnection {
                 return;
             }
             callback(null, rows, fieldsFromRows(rows));
-        });
+        };
+        this.connection.all(sql, ...params, handler);
         return event;
     }
 

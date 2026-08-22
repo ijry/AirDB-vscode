@@ -1,4 +1,5 @@
 export default {
+    'Update Failed': '更新失败',
     'delete': '删除',
     'Save': '保存',
     'Update Success': '更新成功',

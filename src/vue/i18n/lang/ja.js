@@ -1,4 +1,5 @@
 export default {  
+    'Update Failed': '更新に失敗しました',
     'Connect to Database Server': 'データベースサーバーに接続',  
     'Connection error!': '接続エラーです！',  
     'Success!': '成功！接続に成功しました！',  

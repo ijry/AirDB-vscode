@@ -43,9 +43,15 @@ export class PostgreSqlConnection extends IConnection {
 
         if (!callback && values instanceof Function) {
             callback = values;
+            values = undefined;
         }
         const event = new EventEmitter()
-        this.client.query(sql, (err, res) => {
+        // Bind values were previously accepted and then dropped, so every caller was
+        // silently forced back onto string interpolation. Passing them switches pg to
+        // the extended protocol, which allows only one statement per call -- callers
+        // must send edit statements individually.
+        const params = Array.isArray(values) ? values : undefined;
+        const handler = (err, res) => {
             if (err) {
                 if(callback) callback(err)
                 this.end()
@@ -65,7 +71,12 @@ export class PostgreSqlConnection extends IConnection {
                     callback(null, this.adaptResult(res), res.fields)
                 }
             }
-        })
+        };
+        if (params) {
+            this.client.query(sql, params, handler)
+        } else {
+            this.client.query(sql, handler)
+        }
         return event;
     }
     

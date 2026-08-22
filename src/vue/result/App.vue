@@ -305,6 +305,16 @@ export default {
         message: this.$t("Update Success"),
         type: "success",
       });
+    }).on("updateFail", (err) => {
+      // Previously emitted with no listener at all: a failed save left the lock on,
+      // the pending edits in place and the dirty marker in the title, with no error
+      // shown anywhere.
+      this.update.lock = false;
+      this.$message({
+        showClose: true,
+        message: (err && err.message) || this.$t("Update Failed"),
+        type: "error",
+      });
     });
     // window.onkeypress = (e) => {
     //   if (
@@ -497,21 +507,39 @@ export default {
       return this.editable && !row.isFilter;
     },
     save() {
-      if (Object.keys(this.update.editList).length == 0 && this.update.lock) {
+      // The guard used to be `length == 0 && lock`, which is false whenever there
+      // are edits -- so the lock never blocked anything and repeated clicks resent
+      // the whole batch.
+      if (this.update.lock) {
+        return;
+      }
+      if (Object.keys(this.update.editList).length == 0) {
+        return;
+      }
+      const statements = [];
+      try {
+        for (const index in this.update.editList) {
+          const element = this.update.editList[index];
+          const statement = this.$refs.editor.buildUpdateStatement(
+            element,
+            this.result.data[index]
+          );
+          if (statement) {
+            statements.push(statement);
+          }
+        }
+      } catch (err) {
+        // buildUpdateStatement reports the reason itself (no primary key, ...).
+        return;
+      }
+      if (!statements.length) {
         return;
       }
       this.update.lock = true;
-      let sql = "";
-      for (const index in this.update.editList) {
-        const element = this.update.editList[index];
-        sql += this.$refs.editor.buildUpdateSql(
-          element,
-          this.result.data[index]
-        );
-      }
-      if (sql) {
-        vscodeEvent.emit("saveModify", sql);
-      }
+      // Structured statements, executed one at a time inside a transaction. A single
+      // concatenated string committed each statement separately, so a failure part
+      // way through left some edits applied and the rest silently dropped.
+      vscodeEvent.emit("saveModify", { statements });
     },
     sendToVscode(event, param) {
       if (event == 'dataModify') {

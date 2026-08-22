@@ -18,9 +18,9 @@ import { SQLParser } from "@/provider/parser/sqlParser";
 
 export class QueryUnit {
 
-    public static queryPromise<T>(connection: IConnection, sql: string, showError = true): Promise<QueryResult<T>> {
+    public static queryPromise<T>(connection: IConnection, sql: string, showError = true, values?: any[]): Promise<QueryResult<T>> {
         return new Promise((resolve, reject) => {
-            connection.query(sql, (err: Error, rows, fields, total) => {
+            const handler = (err: Error, rows, fields, total) => {
                 if (err) {
                     if (showError) {
                         Console.log(`Execute sql fail : ${sql}`);
@@ -30,7 +30,15 @@ export class QueryUnit {
                 } else {
                     resolve(({ rows, fields, total }));
                 }
-            });
+            };
+            // Only take the bind path when there is something to bind: several drivers
+            // switch protocol when given a values array, which forbids multi-statement
+            // text.
+            if (values && values.length) {
+                connection.query(sql, values, handler);
+            } else {
+                connection.query(sql, handler);
+            }
         });
     }
 
@@ -162,13 +170,27 @@ export class QueryUnit {
         });
     }
     public static runBatch(connection: IConnection, sqlList: string[]) {
+        return this.runStatements(connection, sqlList.map(sql => ({ sql })));
+    }
+
+    /**
+     * Runs statements in one transaction, each with its own optional bind values.
+     * Rolls back and rejects on the first failure, so a batch cannot leave half of
+     * the user's edits applied.
+     */
+    public static runStatements(connection: IConnection, statements: Array<{ sql: string, values?: any[] }>) {
         return new Promise((resolve, reject) => {
-            connection.beginTransaction(async () => {
+            // A failed BEGIN used to be ignored, which ran the batch unwrapped.
+            connection.beginTransaction(async (err) => {
+                if (err) {
+                    reject(err)
+                    return;
+                }
                 try {
-                    for (let sql of sqlList) {
-                        sql = sql.trim()
+                    for (const statement of statements) {
+                        const sql = statement?.sql?.trim()
                         if (!sql) { continue }
-                        await this.queryPromise(connection, sql)
+                        await this.queryPromise(connection, sql, true, statement.values)
                     }
                     connection.commit()
                     resolve(true)

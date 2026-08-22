@@ -30,6 +30,9 @@
 <script>
 import { wrapByDb } from "@/common/wrapper";
 
+/** Text shown for NULL cells; must match the template below. */
+const NULL_PLACEHOLDER = "(NULL)";
+
 export default {
   props: ["result", "scope", "editList","filterObj"],
   methods: {
@@ -59,7 +62,13 @@ export default {
         editList[rowIndex] = { ...row };
         delete editList[rowIndex]._XID;
       }
-      editList[rowIndex][columnName] = event.target.textContent;
+      let text = event.target.textContent;
+      // The NULL placeholder is rendered inside the editable cell, so typing into a
+      // NULL cell without clearing it first produced "(NULL)abc" as the value.
+      if (row[columnName] == null && text.indexOf(NULL_PLACEHOLDER) !== -1) {
+        text = text.split(NULL_PLACEHOLDER).join("");
+      }
+      editList[rowIndex][columnName] = text;
       this.$emit("sendToVscode", "dataModify");
       this.$emit("update:editList", editList);
     },

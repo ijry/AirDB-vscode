@@ -1,4 +1,5 @@
 export default {  
+    'Update Failed': '업데이트 실패',
     'Connect to Database Server': '데이터베이스 서버에 연결',  
     'Connection error!': '잘못됐어요, 연결 오류가 발생했습니다!',  
     'Success!': '잘됐어요, 연결 성공!',  

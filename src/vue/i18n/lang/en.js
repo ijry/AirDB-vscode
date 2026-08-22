@@ -1,4 +1,5 @@
 export default {
+    'Update Failed': 'Update Failed',
     'Design.Column': 'Column',
     'Design.Index': 'Index',
     'Design.Table': 'Table Name',

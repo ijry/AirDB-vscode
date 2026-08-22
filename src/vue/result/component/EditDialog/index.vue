@@ -68,6 +68,8 @@
 import CellEditor from "./CellEditor.vue";
 import { util } from "../../mixin/util";
 import { wrapByDb } from "@/common/wrapper";
+import { toBindValue, quoteLiteral, isTextType } from "@/common/sqlValue";
+import { supportsBindParameters, placeholder } from "@/common/sqlDialect";
 
 export default {
   mixins: [util],
@@ -172,12 +174,15 @@ export default {
       let columns = "";
       let values = "";
       for (const key in this.editModel) {
-        if (this.getTypeByColumn(key) == null) continue;
+        const type = this.getTypeByColumn(key);
+        if (type == null) continue;
         const newEle = this.editModel[key];
-        if (newEle != null && newEle !== "") {
-          columns += `${wrapByDb(key, this.dbType)},`;
-          values += `${this.wrapQuote(this.getTypeByColumn(key), newEle)},`;
-        }
+        // An omitted column takes the table default, which is the useful behaviour
+        // for INSERT. An empty text cell is still a real value ('') and is kept.
+        if (newEle == null) continue;
+        if (newEle === "" && !isTextType(type)) continue;
+        columns += `${wrapByDb(key, this.dbType)},`;
+        values += `${quoteLiteral(type, newEle, this.dbType)},`;
       }
       if (values) {
         const insertSql = `INSERT INTO ${this.table}(${columns.replace(
@@ -190,46 +195,70 @@ export default {
         this.$message("Not any input, insert fail!");
       }
     },
+    /**
+     * Builds the UPDATE for one edited row.
+     *
+     * Returns {sql, values} so the extension can bind parameters on drivers that
+     * support them; values is empty for the databases that cannot bind, where the
+     * literals are escaped inline instead.
+     */
+    buildUpdateStatement(currentNew, oldRow, options) {
+      if (!this.primaryKey) {
+        this.$message.error("This table has not primary key, cannot update!");
+        throw new Error("This table has not primary key, cannot update!");
+      }
+      const pkList = this.primaryKeyList || [];
+      if (!pkList.length) {
+        // Without this the WHERE loop below emits nothing and the UPDATE would
+        // rewrite the entire table.
+        this.$message.error("This table has not primary key, cannot update!");
+        throw new Error("This table has not primary key, cannot update!");
+      }
+
+      const bind = !(options && options.inline) && supportsBindParameters(this.dbType);
+      const values = [];
+      const render = (type, value) => {
+        if (bind) {
+          values.push(toBindValue(type, value));
+          return placeholder(this.dbType, values.length - 1);
+        }
+        return quoteLiteral(type, value, this.dbType);
+      };
+
+      let change = "";
+      for (const key in currentNew) {
+        const type = this.getTypeByColumn(key);
+        if (type == null) continue;
+        if (oldRow[key] !== currentNew[key]) {
+          change += `${wrapByDb(key, this.dbType)}=${render(type, currentNew[key])},`;
+        }
+      }
+      if (!change) {
+        return null;
+      }
+
+      const table = wrapByDb(this.table, this.dbType);
+      let sql = `UPDATE ${table} SET ${change.replace(/,$/, "")}`;
+      pkList.forEach((pk, i) => {
+        const pkType = pk.simpleType || pk.type;
+        const keyword = i === 0 ? "WHERE" : "AND";
+        sql += ` ${keyword} ${wrapByDb(pk.name, this.dbType)}=${render(pkType, oldRow[pk.name])}`;
+      });
+      return { sql: sql + ";", values };
+    },
+    /**
+     * Text-only form, for the ES/Mongo paths and for callers that cannot carry bind
+     * values. Delegates to buildUpdateStatement so there is a single implementation;
+     * the returned SQL has literals inlined.
+     */
     buildUpdateSql(currentNew, oldRow) {
       if (this.dbType == "ElasticSearch") {
         return this.confirmUpdateEs(currentNew);
       } else if (this.dbType == "MongoDB") {
         return this.confirmUpdateMongo(currentNew, oldRow);
       }
-      if (!this.primaryKey) {
-        this.$message.error("This table has not primary key, cannot update!");
-        throw new Error("This table has not primary key, cannot update!");
-      }
-
-      let change = "";
-      for (const key in currentNew) {
-        if (this.getTypeByColumn(key) == null) continue;
-        const oldEle = oldRow[key];
-        const newEle = currentNew[key];
-        if (oldEle !== newEle) {
-          change += `${wrapByDb(key, this.dbType)}=${this.wrapQuote(
-            this.getTypeByColumn(key),
-            newEle
-          )},`;
-        }
-      }
-      if (!change) {
-        return "";
-      }
-
-      const table = wrapByDb(this.table, this.dbType);
-      let updateSql = `UPDATE ${table} SET ${change.replace(/,$/, "")}`;
-      for (let i = 0; i < (this.primaryKeyList || []).length; i++) {
-        const pk = this.primaryKeyList[i];
-        const pkName = pk.name;
-        const pkType = pk.simpleType || pk.type;
-        if (i == 0) {
-          updateSql = `${updateSql} WHERE ${pkName}=${this.wrapQuote(pkType, oldRow[pkName])}`;
-        } else {
-          updateSql = `${updateSql} AND ${pkName}=${this.wrapQuote(pkType, oldRow[pkName])}`;
-        }
-      }
-      return updateSql + ";";
+      const statement = this.buildUpdateStatement(currentNew, oldRow, { inline: true });
+      return statement ? statement.sql : "";
     },
     confirmUpdate(row, oldRow) {
       if (!oldRow) {

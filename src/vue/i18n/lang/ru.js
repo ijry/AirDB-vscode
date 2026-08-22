@@ -1,4 +1,5 @@
 export default {  
+    'Update Failed': 'Не удалось обновить',
     'Connect to Database Server': 'Подключение к серверу базы данных',  
     'Connection error!': 'Внимание, произошла ошибка при подключении!',  
     'Success!': 'Отлично, подключение прошло успешно!',  

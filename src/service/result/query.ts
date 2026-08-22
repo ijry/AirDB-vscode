@@ -1,5 +1,6 @@
 import { FieldInfo } from "@/common/typeDef";
 import { Util } from "@/common/util";
+import { ConnectionManager } from "@/service/connectionManager";
 import { EsRequest } from "@/model/es/esRequest";
 import { ServiceManager } from "@/service/serviceManager";
 import { basename, extname } from "path";
@@ -116,13 +117,28 @@ export class QueryPage {
                     env.openExternal(Uri.parse('https://www.buymeacoffee.com/ijry'));
                 }).on('dataModify', () => {
                     if (handler.panel.title.indexOf("*") == -1) handler.panel.title = `${handler.panel.title}*`
-                }).on("saveModify", (sql) => {
-                    dbOption.execute(sql).then(() => {
+                }).on("saveModify", async (payload) => {
+                    // Accepts either the new structured form ({statements:[{sql,values}]})
+                    // or a bare SQL string from an older webview bundle.
+                    const statements = Array.isArray(payload?.statements)
+                        ? payload.statements
+                        : (typeof payload == 'string' ? [{ sql: payload }] : []);
+                    if (!statements.length) {
+                        handler.emit('updateSuccess')
+                        return;
+                    }
+                    try {
+                        // One transaction for the whole batch: executing a concatenated
+                        // string committed each statement separately, so a failure part
+                        // way through left some edits applied and the rest lost.
+                        const connection = await ConnectionManager.getConnection(dbOption)
+                        await QueryUnit.runStatements(connection, statements)
                         handler.emit('updateSuccess')
                         handler.panel.title = handler.panel.title.replace("*", "")
-                    }).catch(err => {
-                        handler.emit("updateFail", err)
-                    })
+                    } catch (err) {
+                        Console.reportError(err, 'Save failed')
+                        handler.emit("updateFail", { message: err?.message || String(err) })
+                    }
                 }).on('designTable', () => {
                     // 跳转表结构设计
                     // @ts-ignore

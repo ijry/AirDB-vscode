@@ -1,55 +1,21 @@
+import { quoteLiteral } from "@/common/sqlValue";
+
 export const util = {
     methods: {
+        /**
+         * Escapes a value for inlining into SQL.
+         *
+         * Thin wrapper over the shared implementation so the filter and DELETE paths
+         * escape identically to the edit path. The previous local version returned any
+         * value containing parentheses verbatim -- so a cell holding `(1) , price=0`
+         * rewrote a column the user never edited -- escaped only single quotes, and
+         * did so with a backslash, which is not an escape on PostgreSQL, SQL Server or
+         * Oracle.
+         */
         wrapQuote(type, value) {
-            if (value === "") {
-                return "''"
-                // return "null"
-            }
-            if (value === null) {
-                return "null"
-            }
-            // method call 
-            if (/\(.*?\)/.exec(value)) {
-                return value
-            }
-            if (typeof value == "string") {
-                value = value.replace(/'/g, "\\'")
-            }
-            if(!type){
-                return value;
-            }
-            type = type.toLowerCase()
-            switch (type) {
-                // sql server
-                case "nvarchar":
-                case "nchar":
-                case "nvarchar":
-                case "datetimeoffset":
-                case "smalldatetime":
-                case "datetime2":
-                // pg
-                case "character":
-                case "xml":
-                case "uuid":
-                case "jsonb":
-                case "character varying":
-                case "timestamp with time zone":
-                // mysql
-                case "varchar":
-                case "char":
-                case "date":
-                case "time":
-                case "timestamp":
-                case "datetime":
-                case "set":
-                case "json":
-                    return `'${value}'`
-                default:
-                    if (type.indexOf("timestamp") !== -1 || type.indexOf("text") !== -1 || type.indexOf("blob") !== -1 || type.indexOf("binary") !== -1) {
-                        return `'${value}'`
-                    }
-            }
-            return value
+            // EditDialog carries dbType directly; App.vue has it on result.
+            const databaseType = this.dbType || (this.result && this.result.dbType);
+            return quoteLiteral(type, value, databaseType);
         }
     }
 }
