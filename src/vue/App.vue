@@ -12,7 +12,7 @@ export default {
   mounted() {
     // 监听语言
     vscodeEvent.on("syncState", (state) => {
-      console.log('syncState', state)
+      // Not logged: state.userState holds the auth token.
       localStorage.setItem('userState', JSON.stringify(state.userState)); // 用户登录信息
       let locale = 'en'
       if (state.lang == 'zh-cn' || state.lang == 'zh-tw') {

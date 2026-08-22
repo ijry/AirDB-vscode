@@ -207,7 +207,11 @@ export class ConnectionManager {
             case DatabaseType.FTP:
                 return new FTPConnection(opt);
             default:
-                Console.log('创建连接出错' + JSON.stringify(opt))
+                // Log the type only: opt is the full node, so stringifying it wrote
+                // the password, SSH credentials and access keys into the output
+                // channel -- which Console.log also reveals, and which users paste
+                // into bug reports.
+                Console.log(`创建连接出错: unsupported dbType ${opt?.dbType}`)
                 throw new Error(vscode.l10n.t('no dbType'))
         }
     }

@@ -541,7 +541,8 @@ export default {
     vscodeEvent
       .on("edit", (node) => {
         this.editModel = true;
-        console.log(node);
+        // Not logged: node carries the plaintext password, ssh.password and
+        // ssh.passphrase, which would land in the webview devtools console.
         this.connectionOption = node;
       })
       .on("connect", (node) => {

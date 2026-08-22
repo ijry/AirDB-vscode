@@ -283,7 +283,7 @@ export default {
 
     // 监听状态同步
     vscodeEvent.on("syncState", (state) => {
-      console.log('syncState', state)
+      // Not logged: state.userState holds the auth token.
       let locale = 'en'
       if (state.lang == 'zh-cn' || state.lang == 'zh-tw') {
         locale = 'zh'

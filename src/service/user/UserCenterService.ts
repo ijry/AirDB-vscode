@@ -50,7 +50,10 @@ export class UserCenterService {
                     try {
                         // 更新主密码
                         GlobalState.update('mainPwd', data.pwd);
-                        vscode.window.showInformationMessage(vscode.l10n.t(`Main password set success!`) + data.pwd)
+                        // Never echo the password itself: this is the AES key for every
+                        // synced connection password, and notifications persist in the
+                        // notification centre and show up in screenshots.
+                        vscode.window.showInformationMessage(vscode.l10n.t(`Main password set success!`))
                         // handler.emit("success") // 成功提示
 
                         // 刷新左侧目录树
