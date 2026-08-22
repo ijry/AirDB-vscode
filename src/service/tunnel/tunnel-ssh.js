@@ -87,9 +87,27 @@ function tunnel(configArgs, callback) {
         config = createConfig(configArgs);
         server = createServer(config);
 
-        server.listen(config.localPort, config.localHost, function (error) {
-            callback(error, server);
-        });
+        // server.listen's third argument is a 'listening' listener and is called
+        // with no arguments, so the old `function (error)` here was always
+        // undefined. Bind failures (EADDRINUSE) arrive as an 'error' event
+        // instead, and with nothing listening the caller's promise never settled
+        // and node saw an uncaught exception.
+        var settled = false;
+        var onListenError = function (err) {
+            if (settled) { return; }
+            settled = true;
+            server.removeListener('listening', onListening);
+            callback(err, server);
+        };
+        var onListening = function () {
+            if (settled) { return; }
+            settled = true;
+            server.removeListener('error', onListenError);
+            callback(null, server);
+        };
+        server.once('error', onListenError);
+        server.once('listening', onListening);
+        server.listen(config.localPort, config.localHost);
     } catch (e) {
         server = new events.EventEmitter();
         setImmediate(function () {

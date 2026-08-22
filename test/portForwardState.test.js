@@ -126,6 +126,40 @@ watchdog.unref?.();
     "Stop from a rebuilt node must actually stop the tunnel"
   );
 
+  // -------------------------------------------------------------------------
+  // 4. The database-connection tunnel (a separate copy of the same code, used
+  //    when a connection goes over SSH) must report bind failures too. Without
+  //    this the whole connection attempt hangs on a taken local port.
+  // -------------------------------------------------------------------------
+  const dbTunnel = require("../src/service/tunnel/tunnel-ssh.js");
+
+  const blocker2 = net.createServer();
+  const port2 = await new Promise((resolve) => {
+    blocker2.listen(0, "127.0.0.1", () => resolve(blocker2.address().port));
+  });
+
+  const dbResult = await new Promise((resolve) => {
+    let calls = 0;
+    const server = dbTunnel(
+      {
+        host: "127.0.0.1", port: 22, username: "u", password: "p",
+        localHost: "127.0.0.1", localPort: port2,
+        dstHost: "127.0.0.1", dstPort: 3306,
+      },
+      (error) => { calls++; resolve({ error, calls }); }
+    );
+    server.on("error", () => {});
+  });
+
+  assert.ok(dbResult.error, "the db tunnel must report a bind failure");
+  assert.match(
+    String(dbResult.error.code || dbResult.error.message), /EADDRINUSE/,
+    `expected EADDRINUSE, got ${dbResult.error.code || dbResult.error.message}`
+  );
+  assert.strictEqual(dbResult.calls, 1, "the db tunnel callback must fire exactly once");
+
+  await new Promise((r) => blocker2.close(r));
+
   console.log("portForwardState: all assertions passed");
   clearTimeout(watchdog);
 })().catch((err) => {

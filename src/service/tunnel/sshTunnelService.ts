@@ -77,11 +77,15 @@ export class SSHTunnelService {
             }
 
             const localTunnel = tunnel(config, (error, server) => {
-                this.tunelMark[key] = { tunnel: localTunnel, tunnelPort: port }
-                if (error && errorCallback) {
+                if (error) {
+                    // Must not fall through: resolving with a node pointing at a port
+                    // that never bound made the caller connect to nothing.
                     delete this.tunelMark[key]
-                    errorCallback(error)
+                    if (errorCallback) { errorCallback(error) }
+                    resolve(null)
+                    return;
                 }
+                this.tunelMark[key] = { tunnel: localTunnel, tunnelPort: port }
                 resolve({ ...node, host: "127.0.0.1", port } as Node)
             });
             localTunnel.on('error', (err) => {
