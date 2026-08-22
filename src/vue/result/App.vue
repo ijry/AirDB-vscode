@@ -636,10 +636,42 @@ export default {
               .deleteMany({_id:{$in:[${checkboxRecords.join(",")}]}})`;
           } else {
             const table=wrapByDb(this.result.table,this.result.dbType);
-            deleteSql =
-              checkboxRecords.length > 1
-                ? `DELETE FROM ${table} WHERE ${this.result.primaryKey} in (${checkboxRecords.join(",")})`
-                : `DELETE FROM ${table} WHERE ${this.result.primaryKey}=${checkboxRecords[0]}`;
+            // A composite primary key needs every column in the WHERE clause.
+            // result.primaryKey only holds the LAST key column, so deleting one row
+            // of order_item(order_id, product_id) used to run
+            // DELETE ... WHERE product_id=5 and remove that product from every order.
+            const pkList = this.result.primaryKeyList || [];
+            if (pkList.length > 1) {
+              // Same guard as the single-key path below: a row missing any key column
+              // cannot be addressed, and emitting "=null" would match nothing.
+              const addressable = datas.filter((record) =>
+                pkList.every((pk) => record[pk.name] != null)
+              );
+              if (!addressable.length) {
+                this.$message.error(this.$t("Delete canceled"));
+                return;
+              }
+              const rowClauses = addressable.map((record) =>
+                "(" +
+                pkList
+                  .map(
+                    (pk) =>
+                      `${wrapByDb(pk.name, this.result.dbType)}=${this.wrapQuote(
+                        pk.simpleType || pk.type,
+                        record[pk.name]
+                      )}`
+                  )
+                  .join(" AND ") +
+                ")"
+              );
+              deleteSql = `DELETE FROM ${table} WHERE ${rowClauses.join(" OR ")}`;
+            } else {
+              const pkName = wrapByDb(this.result.primaryKey, this.result.dbType);
+              deleteSql =
+                checkboxRecords.length > 1
+                  ? `DELETE FROM ${table} WHERE ${pkName} in (${checkboxRecords.join(",")})`
+                  : `DELETE FROM ${table} WHERE ${pkName}=${checkboxRecords[0]}`;
+            }
           }
           this.execute(deleteSql);
         })

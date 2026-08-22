@@ -45,17 +45,45 @@ export default {
     // 单元格变动事件
     editListen(event, scope) {
       const { row, column } = scope;
-      const rowIndex = scope.rowIndex != null ? scope.rowIndex : scope.$rowIndex;
       const columnName = column.title || column.field;
+      // Key the pending edit by the row's index in the UNFILTERED data. vxe reports
+      // an index into the rendered (search-filtered) array, and save() resolves the
+      // original row from result.data -- using the rendered index there overwrote a
+      // different row and rewrote its primary key.
+      const rowIndex = this.resolveRowIndex(row);
+      if (rowIndex < 0) {
+        return;
+      }
       const editList = this.editList.concat([]);
       if (!editList[rowIndex]) {
         editList[rowIndex] = { ...row };
         delete editList[rowIndex]._XID;
-        console.log(editList[rowIndex]);
       }
       editList[rowIndex][columnName] = event.target.textContent;
       this.$emit("sendToVscode", "dataModify");
       this.$emit("update:editList", editList);
+    },
+    /**
+     * Position of a rendered row within the unfiltered result data. Identity is the
+     * reliable answer; the primary-key comparison is a fallback in case the grid
+     * ever hands back a copy rather than the original object.
+     */
+    resolveRowIndex(row) {
+      const data = (this.result && this.result.data) || [];
+      const direct = data.indexOf(row);
+      if (direct >= 0) {
+        return direct;
+      }
+      const pkList = (this.result && this.result.primaryKeyList) || [];
+      const keys = pkList.length
+        ? pkList.map((pk) => pk.name)
+        : (this.result && this.result.primaryKey ? [this.result.primaryKey] : []);
+      if (!keys.length) {
+        return -1;
+      }
+      return data.findIndex((candidate) =>
+        keys.every((key) => candidate[key] === row[key])
+      );
     },
     filter(event, column, operation) {
       if (!operation) operation = "=";
